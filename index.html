@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ashen Throne — Idle RPG</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #0f0f1a;
+    --bg3: #141420;
+    --panel: #12121e;
+    --border: #2a2a3e;
+    --border-glow: #4a3a6e;
+    --gold: #c9a44a;
+    --gold-light: #e8c56a;
+    --silver: #9aa3b2;
+    --red: #8b2a2a;
+    --red-light: #c04040;
+    --green: #2a6b3a;
+    --green-light: #4a9b5a;
+    --blue: #2a3a6b;
+    --blue-light: #4a6aab;
+    --purple: #4a2a6b;
+    --purple-light: #8a5aab;
+    --text: #d4c9b8;
+    --text-dim: #7a7260;
+    --text-bright: #f0e8d4;
+  }
+
+- { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+background: var(–bg);
+color: var(–text);
+font-family: ‘Crimson Pro’, Georgia, serif;
+font-size: 15px;
+min-height: 100vh;
+overflow-x: hidden;
+}
+
+body::before {
+content: ‘’;
+position: fixed;
+inset: 0;
+background:
+radial-gradient(ellipse 60% 40% at 20% 10%, rgba(74,42,107,0.12) 0%, transparent 60%),
+radial-gradient(ellipse 40% 60% at 80% 80%, rgba(139,42,42,0.08) 0%, transparent 50%);
+pointer-events: none;
+z-index: 0;
+}
+
+#app { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 10px; }
+
+/* HEADER */
+header {
+text-align: center;
+padding: 18px 0 10px;
+border-bottom: 1px solid var(–border);
+margin-bottom: 12px;
+}
+header h1 {
+font-family: ‘Cinzel Decorative’, serif;
+font-size: 2rem;
+color: var(–gold);
+letter-spacing: 3px;
+text-shadow: 0 0 30px rgba(201,164,74,0.4), 0 2px 4px #000;
+}
+header p { color: var(–text-dim); font-style: italic; font-size: 13px; margin-top: 2px; }
+
+/* TOP STATUS BAR */
+#status-bar {
+display: flex;
+gap: 8px;
+flex-wrap: wrap;
+margin-bottom: 10px;
+align-items: center;
+}
+.stat-chip {
+background: var(–panel);
+border: 1px solid var(–border);
+border-radius: 4px;
+padding: 4px 10px;
+font-size: 13px;
+display: flex;
+align-items: center;
+gap: 6px;
+}
+.stat-chip span { color: var(–gold); font-weight: 600; }
+.prestige-chip { border-color: var(–purple-light); }
+.prestige-chip span { color: var(–purple-light); }
+
+/* MAIN GRID */
+#main-grid {
+display: grid;
+grid-template-columns: 260px 1fr 280px;
+grid-template-rows: auto auto;
+gap: 10px;
+}
+
+/* PANELS */
+.panel {
+background: var(–panel);
+border: 1px solid var(–border);
+border-radius: 6px;
+padding: 14px;
+}
+.panel-title {
+font-family: ‘Cinzel Decorative’, serif;
+font-size: 0.75rem;
+color: var(–gold);
+letter-spacing: 2px;
+text-transform: uppercase;
+margin-bottom: 12px;
+padding-bottom: 8px;
+border-bottom: 1px solid var(–border);
+}
+
+/* CHARACTER PANEL */
+#char-panel { grid-column: 1; grid-row: 1 / 3; }
+
+.char-avatar {
+width: 80px; height: 80px;
+margin: 0 auto 10px;
+border-radius: 50%;
+border: 2px solid var(–border-glow);
+display: flex; align-items: center; justify-content: center;
+font-size: 2.5rem;
+background: radial-gradient(circle at 40% 35%, var(–bg3), var(–bg));
+box-shadow: 0 0 20px rgba(74,42,107,0.3);
+}
+
+.char-name {
+text-align: center;
+font-family: ‘Cinzel Decorative’, serif;
+color: var(–text-bright);
+font-size: 1rem;
+margin-bottom: 2px;
+}
+.char-class {
+text-align: center;
+color: var(–purple-light);
+font-style: italic;
+font-size: 13px;
+margin-bottom: 12px;
+}
+
+.bar-wrap { margin-bottom: 8px; }
+.bar-label { display: flex; justify-content: space-between; font-size: 12px; color: var(–text-dim); margin-bottom: 3px; }
+.bar { height: 8px; background: var(–bg); border-radius: 4px; overflow: hidden; border: 1px solid var(–border); }
+.bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+.bar-hp .bar-fill { background: linear-gradient(90deg, var(–red), var(–red-light)); }
+.bar-xp .bar-fill { background: linear-gradient(90deg, #3a5a8b, #6a9acb); }
+.bar-mana .bar-fill { background: linear-gradient(90deg, var(–purple), var(–purple-light)); }
+
+.char-stats { margin-top: 12px; }
+.stat-row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; border-bottom: 1px solid rgba(42,42,62,0.5); }
+.stat-row:last-child { border-bottom: none; }
+.stat-row .val { color: var(–gold-light); }
+
+/* CLASS SELECT */
+.class-select-wrap { margin-top: 14px; }
+.class-btn {
+display: block; width: 100%;
+background: var(–bg3); border: 1px solid var(–border);
+color: var(–text); cursor: pointer;
+padding: 7px 10px; border-radius: 4px;
+text-align: left; font-family: ‘Crimson Pro’, serif;
+font-size: 13px; margin-bottom: 5px;
+transition: all 0.2s;
+}
+.class-btn:hover { border-color: var(–gold); color: var(–gold-light); }
+.class-btn.active { background: rgba(74,42,107,0.3); border-color: var(–purple-light); color: var(–purple-light); }
+.class-btn .class-icon { margin-right: 6px; }
+
+/* COMBAT / IDLE PANEL */
+#combat-panel { grid-column: 2; grid-row: 1; }
+
+.enemy-area {
+display: flex; align-items: center; gap: 14px;
+background: var(–bg3); border: 1px solid var(–border);
+border-radius: 6px; padding: 12px; margin-bottom: 12px;
+}
+.enemy-icon { font-size: 2.2rem; }
+.enemy-info { flex: 1; }
+.enemy-name { font-family: ‘Cinzel Decorative’, serif; font-size: 0.8rem; color: var(–red-light); margin-bottom: 4px; }
+.enemy-zone { font-size: 12px; color: var(–text-dim); font-style: italic; }
+
+.combat-log {
+background: var(–bg);
+border: 1px solid var(–border);
+border-radius: 4px;
+padding: 10px;
+height: 140px;
+overflow-y: auto;
+font-size: 13px;
+line-height: 1.6;
+margin-bottom: 10px;
+}
+.combat-log::-webkit-scrollbar { width: 4px; }
+.combat-log::-webkit-scrollbar-thumb { background: var(–border-glow); border-radius: 2px; }
+.log-hit { color: var(–red-light); }
+.log-crit { color: var(–gold); font-weight: 600; }
+.log-loot { color: var(–green-light); }
+.log-level { color: var(–purple-light); font-style: italic; }
+.log-dim { color: var(–text-dim); }
+
+.idle-controls { display: flex; gap: 8px; flex-wrap: wrap; }
+.btn {
+padding: 8px 16px; border-radius: 4px; cursor: pointer;
+font-family: ‘Crimson Pro’, serif; font-size: 14px;
+border: 1px solid; transition: all 0.2s; letter-spacing: 0.5px;
+}
+.btn-primary { background: rgba(74,42,107,0.4); border-color: var(–purple-light); color: var(–purple-light); }
+.btn-primary:hover { background: rgba(74,42,107,0.7); box-shadow: 0 0 10px rgba(138,90,171,0.3); }
+.btn-gold { background: rgba(201,164,74,0.15); border-color: var(–gold); color: var(–gold); }
+.btn-gold:hover { background: rgba(201,164,74,0.3); }
+.btn-danger { background: rgba(139,42,42,0.3); border-color: var(–red-light); color: var(–red-light); }
+.btn-danger:hover { background: rgba(139,42,42,0.5); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.speed-indicator {
+display: flex; gap: 5px; align-items: center;
+font-size: 12px; color: var(–text-dim); margin-top: 8px;
+}
+.speed-dot { width: 8px; height: 8px; border-radius: 50%; background: var(–border); }
+.speed-dot.active { background: var(–green-light); box-shadow: 0 0 6px var(–green-light); }
+
+/* SKILL TREE */
+#skill-panel { grid-column: 3; grid-row: 1 / 3; }
+
+.skill-points-display {
+display: flex; align-items: center; justify-content: space-between;
+background: var(–bg3); border: 1px solid var(–border-glow);
+border-radius: 4px; padding: 8px 12px; margin-bottom: 12px;
+font-size: 13px;
+}
+.skill-points-display strong { color: var(–gold); font-size: 1.1rem; }
+
+.skill-tree {
+display: flex; flex-direction: column; gap: 6px;
+}
+.skill-category { margin-bottom: 8px; }
+.skill-cat-label {
+font-size: 11px; color: var(–text-dim); letter-spacing: 2px;
+text-transform: uppercase; margin-bottom: 6px;
+padding-bottom: 3px; border-bottom: 1px solid var(–border);
+}
+.skill-node {
+display: flex; align-items: center; gap: 10px;
+background: var(–bg3); border: 1px solid var(–border);
+border-radius: 4px; padding: 8px 10px;
+cursor: pointer; transition: all 0.2s; margin-bottom: 4px;
+position: relative;
+}
+.skill-node:hover:not(.locked):not(.maxed) { border-color: var(–gold); }
+.skill-node.unlocked { border-color: var(–purple-light); background: rgba(74,42,107,0.15); }
+.skill-node.maxed { border-color: var(–gold); background: rgba(201,164,74,0.1); }
+.skill-node.locked { opacity: 0.4; cursor: not-allowed; }
+.skill-icon { font-size: 1.3rem; min-width: 24px; text-align: center; }
+.skill-info { flex: 1; }
+.skill-name { font-size: 13px; color: var(–text-bright); }
+.skill-desc { font-size: 11px; color: var(–text-dim); font-style: italic; }
+.skill-level {
+font-size: 11px; color: var(–gold);
+min-width: 36px; text-align: right;
+}
+
+/* QUESTS PANEL */
+#quest-panel { grid-column: 2; grid-row: 2; }
+
+.quest-list { display: flex; flex-direction: column; gap: 8px; }
+.quest-item {
+background: var(–bg3); border: 1px solid var(–border);
+border-radius: 4px; padding: 10px 12px;
+display: flex; align-items: center; gap: 10px;
+}
+.quest-item.complete { border-color: var(–gold); background: rgba(201,164,74,0.05); }
+.quest-item.available { border-color: var(–border); }
+.quest-icon { font-size: 1.3rem; }
+.quest-info { flex: 1; }
+.quest-name { font-size: 13px; color: var(–text-bright); }
+.quest-progress { font-size: 12px; color: var(–text-dim); margin-top: 2px; }
+.quest-reward { font-size: 12px; color: var(–gold); margin-top: 2px; }
+.quest-bar-wrap { height: 4px; background: var(–bg); border-radius: 2px; margin-top: 4px; }
+.quest-bar-fill { height: 100%; background: linear-gradient(90deg, var(–gold), var(–gold-light)); border-radius: 2px; transition: width 0.5s; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+
+/* BOOSTS / SHOP */
+#boost-section {
+grid-column: 1 / 4;
+margin-top: 2px;
+}
+#boost-section .panel-title { margin-bottom: 10px; }
+.boost-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.boost-card {
+background: var(–bg3); border: 1px solid var(–border);
+border-radius: 5px; padding: 10px 12px;
+display: flex; align-items: flex-start; gap: 10px;
+transition: all 0.2s;
+}
+.boost-card:not(.owned):hover { border-color: var(–gold); }
+.boost-card.owned { border-color: var(–green-light); background: rgba(42,107,58,0.1); }
+.boost-icon { font-size: 1.6rem; }
+.boost-info { flex: 1; }
+.boost-name { font-size: 13px; color: var(–text-bright); }
+.boost-desc { font-size: 11px; color: var(–text-dim); font-style: italic; margin-top: 2px; }
+.boost-cost { font-size: 12px; color: var(–gold); margin-top: 4px; }
+.boost-owned-label { font-size: 11px; color: var(–green-light); margin-top: 4px; }
+
+/* NOTIFICATION TOAST */
+#toast {
+position: fixed; bottom: 20px; right: 20px;
+background: var(–panel); border: 1px solid var(–gold);
+border-radius: 5px; padding: 10px 16px;
+font-size: 13px; color: var(–gold);
+opacity: 0; transform: translateY(10px);
+transition: all 0.3s; pointer-events: none;
+z-index: 999;
+}
+#toast.show { opacity: 1; transform: translateY(0); }
+
+/* PRESTIGE MODAL */
+#prestige-modal {
+display: none; position: fixed; inset: 0;
+background: rgba(0,0,0,0.8); z-index: 100;
+align-items: center; justify-content: center;
+}
+#prestige-modal.open { display: flex; }
+.modal-box {
+background: var(–panel); border: 1px solid var(–gold);
+border-radius: 8px; padding: 28px 32px;
+max-width: 420px; text-align: center;
+}
+.modal-box h2 { font-family: ‘Cinzel Decorative’, serif; color: var(–gold); margin-bottom: 10px; }
+.modal-box p { color: var(–text); font-size: 14px; line-height: 1.6; margin-bottom: 16px; }
+.modal-actions { display: flex; gap: 10px; justify-content: center; }
+
+/* ANIMATIONS */
+@keyframes pulse-gold {
+0%, 100% { text-shadow: 0 0 10px rgba(201,164,74,0.3); }
+50% { text-shadow: 0 0 20px rgba(201,164,74,0.6); }
+}
+.gold-pulse { animation: pulse-gold 2s infinite; }
+
+@keyframes float {
+0%, 100% { transform: translateY(0); }
+50% { transform: translateY(-3px); }
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: var(–bg); }
+::-webkit-scrollbar-thumb { background: var(–border-glow); }
+
+/* TABS for skill tree */
+.tab-bar { display: flex; gap: 4px; margin-bottom: 10px; }
+.tab-btn {
+flex: 1; padding: 5px; background: var(–bg3);
+border: 1px solid var(–border); border-radius: 3px;
+font-family: ‘Crimson Pro’, serif; font-size: 12px;
+color: var(–text-dim); cursor: pointer; transition: all 0.2s;
+}
+.tab-btn.active { background: rgba(74,42,107,0.3); border-color: var(–purple-light); color: var(–purple-light); }
+
+.zone-badge {
+display: inline-block; background: rgba(42,42,107,0.4);
+border: 1px solid var(–blue-light); border-radius: 3px;
+padding: 2px 8px; font-size: 11px; color: var(–blue-light); margin-left: 8px;
+}
+</style>
+
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1 class="gold-pulse">⚔ Ashen Throne ⚔</h1>
+    <p>An idle realm where darkness hungers and legends are forged</p>
+  </header>
+
+  <div id="status-bar">
+    <div class="stat-chip">⚔ Kills: <span id="stat-kills">0</span></div>
+    <div class="stat-chip">💰 Gold: <span id="stat-gold">0</span></div>
+    <div class="stat-chip">💀 Deaths: <span id="stat-deaths">0</span></div>
+    <div class="stat-chip">🏆 Zone: <span id="stat-zone">1</span></div>
+    <div class="stat-chip">⏱ Offline: <span id="stat-offline">0s</span></div>
+    <div class="stat-chip prestige-chip">✨ Prestige: <span id="stat-prestige">0</span></div>
+    <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="openPrestige()">Prestige</button>
+  </div>
+
+  <div id="main-grid">
+    <!-- CHARACTER PANEL -->
+    <div class="panel" id="char-panel">
+      <div class="panel-title">⚰ The Hollow</div>
+      <div class="char-avatar" id="char-avatar">🗡</div>
+      <div class="char-name" id="char-name">Unnamed</div>
+      <div class="char-class" id="char-class">Choose your path</div>
+
+```
+  <div class="bar-wrap">
+    <div class="bar-label"><span>HP</span><span id="hp-text">100 / 100</span></div>
+    <div class="bar bar-hp"><div class="bar-fill" id="hp-bar" style="width:100%"></div></div>
+  </div>
+  <div class="bar-wrap">
+    <div class="bar-label"><span>Mana</span><span id="mana-text">50 / 50</span></div>
+    <div class="bar bar-mana"><div class="bar-fill" id="mana-bar" style="width:100%"></div></div>
+  </div>
+  <div class="bar-wrap">
+    <div class="bar-label"><span>XP — Lv.<span id="char-level">1</span></span><span id="xp-text">0 / 100</span></div>
+    <div class="bar bar-xp"><div class="bar-fill" id="xp-bar" style="width:0%"></div></div>
+  </div>
+
+  <div class="char-stats">
+    <div class="stat-row"><span>⚔ Attack</span><span class="val" id="s-atk">5</span></div>
+    <div class="stat-row"><span>🛡 Defense</span><span class="val" id="s-def">2</span></div>
+    <div class="stat-row"><span>⚡ Speed</span><span class="val" id="s-spd">1.0</span></div>
+    <div class="stat-row"><span>🎯 Crit %</span><span class="val" id="s-crit">5</span></div>
+    <div class="stat-row"><span>🩸 Lifesteal</span><span class="val" id="s-life">0</span></div>
+    <div class="stat-row"><span>🧿 Spell Dmg</span><span class="val" id="s-spell">0</span></div>
+  </div>
+
+  <div class="class-select-wrap">
+    <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px;letter-spacing:1px">CHOOSE CLASS</div>
+    <button class="class-btn active" onclick="selectClass('warrior')" id="cls-warrior"><span class="class-icon">⚔</span>Ironclad Warrior</button>
+    <button class="class-btn" onclick="selectClass('mage')" id="cls-mage"><span class="class-icon">🔮</span>Void Mage</button>
+    <button class="class-btn" onclick="selectClass('rogue')" id="cls-rogue"><span class="class-icon">🗡</span>Shadow Rogue</button>
+  </div>
+</div>
+
+<!-- COMBAT PANEL -->
+<div class="panel" id="combat-panel">
+  <div class="panel-title">☠ The Battlefield</div>
+  <div class="enemy-area">
+    <div class="enemy-icon" id="enemy-icon">💀</div>
+    <div class="enemy-info">
+      <div class="enemy-name" id="enemy-name">Grave Rat</div>
+      <div style="margin: 4px 0;">
+        <div class="bar-label" style="margin-bottom:2px"><span style="font-size:11px;color:var(--text-dim)">Enemy HP</span><span id="enemy-hp-text" style="font-size:11px;color:var(--text-dim)">20 / 20</span></div>
+        <div class="bar bar-hp" style="height:6px"><div class="bar-fill" id="enemy-hp-bar" style="width:100%"></div></div>
+      </div>
+      <div class="enemy-zone">Zone <span id="enemy-zone">1</span> — <span id="enemy-zone-name">The Ashen Fields</span></div>
+    </div>
+    <div style="text-align:center">
+      <div style="font-size:11px;color:var(--text-dim)">Next Zone</div>
+      <div id="zone-progress" style="font-size:13px;color:var(--gold)">0 / 10</div>
+    </div>
+  </div>
+
+  <div class="combat-log" id="combat-log">
+    <div class="log-dim">The realm awaits your command, hero...</div>
+  </div>
+
+  <div class="idle-controls">
+    <button class="btn btn-primary" id="toggle-btn" onclick="toggleIdle()">▶ Begin Idle</button>
+    <button class="btn btn-gold" onclick="manualAttack()">⚔ Strike</button>
+    <button class="btn" style="border-color:var(--border);color:var(--text-dim)" onclick="advanceZone()">→ Next Zone</button>
+  </div>
+  <div class="speed-indicator">
+    Attack speed: <span id="speed-label">1.0x</span>
+    <div class="speed-dot" id="dot1"></div>
+    <div class="speed-dot" id="dot2"></div>
+    <div class="speed-dot" id="dot3"></div>
+    <div class="speed-dot" id="dot4"></div>
+    <div class="speed-dot" id="dot5"></div>
+  </div>
+</div>
+
+<!-- SKILL TREE PANEL -->
+<div class="panel" id="skill-panel">
+  <div class="panel-title">🌳 Skill Tree</div>
+  <div class="skill-points-display">
+    <span>Skill Points</span>
+    <strong id="sp-display">0</strong>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="setSkillTab('combat')" id="tab-combat">Combat</button>
+    <button class="tab-btn" onclick="setSkillTab('passive')" id="tab-passive">Passive</button>
+    <button class="tab-btn" onclick="setSkillTab('class')" id="tab-class">Class</button>
+  </div>
+  <div id="skill-tree-content" class="skill-tree"></div>
+</div>
+
+<!-- QUEST PANEL -->
+<div class="panel" id="quest-panel">
+  <div class="panel-title">📜 Quest Log</div>
+  <div class="quest-list" id="quest-list"></div>
+</div>
+```
+
+  </div>
+
+  <!-- BOOSTS SECTION -->
+
+  <div id="boost-section" style="margin-top:10px">
+    <div class="panel">
+      <div class="panel-title">⚗ Unlockable Boons</div>
+      <div class="boost-grid" id="boost-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- PRESTIGE MODAL -->
+
+<div id="prestige-modal">
+  <div class="modal-box">
+    <h2>✨ Prestige</h2>
+    <p>Sacrifice your progress and return stronger. Your level, gold, and skills reset — but you keep Prestige Points, permanent boosts, and the wisdom you have earned.</p>
+    <p style="color:var(--gold)">You will gain <strong id="prestige-gain">1</strong> Prestige Point.<br>Bonus: +5% all stats per Prestige level.</p>
+    <div class="modal-actions">
+      <button class="btn btn-gold" onclick="doPrestige()">✨ Ascend</button>
+      <button class="btn" style="border-color:var(--border);color:var(--text-dim)" onclick="closePrestige()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ============================================================
+// GAME STATE
+// ============================================================
+const SAVE_KEY = 'ashen_throne_v1';
+
+const CLASSES = {
+  warrior: { icon: '⚔', name: 'Ironclad Warrior', avatar: '🛡', atk: 7, def: 4, maxHp: 140, maxMana: 30, spd: 1.0, crit: 5, color: '#c04040' },
+  mage:    { icon: '🔮', name: 'Void Mage',        avatar: '🔮', atk: 4, def: 2, maxHp: 90,  maxMana: 100, spd: 1.0, crit: 10, spell: 8, color: '#8a5aab' },
+  rogue:   { icon: '🗡', name: 'Shadow Rogue',      avatar: '🗡', atk: 6, def: 2, maxHp: 110, maxMana: 60, spd: 1.4, crit: 20, color: '#4a9b5a' },
+};
+
+const ZONES = [
+  { name: 'The Ashen Fields', icon: '🌾', enemies: ['Grave Rat','Skeletal Hound','Blighted Crow'], hp: 20, goldMin: 2, goldMax: 5 },
+  { name: 'Catacombs of Mourn', icon: '💀', enemies: ['Rotting Zealot','Bone Archer','Crypt Crawler'], hp: 50, goldMin: 5, goldMax: 12 },
+  { name: 'Frostbitten Wastes', icon: '❄', enemies: ['Frost Wraith','Ice Golem','Frozen Knight'], hp: 110, goldMin: 12, goldMax: 25 },
+  { name: 'Shadowmere Swamp', icon: '🌿', enemies: ['Plague Toad','Swamp Specter','Bog Witch'], hp: 230, goldMin: 25, goldMax: 55 },
+  { name: 'The Obsidian Keep', icon: '🏯', enemies: ['Lava Sentinel','Shadow Drake','Iron Lich'], hp: 500, goldMin: 55, goldMax: 120 },
+];
+
+const SKILLS = {
+  combat: [
+    { id: 'heavy_blow', name: 'Heavy Blow', icon: '💥', desc: '+3 attack per level', max: 5, effect: 'atk', value: 3 },
+    { id: 'iron_skin',  name: 'Iron Skin',  icon: '🛡', desc: '+2 defense per level', max: 5, effect: 'def', value: 2 },
+    { id: 'swift',      name: 'Swiftness',  icon: '⚡', desc: '+0.1 attack speed per level', max: 5, effect: 'spd', value: 0.1 },
+    { id: 'executioner',name: 'Executioner',icon: '🗡', desc: '+5% crit chance per level', max: 3, effect: 'crit', value: 5, requires: 'heavy_blow' },
+  ],
+  passive: [
+    { id: 'bloodthirst',name: 'Bloodthirst',icon: '🩸', desc: '+2% lifesteal per level', max: 4, effect: 'life', value: 2 },
+    { id: 'arcane_flow',name: 'Arcane Flow', icon: '✨', desc: '+5 spell dmg per level', max: 5, effect: 'spell', value: 5 },
+    { id: 'resilience', name: 'Resilience', icon: '💚', desc: '+15 max HP per level', max: 5, effect: 'maxHp', value: 15 },
+    { id: 'endurance',  name: 'Endurance',  icon: '🫀', desc: 'Regen 1% HP after each kill', max: 3, effect: 'regen', value: 1 },
+  ],
+  class: [
+    { id: 'berserker',  name: 'Berserker',  icon: '🔥', desc: '+50% atk, -25% def at <30% HP', max: 1, effect: 'special', requires: null },
+    { id: 'soulbind',   name: 'Soul Bind',  icon: '🌑', desc: 'Spells also drain enemy mana', max: 1, effect: 'special', requires: null },
+    { id: 'shadowstep', name: 'Shadow Step',icon: '👤', desc: '+10% dodge chance', max: 1, effect: 'dodge', value: 10 },
+    { id: 'overpower',  name: 'Overpower',  icon: '⚔', desc: 'Every 5th attack deals 3x dmg', max: 1, effect: 'special', requires: null },
+  ],
+};
+
+const QUESTS = [
+  { id: 'q1', name: 'First Blood', icon: '🩸', desc: 'Slay 10 enemies', type: 'kills', target: 10, reward: { gold: 50, sp: 2 }, done: false },
+  { id: 'q2', name: 'Centennial Slaughter', icon: '💀', desc: 'Slay 100 enemies', type: 'kills', target: 100, reward: { gold: 300, sp: 5 }, done: false },
+  { id: 'q3', name: 'Level 5 Initiate', icon: '⬆', desc: 'Reach level 5', type: 'level', target: 5, reward: { gold: 100, sp: 3 }, done: false },
+  { id: 'q4', name: 'Zone Conqueror', icon: '🗺', desc: 'Reach Zone 3', type: 'zone', target: 3, reward: { gold: 500, sp: 8 }, done: false },
+  { id: 'q5', name: 'Wealthy Shade', icon: '💰', desc: 'Accumulate 1000 gold', type: 'goldTotal', target: 1000, reward: { gold: 0, sp: 5 }, done: false },
+  { id: 'q6', name: 'Gilded Legend', icon: '🏆', desc: 'Reach level 15', type: 'level', target: 15, reward: { gold: 2000, sp: 15 }, done: false },
+];
+
+const BOOSTS = [
+  { id: 'b1', name: 'Iron Discipline', icon: '💪', desc: '+10% base attack permanently', cost: 500, effect: 'atk_pct', value: 0.1 },
+  { id: 'b2', name: 'Shadow Cloak', icon: '🌑', desc: '+15% gold from enemies', cost: 300, effect: 'gold_pct', value: 0.15 },
+  { id: 'b3', name: 'Sorcerer\'s Lens', icon: '🔭', desc: '+20% XP gained', cost: 600, effect: 'xp_pct', value: 0.2 },
+  { id: 'b4', name: 'Blood Pact', icon: '🩸', desc: 'Start each fight at +20% HP', cost: 800, effect: 'hp_start', value: 0.2 },
+  { id: 'b5', name: 'Ethereal Gale', icon: '🌬', desc: '+0.2 attack speed', cost: 1000, effect: 'spd_bonus', value: 0.2 },
+  { id: 'b6', name: 'Cursed Greed', icon: '👑', desc: '+25% gold & +25% enemy HP', cost: 1500, effect: 'cursed_greed', value: 0.25 },
+];
+
+let state = {
+  class: 'warrior',
+  name: 'The Hollow',
+  level: 1,
+  xp: 0,
+  xpNext: 100,
+  hp: 140,
+  maxHp: 140,
+  mana: 30,
+  maxMana: 30,
+  atk: 7, def: 4, spd: 1.0, crit: 5, life: 0, spell: 0, dodge: 0,
+  gold: 0,
+  goldTotal: 0,
+  kills: 0,
+  deaths: 0,
+  zone: 1,
+  zoneKills: 0,
+  zoneTarget: 10,
+  sp: 0,
+  prestige: 0,
+  prestigeBonus: 1.0,
+  skills: {},
+  quests: QUESTS.map(q => ({ ...q })),
+  boosts: {},
+  idle: false,
+  lastSave: Date.now(),
+};
+
+let enemyHp = 0, enemyMaxHp = 0, attackTimer = null, logLines = [];
+let currentEnemy = null;
+let skillTab = 'combat';
+let attackCount = 0;
+
+// ============================================================
+// INITIALIZATION & SAVE/LOAD
+// ============================================================
+function init() {
+  loadState();
+  spawnEnemy();
+  renderAll();
+  checkOffline();
+  setInterval(saveState, 30000);
+  if (state.idle) startIdle();
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify({ ...state, idle: false, lastSave: Date.now() }));
+  } catch(e) {}
+}
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(SAVE_KEY);
+    if (saved) {
+      const s = JSON.parse(saved);
+      Object.assign(state, s);
+      state.quests = QUESTS.map(q => {
+        const saved_q = (s.quests || []).find(x => x.id === q.id);
+        return saved_q ? { ...q, ...saved_q } : { ...q };
+      });
+    }
+  } catch(e) {}
+}
+
+function checkOffline() {
+  const elapsed = (Date.now() - (state.lastSave || Date.now())) / 1000;
+  if (elapsed > 30 && state.idle) {
+    const ticks = Math.floor(elapsed / getAttackInterval() * 1000);
+    const earned = Math.min(ticks, 3000);
+    for (let i = 0; i < earned; i++) simulateCombatTick(true);
+    document.getElementById('stat-offline').textContent = Math.floor(elapsed) + 's';
+    showToast(`Offline for ${Math.floor(elapsed)}s — fought ${earned} battles!`);
+  }
+}
+
+// ============================================================
+// COMPUTED STATS
+// ============================================================
+function getStats() {
+  const cls = CLASSES[state.class];
+  let atk = cls.atk, def = cls.def, spd = cls.spd, crit = cls.crit;
+  let life = 0, spell = cls.spell || 0, maxHp = cls.maxHp, dodge = 0;
+
+  // Level scaling
+  atk += (state.level - 1) * 1.5;
+  def += (state.level - 1) * 0.8;
+  maxHp += (state.level - 1) * 10;
+
+  // Skills
+  if (state.skills['heavy_blow']) atk += state.skills['heavy_blow'] * 3;
+  if (state.skills['iron_skin']) def += state.skills['iron_skin'] * 2;
+  if (state.skills['swift']) spd += state.skills['swift'] * 0.1;
+  if (state.skills['executioner']) crit += state.skills['executioner'] * 5;
+  if (state.skills['bloodthirst']) life += state.skills['bloodthirst'] * 2;
+  if (state.skills['arcane_flow']) spell += state.skills['arcane_flow'] * 5;
+  if (state.skills['resilience']) maxHp += state.skills['resilience'] * 15;
+  if (state.skills['shadowstep']) dodge += 10;
+
+  // Boosts
+  if (state.boosts['b1']) atk *= 1.1;
+  if (state.boosts['b5']) spd += 0.2;
+
+  // Prestige
+  atk *= state.prestigeBonus;
+  def *= state.prestigeBonus;
+  maxHp *= state.prestigeBonus;
+
+  return { atk: Math.round(atk * 10) / 10, def: Math.round(def * 10) / 10, spd: Math.round(spd * 10) / 10, crit: Math.round(crit), life: Math.round(life), spell: Math.round(spell), maxHp: Math.round(maxHp), dodge: Math.round(dodge) };
+}
+
+function getXpNext(level) { return Math.floor(100 * Math.pow(1.3, level - 1)); }
+function getAttackInterval() { return Math.max(300, Math.round(1000 / getStats().spd)); }
+
+// ============================================================
+// CLASS SELECTION
+// ============================================================
+function selectClass(cls) {
+  state.class = cls;
+  const stats = getStats();
+  state.hp = stats.maxHp;
+  state.maxHp = stats.maxHp;
+  state.mana = CLASSES[cls].maxMana;
+  state.maxMana = CLASSES[cls].maxMana;
+  document.querySelectorAll('.class-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('cls-' + cls).classList.add('active');
+  renderChar();
+  applyStats();
+  saveState();
+}
+
+// ============================================================
+// COMBAT
+// ============================================================
+function spawnEnemy() {
+  const z = ZONES[Math.min(state.zone - 1, ZONES.length - 1)];
+  const enemies = z.enemies;
+  const name = enemies[Math.floor(Math.random() * enemies.length)];
+  const hpScale = Math.pow(1.5, state.zone - 1);
+  const boost = state.boosts['b6'] ? 1.25 : 1;
+  enemyMaxHp = Math.round(z.hp * hpScale * boost);
+  enemyHp = enemyMaxHp;
+  currentEnemy = { name, zone: state.zone, zoneName: z.name, icon: z.icon, goldMin: z.goldMin, goldMax: z.goldMax };
+  renderEnemy();
+}
+
+function doAttack() {
+  if (state.hp <= 0) return;
+  const stats = getStats();
+  attackCount++;
+
+  // Check berserker
+  let atkMult = 1;
+  if (state.skills['berserker'] && (state.hp / state.maxHp) < 0.3) atkMult = 1.5;
+  // Overpower every 5th hit
+  if (state.skills['overpower'] && attackCount % 5 === 0) atkMult *= 3;
+
+  let dmg = Math.max(1, stats.atk * atkMult - (currentEnemy ? 0 : 0));
+  const isCrit = Math.random() * 100 < stats.crit;
+  if (isCrit) dmg *= 2;
+  dmg = Math.round(dmg);
+  if (stats.spell > 0) dmg += Math.round(stats.spell * (0.5 + Math.random() * 0.5));
+
+  // Dodge check
+  if (Math.random() * 100 < stats.dodge) { addLog('Enemy missed! (dodge)', 'log-loot'); return; }
+
+  enemyHp = Math.max(0, enemyHp - dmg);
+  addLog(isCrit ? `⚡ CRITICAL STRIKE for ${dmg} damage!` : `You strike for ${dmg} damage.`, isCrit ? 'log-crit' : 'log-hit');
+
+  // Lifesteal
+  if (stats.life > 0) {
+    const heal = Math.round(dmg * stats.life / 100);
+    if (heal > 0) { state.hp = Math.min(state.maxHp, state.hp + heal); }
+  }
+
+  if (enemyHp <= 0) { killEnemy(); return; }
+
+  // Enemy counterattack
+  const enemyAtk = Math.max(1, Math.round((2 + state.zone * 1.5) * Math.pow(1.2, state.zone - 1)) - stats.def);
+  state.hp = Math.max(0, state.hp - enemyAtk);
+  if (enemyAtk > 0) addLog(`Enemy strikes back for ${enemyAtk} damage.`, 'log-dim');
+
+  if (state.hp <= 0) { die(); return; }
+  updateBars();
+}
+
+function killEnemy() {
+  state.kills++;
+  state.zoneKills++;
+  const z = currentEnemy;
+  let goldGained = Math.round((z.goldMin + Math.random() * (z.goldMax - z.goldMin)) * Math.pow(1.3, state.zone - 1));
+  if (state.boosts['b2']) goldGained = Math.round(goldGained * 1.15);
+  if (state.boosts['b6']) goldGained = Math.round(goldGained * 1.25);
+  state.gold += goldGained;
+  state.goldTotal += goldGained;
+
+  let xpGained = Math.round(10 * Math.pow(1.4, state.zone - 1));
+  if (state.boosts['b3']) xpGained = Math.round(xpGained * 1.2);
+  state.xp += xpGained;
+
+  // Regen after kill
+  if (state.skills['endurance']) {
+    const regen = Math.round(state.maxHp * 0.01 * state.skills['endurance']);
+    state.hp = Math.min(state.maxHp, state.hp + regen);
+  }
+
+  addLog(`💰 Killed ${z.name}! +${goldGained}g +${xpGained}xp`, 'log-loot');
+
+  // Level up
+  while (state.xp >= state.xpNext) {
+    state.xp -= state.xpNext;
+    state.level++;
+    state.xpNext = getXpNext(state.level);
+    state.sp += 1;
+    const s = getStats();
+    state.hp = s.maxHp; // Heal on level up
+    addLog(`🌟 LEVEL UP! Now level ${state.level}! +1 Skill Point`, 'log-level');
+  }
+
+  // Zone progress
+  if (state.zoneKills >= state.zoneTarget) {
+    state.zone++;
+    state.zoneKills = 0;
+    state.zoneTarget = Math.round(state.zoneTarget * 1.2);
+    if (state.zone > ZONES.length) state.zone = ZONES.length;
+    addLog(`🗺 Entering Zone ${state.zone}: ${ZONES[Math.min(state.zone - 1, ZONES.length - 1)].name}!`, 'log-level');
+  }
+
+  checkQuests();
+  spawnEnemy();
+  renderAll();
+}
+
+function simulateCombatTick(silent = false) {
+  if (state.hp <= 0) { state.hp = Math.round(state.maxHp * 0.3); spawnEnemy(); }
+  doAttack();
+}
+
+function die() {
+  state.deaths++;
+  addLog(`💀 You have fallen... Respawning.`, 'log-level');
+  const stats = getStats();
+  state.hp = Math.round(stats.maxHp * 0.5);
+  spawnEnemy();
+  renderAll();
+}
+
+function manualAttack() { doAttack(); renderAll(); }
+
+function advanceZone() {
+  if (state.zone < ZONES.length) {
+    state.zone++;
+    state.zoneKills = 0;
+    spawnEnemy();
+    addLog(`🗺 Advancing to Zone ${state.zone}!`, 'log-level');
+    renderAll();
+  }
+}
+
+function toggleIdle() {
+  state.idle = !state.idle;
+  if (state.idle) startIdle();
+  else stopIdle();
+  document.getElementById('toggle-btn').textContent = state.idle ? '⏸ Pause Idle' : '▶ Begin Idle';
+}
+
+function startIdle() {
+  if (attackTimer) clearInterval(attackTimer);
+  const interval = getAttackInterval();
+  attackTimer = setInterval(() => {
+    simulateCombatTick();
+    renderAll();
+  }, interval);
+}
+
+function stopIdle() {
+  if (attackTimer) { clearInterval(attackTimer); attackTimer = null; }
+}
+
+// ============================================================
+// SKILL TREE
+// ============================================================
+function setSkillTab(tab) {
+  skillTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  renderSkillTree();
+}
+
+function buySkill(id) {
+  if (state.sp <= 0) { showToast('No skill points!'); return; }
+  const allSkills = [...SKILLS.combat, ...SKILLS.passive, ...SKILLS.class];
+  const skill = allSkills.find(s => s.id === id);
+  if (!skill) return;
+  const cur = state.skills[id] || 0;
+  if (cur >= skill.max) { showToast('Already maxed!'); return; }
+  if (skill.requires && !(state.skills[skill.requires] >= 1)) { showToast('Requires ' + allSkills.find(s => s.id === skill.requires)?.name); return; }
+  state.sp--;
+  state.skills[id] = (state.skills[id] || 0) + 1;
+  applyStats();
+  renderAll();
+  showToast(`Learned: ${skill.name} (${state.skills[id]}/${skill.max})`);
+  saveState();
+}
+
+function applyStats() {
+  const stats = getStats();
+  state.maxHp = stats.maxHp;
+  state.hp = Math.min(state.hp, state.maxHp);
+}
+
+// ============================================================
+// QUESTS
+// ============================================================
+function checkQuests() {
+  state.quests.forEach(q => {
+    if (q.done) return;
+    let progress = 0;
+    if (q.type === 'kills') progress = state.kills;
+    if (q.type === 'level') progress = state.level;
+    if (q.type === 'zone') progress = state.zone;
+    if (q.type === 'goldTotal') progress = state.goldTotal;
+    if (progress >= q.target) {
+      q.done = true;
+      state.gold += q.reward.gold;
+      state.sp += q.reward.sp;
+      addLog(`📜 Quest Complete: ${q.name}! +${q.reward.gold}g +${q.reward.sp}sp`, 'log-level');
+      showToast(`Quest Complete: ${q.name}!`);
+    }
+  });
+}
+
+function getQuestProgress(q) {
+  if (q.type === 'kills') return state.kills;
+  if (q.type === 'level') return state.level;
+  if (q.type === 'zone') return state.zone;
+  if (q.type === 'goldTotal') return state.goldTotal;
+  return 0;
+}
+
+// ============================================================
+// BOOSTS
+// ============================================================
+function buyBoost(id) {
+  const b = BOOSTS.find(x => x.id === id);
+  if (!b || state.boosts[id]) return;
+  if (state.gold < b.cost) { showToast('Not enough gold!'); return; }
+  state.gold -= b.cost;
+  state.boosts[id] = true;
+  applyStats();
+  renderAll();
+  showToast(`Boon acquired: ${b.name}!`);
+  saveState();
+}
+
+// ============================================================
+// PRESTIGE
+// ============================================================
+function openPrestige() {
+  document.getElementById('prestige-gain').textContent = Math.max(1, Math.floor(state.level / 5));
+  document.getElementById('prestige-modal').classList.add('open');
+}
+function closePrestige() { document.getElementById('prestige-modal').classList.remove('open'); }
+function doPrestige() {
+  const gain = Math.max(1, Math.floor(state.level / 5));
+  state.prestige += gain;
+  state.prestigeBonus = 1 + state.prestige * 0.05;
+  state.level = 1; state.xp = 0; state.xpNext = 100;
+  state.sp = 0; state.skills = {};
+  state.zone = 1; state.zoneKills = 0; state.zoneTarget = 10;
+  state.gold = 0;
+  const stats = getStats();
+  state.hp = stats.maxHp; state.maxHp = stats.maxHp;
+  spawnEnemy();
+  closePrestige();
+  renderAll();
+  showToast(`✨ Prestige! Now ${state.prestige} prestige (+${Math.round((state.prestigeBonus - 1) * 100)}% stats)`);
+  saveState();
+}
+
+// ============================================================
+// RENDERING
+// ============================================================
+function renderAll() {
+  renderChar();
+  renderEnemy();
+  renderSkillTree();
+  renderQuests();
+  renderBoosts();
+  updateStatus();
+  updateSpeedDots();
+}
+
+function renderChar() {
+  const cls = CLASSES[state.class];
+  const stats = getStats();
+  document.getElementById('char-avatar').textContent = cls.avatar;
+  document.getElementById('char-name').textContent = state.name;
+  document.getElementById('char-class').textContent = cls.name;
+  document.getElementById('char-level').textContent = state.level;
+  updateBars();
+  // Stats
+  document.getElementById('s-atk').textContent = stats.atk;
+  document.getElementById('s-def').textContent = stats.def;
+  document.getElementById('s-spd').textContent = stats.spd;
+  document.getElementById('s-crit').textContent = stats.crit + '%';
+  document.getElementById('s-life').textContent = stats.life + '%';
+  document.getElementById('s-spell').textContent = stats.spell;
+}
+
+function updateBars() {
+  const stats = getStats();
+  const hpPct = Math.max(0, Math.min(100, (state.hp / stats.maxHp) * 100));
+  const manaPct = Math.max(0, Math.min(100, (state.mana / state.maxMana) * 100));
+  const xpPct = Math.max(0, Math.min(100, (state.xp / state.xpNext) * 100));
+  document.getElementById('hp-bar').style.width = hpPct + '%';
+  document.getElementById('hp-text').textContent = `${Math.round(state.hp)} / ${stats.maxHp}`;
+  document.getElementById('mana-bar').style.width = manaPct + '%';
+  document.getElementById('mana-text').textContent = `${Math.round(state.mana)} / ${state.maxMana}`;
+  document.getElementById('xp-bar').style.width = xpPct + '%';
+  document.getElementById('xp-text').textContent = `${state.xp} / ${state.xpNext}`;
+}
+
+function renderEnemy() {
+  if (!currentEnemy) return;
+  const hpPct = Math.max(0, Math.min(100, (enemyHp / enemyMaxHp) * 100));
+  document.getElementById('enemy-name').textContent = currentEnemy.name;
+  document.getElementById('enemy-icon').textContent = currentEnemy.icon;
+  document.getElementById('enemy-zone').textContent = currentEnemy.zone;
+  document.getElementById('enemy-zone-name').textContent = currentEnemy.zoneName;
+  document.getElementById('enemy-hp-bar').style.width = hpPct + '%';
+  document.getElementById('enemy-hp-text').textContent = `${Math.round(enemyHp)} / ${enemyMaxHp}`;
+  document.getElementById('zone-progress').textContent = `${state.zoneKills} / ${state.zoneTarget}`;
+}
+
+function renderSkillTree() {
+  const skills = SKILLS[skillTab];
+  const allSkills = [...SKILLS.combat, ...SKILLS.passive, ...SKILLS.class];
+  const container = document.getElementById('skill-tree-content');
+  document.getElementById('sp-display').textContent = state.sp;
+  container.innerHTML = skills.map(skill => {
+    const cur = state.skills[skill.id] || 0;
+    const isMaxed = cur >= skill.max;
+    const req = skill.requires;
+    const isLocked = req && !(state.skills[req] >= 1);
+    let cls = '';
+    if (isMaxed) cls = 'maxed';
+    else if (isLocked) cls = 'locked';
+    else if (cur > 0) cls = 'unlocked';
+    const reqLabel = isLocked ? ` (requires ${allSkills.find(s => s.id === req)?.name})` : '';
+    return `<div class="skill-node ${cls}" onclick="buySkill('${skill.id}')">
+      <div class="skill-icon">${skill.icon}</div>
+      <div class="skill-info">
+        <div class="skill-name">${skill.name}${isLocked ? ' 🔒' : ''}</div>
+        <div class="skill-desc">${skill.desc}${reqLabel}</div>
+      </div>
+      <div class="skill-level">${cur}/${skill.max}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderQuests() {
+  const container = document.getElementById('quest-list');
+  container.innerHTML = state.quests.map(q => {
+    const prog = getQuestProgress(q);
+    const pct = Math.min(100, (prog / q.target) * 100);
+    const rewardStr = [q.reward.gold > 0 && `💰 ${q.reward.gold}g`, q.reward.sp > 0 && `⭐ ${q.reward.sp} SP`].filter(Boolean).join(' ');
+    return `<div class="quest-item ${q.done ? 'complete' : 'available'}">
+      <div class="quest-icon">${q.done ? '✅' : q.icon}</div>
+      <div class="quest-info">
+        <div class="quest-name">${q.name} ${q.done ? '<span style="color:var(--gold);font-size:11px">COMPLETE</span>' : ''}</div>
+        <div class="quest-progress">${q.desc} — ${Math.min(prog, q.target)} / ${q.target}</div>
+        ${!q.done ? `<div class="quest-bar-wrap"><div class="quest-bar-fill" style="width:${pct}%"></div></div>` : ''}
+        <div class="quest-reward">Reward: ${rewardStr}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderBoosts() {
+  const container = document.getElementById('boost-grid');
+  container.innerHTML = BOOSTS.map(b => {
+    const owned = !!state.boosts[b.id];
+    const canBuy = !owned && state.gold >= b.cost;
+    return `<div class="boost-card ${owned ? 'owned' : ''}" onclick="${owned ? '' : `buyBoost('${b.id}')`}" style="${!owned && !canBuy ? 'opacity:0.5' : 'cursor:pointer'}">
+      <div class="boost-icon">${b.icon}</div>
+      <div class="boost-info">
+        <div class="boost-name">${b.name}</div>
+        <div class="boost-desc">${b.desc}</div>
+        ${owned ? '<div class="boost-owned-label">✓ Acquired</div>' : `<div class="boost-cost">${b.cost}g</div>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function updateStatus() {
+  document.getElementById('stat-kills').textContent = state.kills.toLocaleString();
+  document.getElementById('stat-gold').textContent = state.gold.toLocaleString();
+  document.getElementById('stat-deaths').textContent = state.deaths;
+  document.getElementById('stat-zone').textContent = state.zone;
+  document.getElementById('stat-prestige').textContent = state.prestige;
+  if (state.idle && attackTimer) {
+    clearInterval(attackTimer);
+    startIdle();
+  }
+}
+
+function updateSpeedDots() {
+  const spd = getStats().spd;
+  document.getElementById('speed-label').textContent = spd.toFixed(1) + 'x';
+  const filled = Math.min(5, Math.ceil(spd));
+  for (let i = 1; i <= 5; i++) {
+    document.getElementById('dot' + i).classList.toggle('active', i <= filled);
+  }
+}
+
+// ============================================================
+// LOG
+// ============================================================
+function addLog(msg, cls = '') {
+  const log = document.getElementById('combat-log');
+  const div = document.createElement('div');
+  div.className = cls;
+  div.textContent = msg;
+  log.appendChild(div);
+  // Keep last 50 lines
+  while (log.children.length > 50) log.removeChild(log.firstChild);
+  log.scrollTop = log.scrollHeight;
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+let toastTimeout;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// ============================================================
+// START
+// ============================================================
+init();
+</script>
+
+</body>
+</html>
