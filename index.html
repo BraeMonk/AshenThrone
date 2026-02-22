@@ -5,123 +5,399 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Ashen Throne</title>
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Cinzel+Decorative:wght@700&family=Crimson+Text:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
 <style>
+/* ========================================================
+   RESET & ROOT
+======================================================== */
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;}
 html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:'Cinzel',Georgia,serif;}
 :root{
---bg:#0a0806;--panel:#151008;--panel2:#1c1610;--panel3:#241e12;
---border:#3e3216;--border2:#5c4a1e;--gold:#f0c030;--gold2:#c89020;
---golddim:#7a5a10;--red:#e03030;--blue:#3060e0;--green:#40b040;
---ember:#d04020;--purple:#8030c0;--txt:#fff;--txt2:#e8d090;--txt3:#b09050;--txtdim:#806040;
+  --bg:#0a0806;--panel:#151008;--panel2:#1c1610;--panel3:#241e12;
+  --border:#3e3216;--border2:#5c4a1e;
+  --gold:#f0c030;--golddim:#7a5a10;
+  --red:#e03030;--green:#40b040;--ember:#d04020;
+  --txt:#fff;--txt2:#e8d090;--txt3:#b09050;--txtdim:#806040;
+  /* Fluid spacing */
+  --sp-xs:clamp(4px,1vw,8px);
+  --sp-sm:clamp(6px,1.5vw,12px);
+  --sp-md:clamp(8px,2vw,16px);
+  --sp-lg:clamp(12px,3vw,24px);
+  /* Fluid type */
+  --fs-xs:clamp(0.55rem,1.2vw,0.65rem);
+  --fs-sm:clamp(0.65rem,1.5vw,0.8rem);
+  --fs-md:clamp(0.75rem,1.8vw,0.95rem);
+  --fs-lg:clamp(0.9rem,2.2vw,1.1rem);
+  --fs-xl:clamp(1.1rem,3vw,1.4rem);
 }
-#app{position:fixed;inset:0;width:100vw;height:100vh;height:100dvh;display:flex;flex-direction:column;background:var(--bg);overflow:hidden;}
+
+/* ========================================================
+APP SHELL
+======================================================== */
+#app{
+position:fixed;inset:0;
+width:100vw;height:100vh;height:100dvh;
+background:var(–bg);overflow:hidden;
+}
 .scr{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden;}
 .scr.on{display:flex;}
 
-/* ===== TITLE ===== */
-#s0{background:radial-gradient(ellipse 120% 90% at 50% 62%,#1e0c04 0%,#080503 100%);align-items:center;justify-content:center;}
+/* ========================================================
+TITLE SCREEN
+======================================================== */
+#s0{
+background:radial-gradient(ellipse 120% 90% at 50% 62%,#1e0c04 0%,#080503 100%);
+align-items:center;justify-content:center;
+}
 #s0-cv{position:absolute;inset:0;width:100%;height:100%;}
-.t-body{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:12px;padding:20px;text-align:center;}
-.t-crest{font-size:4.5rem;filter:drop-shadow(0 0 40px #c04015)drop-shadow(0 0 80px rgba(200,60,20,.4));}
-.t-title{font-family:‘Cinzel Decorative’,serif;font-weight:700;font-size:clamp(2rem,10vw,3rem);color:#f0c030;letter-spacing:4px;line-height:.95;text-shadow:0 0 40px #f0c030,0 0 80px rgba(200,60,20,.5),0 4px 0 #000,0 8px 16px rgba(0,0,0,.9);}
-.t-sub{font-size:.68rem;color:#7a5a20;letter-spacing:8px;text-transform:uppercase;}
-.t-line{width:280px;height:1px;background:linear-gradient(90deg,transparent,#5c4a1e,#f0c030,#5c4a1e,transparent);margin:2px 0;}
-.t-lore{font-family:‘Crimson Text’,serif;font-style:italic;font-size:.88rem;color:#6a4e20;max-width:300px;line-height:1.65;}
-.t-btns{display:flex;flex-direction:column;gap:8px;width:100%;max-width:280px;margin-top:6px;}
-.t-btn{font-family:‘Cinzel’,serif;font-size:1rem;font-weight:700;letter-spacing:3px;color:#0e0800;background:linear-gradient(160deg,#f0d060,#d4a020,#8a6010);border:none;border-radius:4px;padding:14px 48px;box-shadow:0 0 24px rgba(240,192,48,.45),0 4px 16px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.25);min-height:52px;cursor:pointer;transition:transform .1s,box-shadow .1s;}
+.t-body{
+position:relative;z-index:2;
+display:flex;flex-direction:column;align-items:center;
+gap:clamp(8px,2vh,16px);
+padding:clamp(16px,4vh,40px) clamp(16px,4vw,40px);
+text-align:center;
+}
+.t-crest{
+font-size:clamp(3rem,10vw,5.5rem);
+filter:drop-shadow(0 0 40px #c04015)drop-shadow(0 0 80px rgba(200,60,20,.4));
+}
+.t-title{
+font-family:‘Cinzel Decorative’,serif;font-weight:700;
+font-size:clamp(1.8rem,8vw,3.5rem);
+color:#f0c030;letter-spacing:clamp(2px,1vw,8px);line-height:.95;
+text-shadow:0 0 40px #f0c030,0 0 80px rgba(200,60,20,.5),0 4px 0 #000,0 8px 16px rgba(0,0,0,.9);
+}
+.t-sub{font-size:clamp(.58rem,1.4vw,.78rem);color:#7a5a20;letter-spacing:clamp(4px,1.5vw,10px);text-transform:uppercase;}
+.t-line{width:min(280px,70vw);height:1px;background:linear-gradient(90deg,transparent,#5c4a1e,#f0c030,#5c4a1e,transparent);}
+.t-lore{
+font-family:‘Crimson Text’,serif;font-style:italic;
+font-size:clamp(.78rem,1.8vw,.95rem);
+color:#6a4e20;max-width:min(320px,85vw);line-height:1.65;
+}
+.t-btns{display:flex;flex-direction:column;gap:8px;width:100%;max-width:min(300px,80vw);}
+.t-btn{
+font-family:‘Cinzel’,serif;font-size:clamp(.85rem,2vw,1.05rem);
+font-weight:700;letter-spacing:clamp(1px,.5vw,4px);color:#0e0800;
+background:linear-gradient(160deg,#f0d060,#d4a020,#8a6010);
+border:none;border-radius:4px;
+padding:clamp(12px,2.5vh,18px) clamp(24px,6vw,52px);
+box-shadow:0 0 24px rgba(240,192,48,.45),0 4px 16px rgba(0,0,0,.8),inset 0 1px 0 rgba(255,255,255,.25);
+min-height:clamp(44px,6vh,56px);cursor:pointer;transition:transform .1s,box-shadow .1s;
+}
 .t-btn:active{transform:scale(.94);}
-.t-btn-sec{font-family:‘Cinzel’,serif;font-size:.75rem;color:#7a5a20;background:transparent;border:1px solid #3e3216;border-radius:4px;padding:10px 24px;cursor:pointer;letter-spacing:2px;min-height:40px;transition:all .15s;}
+.t-btn-sec{
+font-family:‘Cinzel’,serif;font-size:clamp(.65rem,1.5vw,.78rem);
+color:#7a5a20;background:transparent;
+border:1px solid #3e3216;border-radius:4px;
+padding:clamp(8px,1.5vh,12px) 20px;cursor:pointer;
+letter-spacing:2px;min-height:clamp(38px,5vh,46px);transition:all .15s;
+}
 .t-btn-sec:active{border-color:#f0c030;color:#f0c030;}
-.t-hint{font-size:.6rem;color:#3e3010;font-style:italic;}
+.t-hint{font-size:clamp(.55rem,1.2vw,.65rem);color:#3e3010;font-style:italic;}
 
-/* ===== CLASS SELECT ===== */
+/* ========================================================
+CLASS SELECT
+======================================================== */
 #s1{background:var(–bg);}
-.page-hdr{flex-shrink:0;padding:max(12px,env(safe-area-inset-top,12px)) 16px 10px;background:var(–panel);border-bottom:2px solid var(–border);}
-.page-hdr-title{font-size:.78rem;color:#f0c030;letter-spacing:4px;text-align:center;}
-.page-hdr-sub{font-family:‘Crimson Text’,serif;font-style:italic;font-size:.75rem;color:#5a4218;text-align:center;margin-top:3px;}
-.cls-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:10px;display:flex;flex-direction:column;gap:8px;}
+.page-hdr{
+flex-shrink:0;
+padding:max(clamp(10px,2vh,14px),env(safe-area-inset-top,10px)) var(–sp-md) var(–sp-sm);
+background:var(–panel);border-bottom:2px solid var(–border);
+}
+.page-hdr-title{font-size:var(–fs-sm);color:#f0c030;letter-spacing:4px;text-align:center;}
+.page-hdr-sub{font-family:‘Crimson Text’,serif;font-style:italic;font-size:var(–fs-xs);color:#5a4218;text-align:center;margin-top:3px;}
+.cls-list{
+flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
+padding:var(–sp-sm);
+display:grid;
+/* Single column on narrow, 2 cols on wider */
+grid-template-columns:repeat(auto-fill,minmax(min(100%,340px),1fr));
+gap:var(–sp-sm);
+align-content:start;
+}
 .cls-list::-webkit-scrollbar{display:none;}
-.cls-card{background:var(–panel2);border:2px solid var(–border);border-radius:8px;padding:12px;display:flex;gap:11px;align-items:flex-start;cursor:pointer;position:relative;overflow:hidden;transition:border-color .15s,background .15s;}
+.cls-card{
+background:var(–panel2);border:2px solid var(–border);border-radius:8px;
+padding:var(–sp-sm);display:flex;gap:var(–sp-sm);align-items:flex-start;
+cursor:pointer;overflow:hidden;transition:border-color .15s,background .15s;
+}
 .cls-card.sel{border-color:#f0c030;background:#201a0c;}
-.cls-sprite-wrap{width:66px;height:66px;flex-shrink:0;border-radius:6px;background:#080604;border:2px solid var(–border);overflow:hidden;}
-.cls-sprite-wrap canvas{image-rendering:pixelated;width:66px;height:66px;}
+.cls-sprite-wrap{
+width:clamp(56px,10vw,76px);height:clamp(56px,10vw,76px);
+flex-shrink:0;border-radius:6px;background:#080604;border:2px solid var(–border);overflow:hidden;
+}
+.cls-sprite-wrap canvas{image-rendering:pixelated;width:100%;height:100%;}
 .cls-text{flex:1;min-width:0;}
-.cls-name{font-size:.9rem;font-weight:700;color:#f0c030;margin-bottom:2px;}
-.cls-flavor{font-family:‘Crimson Text’,serif;font-style:italic;font-size:.75rem;color:#8a6830;line-height:1.4;margin-bottom:5px;}
-.cls-lore{font-family:‘Crimson Text’,serif;font-size:.72rem;color:#5a4218;line-height:1.4;margin-bottom:6px;}
+.cls-name{font-size:var(–fs-md);font-weight:700;color:#f0c030;margin-bottom:2px;}
+.cls-flavor{font-family:‘Crimson Text’,serif;font-style:italic;font-size:var(–fs-xs);color:#8a6830;line-height:1.4;margin-bottom:4px;}
+.cls-lore{font-family:‘Crimson Text’,serif;font-size:var(–fs-xs);color:#5a4218;line-height:1.4;margin-bottom:5px;}
 .cls-stats{display:flex;gap:4px;flex-wrap:wrap;}
-.cls-stat{font-size:.6rem;color:#c0a050;background:#080604;border:1px solid var(–border);border-radius:2px;padding:2px 5px;}
-.cls-foot{flex-shrink:0;padding:10px;background:var(–panel);border-top:2px solid var(–border);}
-.cls-go{width:100%;padding:14px;font-family:‘Cinzel’,serif;font-size:.88rem;font-weight:700;letter-spacing:2px;color:#0e0800;background:linear-gradient(160deg,#f0d060,#d4a020,#8a6010);border:none;border-radius:4px;cursor:pointer;min-height:50px;box-shadow:0 4px 16px rgba(240,192,48,.35);transition:all .12s;}
+.cls-stat{font-size:var(–fs-xs);color:#c0a050;background:#080604;border:1px solid var(–border);border-radius:2px;padding:2px 5px;}
+.cls-foot{flex-shrink:0;padding:var(–sp-sm);background:var(–panel);border-top:2px solid var(–border);}
+.cls-go{
+width:100%;padding:clamp(11px,2vh,15px);
+font-family:‘Cinzel’,serif;font-size:var(–fs-md);font-weight:700;letter-spacing:2px;color:#0e0800;
+background:linear-gradient(160deg,#f0d060,#d4a020,#8a6010);
+border:none;border-radius:4px;cursor:pointer;
+min-height:clamp(44px,6vh,52px);box-shadow:0 4px 16px rgba(240,192,48,.35);transition:all .12s;
+}
 .cls-go:disabled{opacity:.2;pointer-events:none;}
 .cls-go:active{transform:scale(.97);}
 
-/* ===== MAIN GAME ===== */
-#s2{background:var(–bg);height:100dvh;overflow:hidden;}
+/* ========================================================
+MAIN GAME — base (mobile-first column layout)
+======================================================== */
+#s2{
+background:var(–bg);
+/* Use dvh so it respects browser chrome on mobile */
+height:100vh;height:100dvh;
+overflow:hidden;
+flex-direction:column;  /* explicit: column by default, row on desktop */
+}
 
-/* HUD */
-#hud{flex-shrink:0;padding:max(8px,env(safe-area-inset-top,8px)) 10px 7px;background:#040302;border-bottom:2px solid var(–border);display:grid;grid-template-columns:44px 1fr auto;align-items:center;gap:8px;}
-#hud-av{width:44px;height:44px;border-radius:50%;background:radial-gradient(circle,#1c1508,#080604);border:2px solid var(–golddim);display:flex;align-items:center;justify-content:center;font-size:1.3rem;}
+/*
+Layout strategy:
+
+- Mobile (<640px): stacked column — HUD → ticker → arena → tabs → tab-body
+- Tablet (640–1024px): same column but bigger proportions
+- Desktop (≥1024px): split — LEFT panel = arena+controls fixed, RIGHT = scrollable tab content
+  */
+
+/* === HUD === */
+#hud{
+flex-shrink:0;
+padding:max(clamp(6px,1.5vh,10px),env(safe-area-inset-top,6px)) var(–sp-md) clamp(6px,1.5vh,9px);
+background:#040302;border-bottom:2px solid var(–border);
+display:grid;grid-template-columns:clamp(38px,5vw,48px) 1fr auto;
+align-items:center;gap:var(–sp-sm);
+}
+#hud-av{
+width:clamp(38px,5vw,48px);height:clamp(38px,5vw,48px);
+border-radius:50%;background:radial-gradient(circle,#1c1508,#080604);
+border:2px solid var(–golddim);display:flex;align-items:center;justify-content:center;
+font-size:clamp(1.1rem,2.5vw,1.4rem);
+}
 #hud-bars{display:flex;flex-direction:column;gap:3px;}
-.br{display:flex;align-items:center;gap:5px;}
-.br-ico{font-size:.7rem;width:13px;flex-shrink:0;}
-.br-track{flex:1;height:8px;background:#080604;border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,.06);}
+.br{display:flex;align-items:center;gap:4px;}
+.br-ico{font-size:clamp(.6rem,1.2vw,.75rem);width:12px;flex-shrink:0;}
+.br-track{flex:1;height:clamp(6px,1.2vh,9px);background:#080604;border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,.06);}
 .br-fill{height:100%;border-radius:4px;transition:width .3s;}
 .br-fill::after{content:’’;display:block;height:35%;background:rgba(255,255,255,.15);border-radius:4px 4px 0 0;}
 .br-fill.hp{background:linear-gradient(90deg,#680c0c,#e03838);}
 .br-fill.mp{background:linear-gradient(90deg,#0c1860,#3860e0);}
 .br-fill.xp{background:linear-gradient(90deg,#0c3010,#38a838);}
-.br-val{font-size:.55rem;color:#806040;width:48px;text-align:right;flex-shrink:0;white-space:nowrap;}
+.br-val{font-size:var(–fs-xs);color:#806040;width:clamp(44px,7vw,58px);text-align:right;flex-shrink:0;white-space:nowrap;}
 #hud-right{text-align:right;}
-#hud-gold{font-size:.8rem;color:#f0c030;display:flex;align-items:center;justify-content:flex-end;gap:3px;}
-#hud-lv{font-size:.62rem;color:#806040;margin-top:2px;}
-#hud-zb{font-size:.56rem;color:#c07020;background:rgba(140,70,10,.2);border:1px solid rgba(140,70,10,.4);border-radius:2px;padding:2px 5px;margin-top:2px;display:inline-block;}
+#hud-gold{font-size:var(–fs-sm);color:#f0c030;display:flex;align-items:center;justify-content:flex-end;gap:3px;}
+#hud-lv{font-size:var(–fs-xs);color:#806040;margin-top:1px;}
+#hud-zb{font-size:var(–fs-xs);color:#c07020;background:rgba(140,70,10,.2);border:1px solid rgba(140,70,10,.4);border-radius:2px;padding:2px 5px;margin-top:2px;display:inline-block;}
 
-/* STORY TICKER */
-#story-ticker{flex-shrink:0;height:26px;background:linear-gradient(90deg,#0c0804,#120e06,#0c0804);border-bottom:1px solid var(–border);overflow:hidden;display:flex;align-items:center;padding:0 10px;gap:8px;}
-#story-ico{font-size:.75rem;flex-shrink:0;}
-#story-txt{font-family:‘Crimson Text’,serif;font-style:italic;font-size:.75rem;color:#7a5c28;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+/* === STORY TICKER === */
+#story-ticker{
+flex-shrink:0;height:clamp(22px,3.5vh,30px);
+background:linear-gradient(90deg,#0c0804,#120e06,#0c0804);
+border-bottom:1px solid var(–border);
+overflow:hidden;display:flex;align-items:center;padding:0 var(–sp-sm);gap:6px;
+}
+#story-ico{font-size:clamp(.65rem,1.3vw,.8rem);flex-shrink:0;}
+#story-txt{font-family:‘Crimson Text’,serif;font-style:italic;font-size:clamp(.68rem,1.4vw,.82rem);color:#7a5c28;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 
-/* ARENA */
-#arena-wrap{flex-shrink:0;height:min(185px,26vh);position:relative;background:#030201;overflow:hidden;}
+/* === ARENA === */
+#arena-wrap{
+flex-shrink:0;
+height:clamp(145px,24vh,230px);
+position:relative;background:#030201;overflow:hidden;
+}
 #arena-cv{position:absolute;inset:0;width:100%;height:100%;display:block;}
 #arena-ov{position:absolute;inset:0;pointer-events:none;z-index:10;}
 #zone-prog{position:absolute;top:0;left:0;right:0;height:3px;z-index:15;background:rgba(0,0,0,.4);}
 #zone-prog-fill{height:100%;background:linear-gradient(90deg,var(–golddim),var(–gold));transition:width .5s;}
-#btn-auto{position:absolute;bottom:8px;left:8px;z-index:20;background:rgba(0,0,0,.75);border:1.5px solid var(–border);border-radius:14px;color:var(–txtdim);font-family:‘Cinzel’,serif;font-size:.6rem;letter-spacing:1px;padding:6px 11px;cursor:pointer;min-height:34px;transition:all .2s;}
+#btn-auto{
+position:absolute;bottom:clamp(6px,1.5vh,10px);left:clamp(6px,1.5vw,10px);z-index:20;
+background:rgba(0,0,0,.75);border:1.5px solid var(–border);border-radius:14px;
+color:var(–txtdim);font-family:‘Cinzel’,serif;
+font-size:clamp(.55rem,1.2vw,.68rem);letter-spacing:1px;
+padding:clamp(5px,1.2vh,8px) clamp(8px,2vw,13px);
+cursor:pointer;min-height:clamp(30px,4.5vh,38px);transition:all .2s;
+}
 #btn-auto.on{border-color:#40b040;color:#40b040;box-shadow:0 0 10px rgba(64,176,64,.3);}
-#btn-zone-lbl{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);z-index:20;background:rgba(0,0,0,.7);border:1.5px solid var(–border2);border-radius:14px;color:var(–gold);font-family:‘Cinzel’,serif;font-size:.58rem;letter-spacing:1px;padding:6px 11px;min-height:34px;white-space:nowrap;display:flex;align-items:center;gap:4px;cursor:pointer;}
-#btn-attack{position:absolute;bottom:8px;right:8px;z-index:20;width:62px;height:62px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#d84820,#b03818,#700e10);border:3px solid #d4a020;display:flex;align-items:center;justify-content:center;font-size:1.55rem;cursor:pointer;box-shadow:0 4px 22px rgba(180,50,20,.65),inset 0 1px 0 rgba(255,255,255,.2);transition:transform .1s,box-shadow .1s;}
+#btn-zone-lbl{
+position:absolute;bottom:clamp(6px,1.5vh,10px);left:50%;transform:translateX(-50%);z-index:20;
+background:rgba(0,0,0,.7);border:1.5px solid var(–border2);border-radius:14px;
+color:var(–gold);font-family:‘Cinzel’,serif;
+font-size:clamp(.52rem,1.1vw,.65rem);letter-spacing:1px;
+padding:clamp(5px,1.2vh,8px) clamp(8px,2vw,13px);
+min-height:clamp(30px,4.5vh,38px);white-space:nowrap;
+display:flex;align-items:center;gap:4px;cursor:pointer;
+}
+#btn-attack{
+position:absolute;bottom:clamp(6px,1.5vh,10px);right:clamp(6px,1.5vw,10px);z-index:20;
+width:clamp(52px,8vw,70px);height:clamp(52px,8vw,70px);border-radius:50%;
+background:radial-gradient(circle at 38% 32%,#d84820,#b03818,#700e10);
+border:3px solid #d4a020;display:flex;align-items:center;justify-content:center;
+font-size:clamp(1.3rem,3.5vw,1.7rem);cursor:pointer;
+box-shadow:0 4px 22px rgba(180,50,20,.65),inset 0 1px 0 rgba(255,255,255,.2);
+transition:transform .1s,box-shadow .1s;
+}
 #btn-attack:active{transform:scale(.87);box-shadow:0 2px 8px rgba(180,50,20,.35);}
 
-/* TABS */
-#tabs{flex-shrink:0;display:grid;grid-template-columns:repeat(5,1fr);background:#060402;border-top:2px solid var(–border);border-bottom:2px solid var(–border);}
-.tab-btn{padding:7px 2px 5px;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;border-right:1px solid var(–border);transition:background .15s;position:relative;}
+/* === TABS === */
+#tabs{
+flex-shrink:0;display:grid;grid-template-columns:repeat(5,1fr);
+background:#060402;border-top:2px solid var(–border);border-bottom:2px solid var(–border);
+}
+.tab-btn{
+padding:clamp(5px,1.2vh,8px) 2px clamp(4px,1vh,7px);
+display:flex;flex-direction:column;align-items:center;gap:2px;
+cursor:pointer;border-right:1px solid var(–border);transition:background .15s;position:relative;
+}
 .tab-btn:last-child{border-right:none;}
 .tab-btn.on{background:#1c1710;border-bottom:2px solid var(–gold);}
-.tab-ico{font-size:1.05rem;line-height:1;}
-.tab-lbl{font-size:.48rem;color:var(–txtdim);letter-spacing:.5px;text-transform:uppercase;}
+.tab-ico{font-size:clamp(.9rem,2.5vw,1.15rem);line-height:1;}
+.tab-lbl{font-size:clamp(.42rem,1vw,.55rem);color:var(–txtdim);letter-spacing:.5px;text-transform:uppercase;}
 .tab-btn.on .tab-lbl{color:var(–gold);}
 .tab-dot{position:absolute;top:4px;right:5px;width:6px;height:6px;background:#e03030;border-radius:50%;border:1px solid #000;}
 
-/* TAB BODY */
-#tab-body{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;background:var(–bg);padding-bottom:max(10px,env(safe-area-inset-bottom,10px));}
+/* === TAB BODY === */
+#tab-body{
+flex:1;
+min-height:0;          /* critical: lets flex child scroll instead of expanding */
+overflow-y:auto;overflow-x:hidden;
+-webkit-overflow-scrolling:touch;
+background:var(–bg);
+padding-bottom:max(var(–sp-md),env(safe-area-inset-bottom,10px));
+}
 #tab-body::-webkit-scrollbar{width:2px;}
 #tab-body::-webkit-scrollbar-thumb{background:var(–border2);}
 
-/* ===== SHARED SECTION STYLES ===== */
-.sec{padding:10px;}
-.sec-hdr{font-size:.7rem;color:#f0c030;letter-spacing:3px;text-transform:uppercase;padding-bottom:7px;margin-bottom:8px;border-bottom:1px solid var(–border);display:flex;align-items:center;justify-content:space-between;}
-.sp-badge{background:var(–panel2);border:1px solid var(–border2);border-radius:10px;padding:3px 10px;font-size:.75rem;color:#f0c030;}
-.filter-row{display:flex;gap:5px;margin-bottom:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;}
+/* ========================================================
+LAYOUT SYSTEM
+Mobile  (<640px):  full-width column, compact arena
+Tablet  (640-1023): wider column, taller arena, 2-col cards
+Desktop (≥1024px): side-by-side — game left, tabs right
+======================================================== */
+
+/* — Mobile base (already handled above) — */
+
+/* — Tablet — */
+@media (min-width:640px) and (max-width:1023px){
+#arena-wrap{height:clamp(200px,32vh,300px);}
+.cls-list{grid-template-columns:repeat(2,1fr);}
+.q-list,.boon-list{display:grid;grid-template-columns:repeat(2,1fr);gap:var(–sp-sm);}
+.story-list{display:grid;grid-template-columns:repeat(2,1fr);gap:var(–sp-sm);}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(–sp-sm);}
+#tab-body .sec{padding:var(–sp-md);}
+.sk-card{min-height:115px;}
+.sk-ico{width:44px;height:44px;font-size:1.3rem;}
+}
+
+/* — Desktop (two-column split) — */
+@media (min-width:1024px){
+
+/* s2 becomes a row */
+#s2{flex-direction:row;align-items:stretch;}
+
+/* LEFT column: HUD + ticker + arena + tabs — fixed width, no scroll */
+#game-left{
+width:clamp(360px,38vw,500px);
+flex-shrink:0;
+display:flex;flex-direction:column;
+border-right:2px solid var(–border2);
+overflow:hidden;
+height:100%;
+}
+
+/* Arena expands to fill remaining left-column height */
+#arena-wrap{flex:1;height:auto;min-height:200px;}
+
+/* RIGHT column: tab content — scrollable, fills rest */
+#game-right{
+flex:1;min-width:0;
+display:flex;flex-direction:column;
+overflow:hidden;
+height:100%;
+}
+
+/* Tab body fills right column, scrolls internally */
+#tab-body{flex:1;overflow-y:auto;}
+
+/* Center & constrain content in right column */
+#tab-body .sec{
+max-width:860px;
+margin:0 auto;
+padding:var(–sp-lg) clamp(var(–sp-md),3vw,32px);
+}
+
+/* 2-col grids in right panel */
+.q-list,.boon-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:var(–sp-sm);}
+.story-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:var(–sp-sm);}
+.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:var(–sp-md);}
+.cls-list{grid-template-columns:repeat(auto-fill,minmax(300px,1fr));}
+
+/* Bigger skill cards on desktop */
+.sk-card{min-height:clamp(110px,13vh,140px);}
+.sk-ico{width:50px;height:50px;font-size:1.45rem;}
+.sk-name{font-size:.76rem;}
+.sk-desc{font-size:.63rem;}
+
+/* HUD text slightly larger on desktop */
+#hud-gold{font-size:clamp(.85rem,1.6vw,.95rem);}
+}
+
+/* — Wide desktop — */
+@media (min-width:1400px){
+#game-left{width:clamp(440px,34vw,540px);}
+.q-list,.boon-list{grid-template-columns:repeat(3,1fr);}
+.story-list{grid-template-columns:repeat(3,1fr);}
+}
+
+/* ========================================================
+GAME-LEFT / GAME-RIGHT: transparent on mobile/tablet,
+proper flex columns on desktop
+======================================================== */
+/* Mobile/tablet: these divs are invisible wrappers — children
+lay out directly inside #s2’s flex column */
+#game-left,#game-right{display:contents;}
+
+@media (min-width:1024px){
+/* Desktop: real columns */
+#game-left,#game-right{display:flex;flex-direction:column;}
+}
+
+/* ========================================================
+SHARED SECTION STYLES
+======================================================== */
+.sec{padding:var(–sp-md);}
+.sec-hdr{
+font-size:var(–fs-xs);color:#f0c030;letter-spacing:3px;text-transform:uppercase;
+padding-bottom:6px;margin-bottom:8px;border-bottom:1px solid var(–border);
+display:flex;align-items:center;justify-content:space-between;
+}
+.sp-badge{
+background:var(–panel2);border:1px solid var(–border2);border-radius:10px;
+padding:3px 10px;font-size:var(–fs-sm);color:#f0c030;
+}
+.filter-row{
+display:flex;gap:5px;margin-bottom:var(–sp-sm);
+overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px;
+}
 .filter-row::-webkit-scrollbar{display:none;}
-.f-btn{flex-shrink:0;padding:5px 11px;border:1.5px solid var(–border);border-radius:12px;font-size:.58rem;color:var(–txtdim);cursor:pointer;background:var(–panel2);letter-spacing:.5px;transition:all .15s;}
+.f-btn{
+flex-shrink:0;padding:4px 10px;border:1.5px solid var(–border);border-radius:12px;
+font-size:var(–fs-xs);color:var(–txtdim);cursor:pointer;background:var(–panel2);
+letter-spacing:.5px;transition:all .15s;
+}
 .f-btn.on{border-color:var(–gold);color:var(–gold);background:var(–panel3);}
 
-/* ===== STORY TAB ===== */
-.story-list{display:flex;flex-direction:column;gap:10px;}
+/* ========================================================
+STORY TAB
+======================================================== */
+.story-list{display:flex;flex-direction:column;gap:var(–sp-sm);}
+@media (min-width:900px){
+.story-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));}
+}
 .chapter-card{background:var(–panel2);border:2px solid var(–border);border-radius:8px;overflow:hidden;position:relative;}
 .chapter-card.active{border-color:var(–border2);}
 .chapter-card.complete{border-color:#1e5018;}
@@ -129,154 +405,274 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:'Ci
 .chapter-card::before{content:’’;position:absolute;top:0;left:0;right:0;height:2px;}
 .chapter-card.active::before{background:linear-gradient(90deg,transparent,var(–gold),transparent);}
 .chapter-card.complete::before{background:linear-gradient(90deg,transparent,#40a030,transparent);}
-.ch-hdr{padding:12px;display:flex;align-items:center;gap:10px;}
-.ch-num{font-size:.58rem;color:var(–golddim);letter-spacing:2px;text-transform:uppercase;flex-shrink:0;}
-.ch-ico{font-size:1.5rem;flex-shrink:0;}
+.ch-hdr{padding:var(–sp-sm) var(–sp-md);display:flex;align-items:center;gap:var(–sp-sm);}
+.ch-num{font-size:var(–fs-xs);color:var(–golddim);letter-spacing:2px;text-transform:uppercase;flex-shrink:0;}
+.ch-ico{font-size:clamp(1.2rem,3vw,1.6rem);flex-shrink:0;}
 .ch-info{flex:1;min-width:0;}
-.ch-title{font-size:.88rem;color:#f0d060;font-weight:700;}
-.ch-zone{font-size:.6rem;color:#6a5020;letter-spacing:1px;margin-top:1px;}
-.ch-lock{font-size:.8rem;color:var(–txtdim);flex-shrink:0;}
-.ch-body{padding:0 12px 8px;}
-.ch-quote{font-family:‘Crimson Text’,serif;font-style:italic;font-size:.75rem;color:#4e3a14;margin-bottom:6px;border-left:2px solid var(–border2);padding-left:8px;}
-.ch-desc{font-family:‘Crimson Text’,serif;font-size:.8rem;color:#9a7840;line-height:1.55;margin-bottom:8px;}
-.ch-objs{display:flex;flex-direction:column;gap:5px;margin-bottom:8px;}
-.ch-obj{display:flex;align-items:center;gap:7px;}
-.ch-obj-ico{font-size:.75rem;width:16px;flex-shrink:0;}
-.ch-obj-txt{font-size:.68rem;color:#9a7840;flex:1;}
+.ch-title{font-size:var(–fs-md);color:#f0d060;font-weight:700;}
+.ch-zone{font-size:var(–fs-xs);color:#6a5020;letter-spacing:1px;margin-top:1px;}
+.ch-lock{font-size:var(–fs-sm);color:var(–txtdim);flex-shrink:0;}
+.ch-body{padding:0 var(–sp-md) var(–sp-sm);}
+.ch-quote{font-family:‘Crimson Text’,serif;font-style:italic;font-size:var(–fs-sm);color:#4e3a14;margin-bottom:5px;border-left:2px solid var(–border2);padding-left:8px;}
+.ch-desc{font-family:‘Crimson Text’,serif;font-size:var(–fs-sm);color:#9a7840;line-height:1.55;margin-bottom:7px;}
+.ch-objs{display:flex;flex-direction:column;gap:4px;margin-bottom:7px;}
+.ch-obj{display:flex;align-items:center;gap:6px;}
+.ch-obj-ico{font-size:var(–fs-sm);width:16px;flex-shrink:0;}
+.ch-obj-txt{font-size:var(–fs-xs);color:#9a7840;flex:1;}
 .ch-obj-bar{height:3px;flex:1;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;}
 .ch-obj-fill{height:100%;background:linear-gradient(90deg,var(–golddim),var(–gold));border-radius:2px;transition:width .5s;}
-.ch-obj-val{font-size:.6rem;color:var(–golddim);white-space:nowrap;}
-.ch-rew{font-size:.68rem;color:var(–gold);padding:6px 12px;background:rgba(240,192,48,.05);border-top:1px solid var(–border);display:flex;align-items:center;gap:6px;}
-.ch-complete{font-size:.68rem;color:#50c050;padding:6px 12px;background:rgba(64,176,64,.05);border-top:1px solid #1a4010;display:flex;align-items:center;gap:5px;}
+.ch-obj-val{font-size:var(–fs-xs);color:var(–golddim);white-space:nowrap;}
+.ch-rew{font-size:var(–fs-xs);color:var(–gold);padding:5px var(–sp-md);background:rgba(240,192,48,.05);border-top:1px solid var(–border);display:flex;align-items:center;gap:6px;}
+.ch-complete{font-size:var(–fs-xs);color:#50c050;padding:5px var(–sp-md);background:rgba(64,176,64,.05);border-top:1px solid #1a4010;display:flex;align-items:center;gap:5px;}
 
-/* ===== SKILL TREES ===== */
-.sk-tree-tabs{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:12px;}
-.sk-tree-tab{padding:7px 2px;text-align:center;background:var(–panel2);border:1.5px solid var(–border);border-radius:5px;font-size:.55rem;color:var(–txtdim);cursor:pointer;transition:all .15s;min-height:40px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;letter-spacing:.3px;}
-.sk-tree-tab span:first-child{font-size:.9rem;}
+/* ========================================================
+SKILL TREES
+======================================================== */
+.sk-tree-tabs{
+display:grid;grid-template-columns:repeat(5,1fr);
+gap:clamp(3px,0.8vw,6px);margin-bottom:var(–sp-md);
+}
+.sk-tree-tab{
+padding:clamp(5px,1.2vh,8px) 2px;text-align:center;
+background:var(–panel2);border:1.5px solid var(–border);border-radius:5px;
+font-size:var(–fs-xs);color:var(–txtdim);cursor:pointer;transition:all .15s;
+min-height:clamp(36px,5vh,48px);
+display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+}
+.sk-tree-tab span:first-child{font-size:clamp(.85rem,2.2vw,1.05rem);}
 .sk-tree-tab.on{background:var(–panel3);border-color:var(–gold);color:var(–gold);}
-
-/* Tree layout */
-.sk-tier-wrap{display:flex;flex-direction:column;gap:0;}
-.sk-tier{display:flex;justify-content:center;gap:8px;position:relative;}
-.sk-connector{height:18px;display:flex;align-items:center;justify-content:space-around;position:relative;margin:0 8px;}
-.sk-connector::before{content:’’;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:1px;height:100%;background:var(–border2);}
-.sk-connector.wide::before{width:60%;height:1px;top:50%;left:20%;}
-.sk-connector.fork{display:grid;grid-template-columns:1fr 1fr;}
+.sk-tier-wrap{display:flex;flex-direction:column;}
+.sk-connector{height:clamp(12px,2.5vh,20px);position:relative;margin:0 8px;}
+.sk-connector::before{content:’’;position:absolute;top:0;left:50%;width:1px;height:100%;background:var(–border2);}
 .sk-connector.fork::before{display:none;}
 .sk-connector.fork::after{content:’’;position:absolute;top:0;left:25%;right:25%;height:50%;border:1px solid var(–border2);border-top:none;}
-.sk-row{display:grid;gap:8px;margin-bottom:0;}
-.sk-row-1{grid-template-columns:minmax(0,1fr);max-width:160px;margin:0 auto;}
+.sk-row{display:grid;gap:clamp(5px,1.2vw,9px);}
+.sk-row-1{grid-template-columns:minmax(0,1fr);max-width:clamp(140px,30vw,200px);margin:0 auto;}
 .sk-row-2{grid-template-columns:1fr 1fr;}
 .sk-row-3{grid-template-columns:1fr 1fr 1fr;}
-.sk-card{background:var(–panel2);border:2px solid var(–border);border-radius:7px;padding:10px 7px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;position:relative;transition:border-color .15s,background .15s,transform .1s;min-height:100px;}
+.sk-card{
+background:var(–panel2);border:2px solid var(–border);border-radius:7px;
+padding:clamp(7px,1.5vh,12px) clamp(5px,1vw,9px);
+cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;
+text-align:center;position:relative;
+transition:border-color .15s,background .15s,transform .1s;
+min-height:clamp(95px,13vh,130px);
+}
 .sk-card.unlocked{border-color:var(–border2);background:var(–panel3);}
 .sk-card.maxed{border-color:var(–gold);background:#1e1a0a;}
 .sk-card.locked{opacity:.32;pointer-events:none;}
-.sk-card.capstone{border-style:dashed;border-width:2px;}
+.sk-card.capstone{border-style:dashed;}
 .sk-card.capstone.maxed{border-style:solid;box-shadow:0 0 18px rgba(240,192,48,.3);}
 .sk-card.capstone.unlocked{border-style:solid;}
 .sk-card:active:not(.locked){transform:scale(.96);}
-.sk-ico{width:42px;height:42px;border-radius:50%;background:var(–panel);border:2px solid var(–border);display:flex;align-items:center;justify-content:center;font-size:1.25rem;transition:all .15s;}
+.sk-ico{
+width:clamp(36px,6vw,50px);height:clamp(36px,6vw,50px);
+border-radius:50%;background:var(–panel);border:2px solid var(–border);
+display:flex;align-items:center;justify-content:center;
+font-size:clamp(1.1rem,2.5vw,1.4rem);transition:all .15s;
+}
 .sk-card.unlocked .sk-ico{border-color:var(–border2);box-shadow:0 0 8px rgba(240,192,48,.18);}
 .sk-card.maxed .sk-ico{border-color:var(–gold);box-shadow:0 0 14px rgba(240,192,48,.45);}
-.sk-name{font-size:.67rem;color:#e8d070;font-weight:700;line-height:1.2;}
-.sk-desc{font-size:.58rem;color:#7a6030;font-style:italic;line-height:1.3;}
-.sk-pips{display:flex;gap:2px;margin-top:1px;}
-.pip{width:8px;height:3px;border-radius:2px;background:#181408;}
+.sk-name{font-size:var(–fs-xs);color:#e8d070;font-weight:700;line-height:1.2;}
+.sk-desc{font-size:clamp(.52rem,1.1vw,.62rem);color:#7a6030;font-style:italic;line-height:1.3;}
+.sk-pips{display:flex;gap:2px;flex-wrap:wrap;justify-content:center;margin-top:1px;}
+.pip{width:7px;height:3px;border-radius:2px;background:#181408;}
 .pip.on{background:#c09828;}
 .pip.onmax{background:var(–gold);}
-.sk-rank{font-size:.58rem;color:var(–gold);}
-.sk-cap-tag{position:absolute;top:3px;right:4px;font-size:.47rem;color:#a08028;letter-spacing:.4px;text-transform:uppercase;}
-.sk-req-warn{font-size:.55rem;color:var(–red);margin-top:2px;}
+.sk-rank{font-size:var(–fs-xs);color:var(–gold);}
+.sk-cap-tag{position:absolute;top:2px;right:3px;font-size:.42rem;color:#a08028;letter-spacing:.4px;text-transform:uppercase;}
+.sk-req-warn{font-size:clamp(.48rem,1vw,.58rem);color:var(–red);margin-top:1px;}
 
-/* ===== QUESTS ===== */
-.q-list{display:flex;flex-direction:column;gap:8px;}
-.q-card{background:var(–panel2);border:2px solid var(–border);border-radius:8px;padding:11px;display:flex;gap:9px;align-items:flex-start;transition:border-color .15s;}
+/* ========================================================
+QUESTS
+======================================================== */
+.q-list{display:flex;flex-direction:column;gap:var(–sp-sm);}
+.q-card{
+background:var(–panel2);border:2px solid var(–border);border-radius:8px;
+padding:var(–sp-sm) var(–sp-md);display:flex;gap:var(–sp-sm);align-items:flex-start;
+transition:border-color .15s;
+}
 .q-card.in-progress{border-color:var(–border2);}
 .q-card.done{border-color:#184012;background:#0c1208;}
-.q-card.locked{opacity:.3;}
-.q-ico{width:40px;height:40px;border-radius:6px;flex-shrink:0;background:var(–panel);border:2px solid var(–border);display:flex;align-items:center;justify-content:center;font-size:1.2rem;}
+.q-ico{
+width:clamp(36px,5vw,46px);height:clamp(36px,5vw,46px);
+border-radius:6px;flex-shrink:0;
+background:var(–panel);border:2px solid var(–border);
+display:flex;align-items:center;justify-content:center;
+font-size:clamp(1rem,2.5vw,1.3rem);
+}
 .q-card.done .q-ico{border-color:#204016;}
 .q-body{flex:1;min-width:0;}
-.q-name{font-size:.78rem;color:#e8d070;font-weight:700;margin-bottom:2px;}
-.q-cat{font-size:.55rem;color:var(–golddim);letter-spacing:1px;text-transform:uppercase;margin-bottom:3px;}
-.q-desc{font-family:‘Crimson Text’,serif;font-style:italic;font-size:.72rem;color:#8a6830;line-height:1.4;margin-bottom:5px;}
+.q-name{font-size:var(–fs-sm);color:#e8d070;font-weight:700;margin-bottom:2px;}
+.q-cat{font-size:var(–fs-xs);color:var(–golddim);letter-spacing:1px;text-transform:uppercase;margin-bottom:2px;}
+.q-desc{font-family:‘Crimson Text’,serif;font-style:italic;font-size:var(–fs-xs);color:#8a6830;line-height:1.4;margin-bottom:4px;}
 .q-bar-wrap{height:4px;background:rgba(255,255,255,.05);border-radius:2px;overflow:hidden;margin-bottom:3px;}
 .q-bar{height:100%;background:linear-gradient(90deg,var(–golddim),var(–gold));border-radius:2px;transition:width .5s;}
-.q-prog{font-size:.6rem;color:var(–txtdim);}
-.q-rew{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;}
-.q-rew-tag{font-size:.62rem;color:var(–gold);background:rgba(240,192,48,.08);border:1px solid rgba(240,192,48,.2);border-radius:2px;padding:2px 5px;}
-.q-done-lbl{font-size:.62rem;color:#50c050;letter-spacing:.5px;margin-top:3px;}
+.q-prog{font-size:var(–fs-xs);color:var(–txtdim);}
+.q-rew{display:flex;gap:4px;flex-wrap:wrap;margin-top:3px;}
+.q-rew-tag{font-size:var(–fs-xs);color:var(–gold);background:rgba(240,192,48,.08);border:1px solid rgba(240,192,48,.2);border-radius:2px;padding:2px 5px;}
+.q-done-lbl{font-size:var(–fs-xs);color:#50c050;letter-spacing:.5px;margin-top:2px;}
 
-/* ===== BOONS ===== */
-.boon-list{display:flex;flex-direction:column;gap:8px;}
-.boon-card{background:var(–panel2);border:2px solid var(–border);border-radius:8px;padding:11px;display:flex;gap:9px;align-items:center;cursor:pointer;position:relative;overflow:hidden;transition:border-color .15s,background .15s;}
+/* ========================================================
+BOONS
+======================================================== */
+.boon-list{display:flex;flex-direction:column;gap:var(–sp-sm);}
+.boon-card{
+background:var(–panel2);border:2px solid var(–border);border-radius:8px;
+padding:var(–sp-sm) var(–sp-md);display:flex;gap:var(–sp-sm);
+align-items:center;cursor:pointer;position:relative;overflow:hidden;
+transition:border-color .15s,background .15s;
+}
 .boon-card.owned{border-color:#184012;background:#0c1208;pointer-events:none;}
 .boon-card.cant{opacity:.32;pointer-events:none;}
 .boon-card.can:active{background:var(–panel3);border-color:var(–border2);}
 .boon-card.elite{border-color:#501870;}
 .boon-card.elite.owned{border-color:#301040;}
-.boon-rar{position:absolute;top:0;right:0;font-size:.5rem;letter-spacing:.4px;text-transform:uppercase;padding:3px 7px;border-radius:0 6px 0 4px;}
+.boon-rar{
+position:absolute;top:0;right:0;font-size:.48rem;
+letter-spacing:.4px;text-transform:uppercase;padding:3px 7px;
+border-radius:0 6px 0 4px;
+}
 .boon-rar.common{background:rgba(60,100,60,.35);color:#60a060;}
 .boon-rar.rare{background:rgba(30,70,200,.35);color:#5888e0;}
 .boon-rar.epic{background:rgba(100,30,200,.35);color:#9058e0;}
 .boon-rar.legendary{background:rgba(180,90,0,.35);color:#d09030;}
-.boon-ico{width:46px;height:46px;border-radius:8px;flex-shrink:0;background:var(–panel);border:2px solid var(–border);display:flex;align-items:center;justify-content:center;font-size:1.45rem;}
+.boon-ico{
+width:clamp(38px,5.5vw,50px);height:clamp(38px,5.5vw,50px);
+border-radius:8px;flex-shrink:0;
+background:var(–panel);border:2px solid var(–border);
+display:flex;align-items:center;justify-content:center;
+font-size:clamp(1.2rem,2.8vw,1.5rem);
+}
 .boon-card.owned .boon-ico{border-color:#284820;}
 .boon-body{flex:1;min-width:0;}
-.boon-name{font-size:.78rem;color:#e8d070;font-weight:700;margin-bottom:2px;}
-.boon-desc{font-family:‘Crimson Text’,serif;font-style:italic;font-size:.72rem;color:#8a6830;line-height:1.4;}
-.boon-cost{font-size:.7rem;color:var(–gold);margin-top:4px;}
-.boon-own-lbl{font-size:.65rem;color:#50c050;margin-top:4px;}
+.boon-name{font-size:var(–fs-sm);color:#e8d070;font-weight:700;margin-bottom:2px;}
+.boon-desc{font-family:‘Crimson Text’,serif;font-style:italic;font-size:var(–fs-xs);color:#8a6830;line-height:1.4;}
+.boon-cost{font-size:var(–fs-xs);color:var(–gold);margin-top:3px;}
+.boon-own-lbl{font-size:var(–fs-xs);color:#50c050;margin-top:3px;}
 
-/* ===== STATS ===== */
-.stat-grp{background:var(–panel2);border:2px solid var(–border);border-radius:8px;padding:11px;margin-bottom:8px;}
-.stat-grp-title{font-size:.65rem;color:var(–gold);letter-spacing:2px;margin-bottom:7px;padding-bottom:5px;border-bottom:1px solid var(–border);}
+/* ========================================================
+STATS
+======================================================== */
+.stats-grid{/* overridden in media queries */}
+.stat-grp{background:var(–panel2);border:2px solid var(–border);border-radius:8px;padding:var(–sp-sm) var(–sp-md);margin-bottom:var(–sp-sm);}
+.stat-grp-title{font-size:var(–fs-xs);color:var(–gold);letter-spacing:2px;margin-bottom:6px;padding-bottom:5px;border-bottom:1px solid var(–border);}
 .stat-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;border-bottom:1px solid rgba(255,255,255,.035);}
 .stat-row:last-child{border-bottom:none;}
-.stat-lbl{font-size:.7rem;color:#9a7840;display:flex;align-items:center;gap:5px;}
-.stat-val{font-size:.75rem;color:#e8d070;font-weight:700;}
-.prestige-box{background:linear-gradient(135deg,#141008,#1c1508);border:2px solid var(–border2);border-radius:8px;padding:13px;}
-.pres-title{font-size:.82rem;color:var(–gold);margin-bottom:6px;display:flex;align-items:center;gap:6px;}
-.pres-desc{font-family:‘Crimson Text’,serif;font-style:italic;font-size:.8rem;color:#9a7040;line-height:1.55;margin-bottom:6px;}
-.pres-warn{font-size:.68rem;color:var(–red);margin-bottom:12px;padding:6px 10px;background:rgba(200,30,30,.08);border:1px solid rgba(200,30,30,.2);border-radius:4px;}
-.btn-prestige{width:100%;padding:13px;font-family:‘Cinzel’,serif;font-size:.85rem;font-weight:700;letter-spacing:2px;color:#0e0800;background:linear-gradient(160deg,#f0d060,#d4a020,#8a6010);border:none;border-radius:4px;cursor:pointer;min-height:50px;box-shadow:0 4px 16px rgba(240,192,48,.3);transition:all .12s;}
+.stat-lbl{font-size:var(–fs-sm);color:#9a7840;}
+.stat-val{font-size:var(–fs-sm);color:#e8d070;font-weight:700;}
+.prestige-box{
+background:linear-gradient(135deg,#141008,#1c1508);
+border:2px solid var(–border2);border-radius:8px;padding:var(–sp-md);
+margin-bottom:var(–sp-sm);
+}
+.pres-title{font-size:var(–fs-md);color:var(–gold);margin-bottom:5px;}
+.pres-desc{font-family:‘Crimson Text’,serif;font-style:italic;font-size:var(–fs-sm);color:#9a7040;line-height:1.55;margin-bottom:5px;}
+.pres-warn{font-size:var(–fs-xs);color:var(–red);margin-bottom:var(–sp-sm);padding:5px 10px;background:rgba(200,30,30,.08);border:1px solid rgba(200,30,30,.2);border-radius:4px;}
+.btn-prestige{
+width:100%;padding:clamp(10px,2vh,15px);
+font-family:‘Cinzel’,serif;font-size:var(–fs-md);font-weight:700;letter-spacing:2px;color:#0e0800;
+background:linear-gradient(160deg,#f0d060,#d4a020,#8a6010);
+border:none;border-radius:4px;cursor:pointer;
+min-height:clamp(42px,5.5vh,52px);box-shadow:0 4px 16px rgba(240,192,48,.3);transition:all .12s;
+}
 .btn-prestige:active{transform:scale(.97);}
 
-/* ===== DAMAGE NUMBERS ===== */
-.dmg-num{position:absolute;pointer-events:none;font-family:‘Cinzel’,serif;font-size:.92rem;font-weight:700;animation:floatup .8s ease-out forwards;white-space:nowrap;text-shadow:0 1px 4px #000,0 0 8px rgba(0,0,0,.9);}
-.dmg-num.crit{font-size:1.25rem;color:#f0d060;}
+/* ========================================================
+DAMAGE NUMBERS
+======================================================== */
+.dmg-num{
+position:absolute;pointer-events:none;font-family:‘Cinzel’,serif;
+font-size:clamp(.8rem,2vw,1rem);font-weight:700;
+animation:floatup .8s ease-out forwards;white-space:nowrap;
+text-shadow:0 1px 4px #000,0 0 8px rgba(0,0,0,.9);
+}
+.dmg-num.crit{font-size:clamp(1rem,2.5vw,1.3rem);color:#f0d060;}
 .dmg-num.hit{color:#ff6050;}
-.dmg-num.heal{color:#50d050;font-size:.8rem;}
+.dmg-num.heal{color:#50d050;font-size:clamp(.7rem,1.7vw,.85rem);}
 .dmg-num.enemy{color:#ff8040;}
-.dmg-num.dodge{color:#80c8ff;font-size:.75rem;}
-.dmg-num.spell{color:#c070f0;font-size:1rem;}
-.dmg-num.special{font-size:1.1rem;color:#ffd060;}
+.dmg-num.dodge{color:#80c8ff;font-size:clamp(.65rem,1.5vw,.8rem);}
+.dmg-num.spell{color:#c070f0;}
+.dmg-num.special{color:#ffd060;font-size:clamp(.95rem,2.2vw,1.15rem);}
 @keyframes floatup{0%{opacity:1;transform:translateY(0)scale(1);}60%{opacity:1;}100%{opacity:0;transform:translateY(-58px)scale(.75);}}
 
-/* ===== LEVEL UP ===== */
-#lvlup{position:fixed;inset:0;z-index:500;pointer-events:none;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;opacity:0;transition:opacity .25s;}
+/* ========================================================
+LEVEL UP
+======================================================== */
+#lvlup{
+position:fixed;inset:0;z-index:500;pointer-events:none;
+display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+opacity:0;transition:opacity .25s;
+}
 #lvlup.show{opacity:1;}
-.lvlup-txt{font-family:‘Cinzel Decorative’,serif;font-size:2rem;font-weight:700;color:var(–gold);text-shadow:0 0 30px var(–gold),0 0 60px rgba(200,60,20,.8),0 4px 8px #000;animation:lvlpop .75s ease-out forwards;}
-.lvlup-sub{font-size:.75rem;color:#a08030;letter-spacing:3px;animation:lvlpop .75s ease-out .1s both;}
+.lvlup-txt{
+font-family:‘Cinzel Decorative’,serif;font-weight:700;
+font-size:clamp(1.6rem,5vw,2.4rem);color:var(–gold);
+text-shadow:0 0 30px var(–gold),0 0 60px rgba(200,60,20,.8),0 4px 8px #000;
+animation:lvlpop .75s ease-out forwards;
+}
+.lvlup-sub{font-size:clamp(.65rem,1.5vw,.82rem);color:#a08030;letter-spacing:3px;animation:lvlpop .75s ease-out .1s both;}
 @keyframes lvlpop{0%{transform:scale(.4);opacity:0;}55%{transform:scale(1.18);}72%{transform:scale(.94);}100%{transform:scale(1);opacity:1;}}
 
-/* ===== TOAST ===== */
-#toast{position:fixed;top:max(56px,env(safe-area-inset-top,56px));left:50%;transform:translateX(-50%) translateY(-16px);background:var(–panel2);border:2px solid var(–border2);border-radius:5px;padding:8px 14px;font-family:‘Cinzel’,serif;font-size:.7rem;color:var(–gold);opacity:0;transition:opacity .22s,transform .22s;z-index:900;pointer-events:none;white-space:nowrap;letter-spacing:1px;box-shadow:0 4px 24px rgba(0,0,0,.85);}
+/* ========================================================
+TOAST
+======================================================== */
+#toast{
+position:fixed;top:max(clamp(50px,8vh,70px),env(safe-area-inset-top,50px));
+left:50%;transform:translateX(-50%) translateY(-16px);
+background:var(–panel2);border:2px solid var(–border2);border-radius:5px;
+padding:8px 14px;font-family:‘Cinzel’,serif;font-size:var(–fs-xs);color:var(–gold);
+opacity:0;transition:opacity .22s,transform .22s;z-index:900;pointer-events:none;
+white-space:nowrap;letter-spacing:1px;box-shadow:0 4px 24px rgba(0,0,0,.85);
+max-width:90vw;overflow:hidden;text-overflow:ellipsis;
+}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-/* ===== MODAL ===== */
-#modal{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:800;display:none;align-items:flex-end;justify-content:center;padding:0;}
+/* ========================================================
+MODAL
+======================================================== */
+#modal{
+position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:800;
+display:none;align-items:center;justify-content:center;padding:var(–sp-md);
+}
 #modal.open{display:flex;}
-.modal-box{background:var(–panel2);border:2px solid var(–border2);border-radius:12px 12px 0 0;padding:22px 18px max(18px,env(safe-area-inset-bottom,18px));width:100%;max-width:500px;text-align:center;box-shadow:0 -8px 40px rgba(0,0,0,.9);}
-.modal-title{font-size:1.05rem;color:var(–gold);margin-bottom:9px;}
-.modal-body{font-family:‘Crimson Text’,serif;font-style:italic;font-size:.85rem;color:#a08040;line-height:1.65;margin-bottom:8px;}
-.modal-warn{font-size:.7rem;color:var(–red);margin-bottom:14px;padding:6px 10px;background:rgba(200,30,30,.08);border:1px solid rgba(200,30,30,.2);border-radius:4px;}
+.modal-box{
+background:var(–panel2);border:2px solid var(–border2);border-radius:10px;
+padding:clamp(18px,4vh,28px) clamp(14px,3vw,24px);
+width:100%;max-width:min(440px,92vw);text-align:center;
+box-shadow:0 8px 40px rgba(0,0,0,.9);
+}
+.modal-title{font-size:var(–fs-lg);color:var(–gold);margin-bottom:9px;}
+.modal-body{font-family:‘Crimson Text’,serif;font-style:italic;font-size:var(–fs-sm);color:#a08040;line-height:1.65;margin-bottom:8px;}
+.modal-warn{font-size:var(–fs-xs);color:var(–red);margin-bottom:var(–sp-md);padding:5px 10px;background:rgba(200,30,30,.08);border:1px solid rgba(200,30,30,.2);border-radius:4px;}
 .modal-btns{display:flex;gap:8px;}
-.m-btn{flex:1;padding:12px;border:none;border-radius:4px;cursor:pointer;font-family:‘Cinzel’,serif;font-size:.8rem;font-weight:700;letter-spacing:1px;min-height:48px;transition:all .12s;}
+.m-btn{
+flex:1;padding:clamp(10px,2vh,14px);border:none;border-radius:4px;cursor:pointer;
+font-family:‘Cinzel’,serif;font-size:var(–fs-sm);font-weight:700;letter-spacing:1px;
+min-height:clamp(42px,5.5vh,50px);transition:all .12s;
+}
 .m-btn.go{background:linear-gradient(160deg,#f0d060,#d4a020,#8a6010);color:#0e0800;}
 .m-btn.cancel{background:var(–panel3);color:#9a7840;border:2px solid var(–border);}
 .m-btn:active{transform:scale(.96);}
+
+/* ========================================================
+SHORT SCREENS (landscape phones, small devices)
+======================================================== */
+@media (max-height:600px){
+.t-crest{font-size:2.2rem;}
+.t-lore{display:none;}
+.t-line{display:none;}
+#story-ticker{height:18px;}
+#arena-wrap{height:clamp(110px,28vh,155px);}
+.ch-desc,.cls-lore{display:none;}
+.tab-lbl{display:none;}
+.tab-btn{padding:8px 2px;}
+}
+@media (max-height:480px){
+#hud{padding-top:4px;padding-bottom:4px;}
+#arena-wrap{height:clamp(90px,24vh,120px);}
+#btn-attack{width:46px;height:46px;font-size:1.1rem;}
+}
 </style>
 
 </head>
@@ -317,66 +713,53 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:'Ci
 <!-- ========== MAIN GAME ========== -->
 
 <div class="scr" id="s2">
-  <div id="hud">
-    <div id="hud-av">⚔</div>
-    <div id="hud-bars">
-      <div class="br">
-        <span class="br-ico" style="color:#e83838">♥</span>
-        <div class="br-track"><div class="br-fill hp" id="b-hp" style="width:100%"></div></div>
-        <span class="br-val" id="v-hp">100/100</span>
+  <!-- LEFT PANEL (flex column on all screens; becomes fixed column on desktop) -->
+  <div id="game-left">
+    <div id="hud">
+      <div id="hud-av">⚔</div>
+      <div id="hud-bars">
+        <div class="br"><span class="br-ico" style="color:#e83838">♥</span><div class="br-track"><div class="br-fill hp" id="b-hp" style="width:100%"></div></div><span class="br-val" id="v-hp">100/100</span></div>
+        <div class="br"><span class="br-ico" style="color:#3860e0">✦</span><div class="br-track"><div class="br-fill mp" id="b-mp" style="width:100%"></div></div><span class="br-val" id="v-mp">50/50</span></div>
+        <div class="br"><span class="br-ico" style="color:#38a838">★</span><div class="br-track"><div class="br-fill xp" id="b-xp" style="width:0%"></div></div><span class="br-val" id="v-xp">0/100</span></div>
       </div>
-      <div class="br">
-        <span class="br-ico" style="color:#3860e0">✦</span>
-        <div class="br-track"><div class="br-fill mp" id="b-mp" style="width:100%"></div></div>
-        <span class="br-val" id="v-mp">50/50</span>
-      </div>
-      <div class="br">
-        <span class="br-ico" style="color:#38a838">★</span>
-        <div class="br-track"><div class="br-fill xp" id="b-xp" style="width:0%"></div></div>
-        <span class="br-val" id="v-xp">0/100</span>
+      <div id="hud-right">
+        <div id="hud-gold">💰 <span id="hud-gold-val">0</span></div>
+        <div id="hud-lv">Lv.<span id="hud-lv-val">1</span> · <span id="hud-cls-name">?</span></div>
+        <div id="hud-zb">Zone <span id="hud-zone-val">1</span></div>
       </div>
     </div>
-    <div id="hud-right">
-      <div id="hud-gold">💰 <span id="hud-gold-val">0</span></div>
-      <div id="hud-lv">Lv.<span id="hud-lv-val">1</span> · <span id="hud-cls-name">?</span></div>
-      <div id="hud-zb">⚔ Zone <span id="hud-zone-val">1</span></div>
+    <div id="story-ticker">
+      <span id="story-ico">📜</span>
+      <span id="story-txt">Your journey begins...</span>
+    </div>
+    <div id="arena-wrap">
+      <canvas id="arena-cv"></canvas>
+      <div id="arena-ov"></div>
+      <div id="zone-prog"><div id="zone-prog-fill" style="width:0%"></div></div>
+      <button id="btn-auto" onclick="toggleAuto()">AUTO OFF</button>
+      <div id="btn-zone-lbl">📍 <span id="zone-name-lbl">Ashen Fields</span></div>
+      <button id="btn-attack" ontouchstart="doAttackTouch(event)" onmousedown="doAttackTouch(event)">⚔</button>
+    </div>
+    <!-- Tabs only shown in left panel on desktop -->
+    <div id="tabs">
+      <div class="tab-btn" id="tb-story" onclick="openTab('story')"><span class="tab-ico">📖</span><span class="tab-lbl">Story</span></div>
+      <div class="tab-btn on" id="tb-skills" onclick="openTab('skills')"><span class="tab-ico">⚔</span><span class="tab-lbl">Skills</span></div>
+      <div class="tab-btn" id="tb-quests" onclick="openTab('quests')"><span class="tab-ico">📜</span><span class="tab-lbl">Quests</span></div>
+      <div class="tab-btn" id="tb-boons" onclick="openTab('boons')"><span class="tab-ico">⚗</span><span class="tab-lbl">Boons</span></div>
+      <div class="tab-btn" id="tb-stats" onclick="openTab('stats')"><span class="tab-ico">📊</span><span class="tab-lbl">Stats</span></div>
     </div>
   </div>
-  <div id="story-ticker">
-    <span id="story-ico">📜</span>
-    <span id="story-txt">Your journey begins...</span>
+
+  <!-- RIGHT PANEL (tab body) -->
+
+  <div id="game-right">
+    <div id="tab-body"></div>
   </div>
-  <div id="arena-wrap">
-    <canvas id="arena-cv"></canvas>
-    <div id="arena-ov"></div>
-    <div id="zone-prog"><div id="zone-prog-fill" style="width:0%"></div></div>
-    <button id="btn-auto" onclick="toggleAuto()">AUTO OFF</button>
-    <div id="btn-zone-lbl">📍 <span id="zone-name-lbl">Ashen Fields</span></div>
-    <button id="btn-attack" ontouchstart="doAttackTouch(event)" onmousedown="doAttackTouch(event)">⚔</button>
-  </div>
-  <div id="tabs">
-    <div class="tab-btn" id="tb-story" onclick="openTab('story')">
-      <span class="tab-ico">📖</span><span class="tab-lbl">Story</span>
-    </div>
-    <div class="tab-btn on" id="tb-skills" onclick="openTab('skills')">
-      <span class="tab-ico">⚔</span><span class="tab-lbl">Skills</span>
-    </div>
-    <div class="tab-btn" id="tb-quests" onclick="openTab('quests')">
-      <span class="tab-ico">📜</span><span class="tab-lbl">Quests</span>
-    </div>
-    <div class="tab-btn" id="tb-boons" onclick="openTab('boons')">
-      <span class="tab-ico">⚗</span><span class="tab-lbl">Boons</span>
-    </div>
-    <div class="tab-btn" id="tb-stats" onclick="openTab('stats')">
-      <span class="tab-ico">📊</span><span class="tab-lbl">Stats</span>
-    </div>
-  </div>
-  <div id="tab-body"></div>
 </div>
 
 </div><!-- #app -->
 
-<div id="lvlup"><div class="lvlup-txt" id="lvlup-txt">LEVEL UP!</div><div class="lvlup-sub" id="lvlup-sub">+1 SKILL POINT</div></div>
+<div id="lvlup"><div class="lvlup-txt" id="lvlup-txt">LEVEL UP!</div><div class="lvlup-sub">+1 SKILL POINT</div></div>
 <div id="toast"></div>
 <div id="modal">
   <div class="modal-box">
@@ -391,13 +774,13 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:'Ci
 </div>
 
 <script>
-/* ===========================================
-   AUDIO ENGINE
-=========================================== */
+/* ===============================================
+   AUDIO
+=============================================== */
 let AC=null,audioOn=false;
 function initAudio(){if(AC)return;try{AC=new(window.AudioContext||window.webkitAudioContext)();audioOn=true;}catch(e){}}
-function tone(f,type,dur,vol,delay=0){if(!AC||!audioOn)return;const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);o.type=type;o.frequency.value=f;const t=AC.currentTime+delay;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.start(t);o.stop(t+dur+.01);}
-function noise(dur,vol,delay=0){if(!AC||!audioOn)return;const buf=AC.createBuffer(1,AC.sampleRate*dur,AC.sampleRate);const d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;const s=AC.createBufferSource(),g=AC.createGain();s.buffer=buf;s.connect(g);g.connect(AC.destination);const t=AC.currentTime+delay;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);s.start(t);}
+function tone(f,t,d,v,dl=0){if(!AC||!audioOn)return;const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);o.type=t;o.frequency.value=f;const ts=AC.currentTime+dl;g.gain.setValueAtTime(v,ts);g.gain.exponentialRampToValueAtTime(.001,ts+d);o.start(ts);o.stop(ts+d+.01);}
+function noise(d,v,dl=0){if(!AC||!audioOn)return;const b=AC.createBuffer(1,AC.sampleRate*d,AC.sampleRate);const da=b.getChannelData(0);for(let i=0;i<da.length;i++)da[i]=Math.random()*2-1;const s=AC.createBufferSource(),g=AC.createGain();s.buffer=b;s.connect(g);g.connect(AC.destination);const ts=AC.currentTime+dl;g.gain.setValueAtTime(v,ts);g.gain.exponentialRampToValueAtTime(.001,ts+d);s.start(ts);}
 const SFX={
   hit(){noise(.042,.16);tone(155,'square',.042,.07,.018)},
   crit(){tone(340,'square',.036,.16);tone(680,'square',.036,.13,.036);tone(1020,'square',.036,.1,.072)},
@@ -412,10 +795,15 @@ const SFX={
   chapter(){[300,400,500,650,820].forEach((f,i)=>tone(f,'square',.1,.19,i*.1))},
   boon(){[500,700,900].forEach((f,i)=>tone(f,'triangle',.08,.15,i*.06))},
 };
+function startBGM(){
+  if(!AC)return;
+  const mel=[220,261,330,196,220,246,220,196];let i=0;
+  (function n(){if(audioOn){const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);o.type='triangle';o.frequency.value=mel[i%mel.length];g.gain.setValueAtTime(.024,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.38);o.start();o.stop(AC.currentTime+.38);}i++;setTimeout(n,i%4===0?950:480);})();
+}
 
-/* ===========================================
-   PIXEL SPRITES
-=========================================== */
+/* ===============================================
+   SPRITES
+=============================================== */
 const PX=3;
 function drawSprite(ctx,sprite,ox,oy){sprite.forEach((row,ry)=>row.forEach((c,rx)=>{if(!c)return;ctx.fillStyle=c;ctx.fillRect(ox+rx*PX,oy+ry*PX,PX,PX);}));}
 const SPRITES={
@@ -441,24 +829,24 @@ const ENEMIES={
   lich:{draw(ctx,x,y,sc){const c=['#1a1a2a','#3a2a5a','#7050b0','#e8e0ff','#c84820'];const p=PX*sc;[[0,c[1],c[2],c[3],c[3],c[2],c[1],0,0],[c[1],c[2],c[3],c[2],c[2],c[3],c[2],c[1],0],[0,c[2],c[3],c[4],c[3],c[4],c[3],c[2],0],[0,c[1],c[3],c[3],c[3],c[3],c[3],c[1],0],[0,c[2],c[1],c[2],c[2],c[2],c[1],c[2],0],[c[1],c[2],c[3],c[2],c[2],c[2],c[3],c[2],c[1]],[0,c[1],c[2],c[3],c[2],c[3],c[2],c[1],0],[0,c[2],c[1],0,0,0,c[1],c[2],0],[0,c[1],c[2],0,0,0,c[2],c[1],0]].forEach((row,ry)=>row.forEach((col,rx)=>{if(!col)return;ctx.fillStyle=col;ctx.fillRect(x+rx*p,y+ry*p,p,p)}));}},
 };
 
-/* ===========================================
+/* ===============================================
    WORLD DATA
-=========================================== */
+=============================================== */
 const ZONES=[
   {name:'Ashen Fields',sky:['#1a1208','#281a0c'],ground:'#2a1e10',hill:'#141008',enemies:['rat','rat','skeleton'],story:'The ancient farmlands choke on ash and sorrow.'},
-  {name:'Rotwood Forest',sky:['#0c1008','#181a0a'],ground:'#182010',hill:'#0c1008',enemies:['skeleton','zombie','skeleton'],story:'These twisted trees remember the Lich\'s first corruption.'},
+  {name:'Rotwood Forest',sky:['#0c1008','#181a0a'],ground:'#182010',hill:'#0c1008',enemies:['skeleton','zombie','skeleton'],story:"These twisted trees remember the Lich's first corruption."},
   {name:'Catacombs Deep',sky:['#0a0808','#180e0a'],ground:'#1a1210',hill:'#0a0808',enemies:['zombie','wraith','zombie'],story:'Sealed for a reason. That reason still prowls the dark.'},
   {name:'Shadowmere',sky:['#080c18','#101828'],ground:'#1a2030',hill:'#08101e',enemies:['wraith','wraith','lich'],story:'The cursed marshlands where wraiths struck a pact with death.'},
   {name:"Sorcerer's Veil",sky:['#0c0818','#180c28'],ground:'#1a1028',hill:'#0c0814',enemies:['dragon','lich','dragon'],story:'A pocket dimension of corrupted magic. Nothing here is real.'},
   {name:'Obsidian Keep',sky:['#0e0606','#180808'],ground:'#1c0e0c',hill:'#0c0606',enemies:['lich','dragon','lich'],story:'Built from the bones of those who dared resist the king.'},
   {name:'Void Spire',sky:['#060610','#0e0e1e'],ground:'#14141e',hill:'#060610',enemies:['dragon','lich','dragon'],story:'The Spire reaches into a dimension of raw, unraveling power.'},
-  {name:'Infernal Core',sky:['#1a0606','#240808'],ground:'#200c0c',hill:'#140404',enemies:['lich','dragon','lich'],story:'The Ashen King\'s throne. Reality fractures here.'},
+  {name:'Infernal Core',sky:['#1a0606','#240808'],ground:'#200c0c',hill:'#140404',enemies:['lich','dragon','lich'],story:"The Ashen King's throne. Reality fractures here."},
 ];
 const ENAMES={rat:['Grave Rat','Diseased Rat','Feral Rat','Plague Carrier'],skeleton:['Skeleton Guard','Bone Archer','Crypt Warrior','Restless Dead'],zombie:['Rot Zombie','Plague Shambler','Brute Zombie','Cursed Revenant'],wraith:['Frost Wraith','Shadow Wraith','Banshee','Soul Eater'],dragon:['Shadow Drake','Ember Wyvern','Ancient Dragon','Void Serpent'],lich:['Bone Lich','Void Lich','Soul Lich','Death Incarnate']};
 
-/* ===========================================
+/* ===============================================
    STORY CHAPTERS
-=========================================== */
+=============================================== */
 const STORY_CHAPTERS=[
   {id:'ch1',zone:1,ico:'🌾',title:'The Shattered Kingdom',
    quote:'"Once, Aetheron shone like a beacon. Then the Ashen King came — and everything burned."',
@@ -502,104 +890,55 @@ const STORY_CHAPTERS=[
    rew:{g:50000,sp:100},done:false,unlocked:false},
 ];
 
-/* ===========================================
+/* ===============================================
    CLASSES
-=========================================== */
+=============================================== */
 const CLASSES={
-  warrior:{
-    icon:'⚔',name:'Ironclad Warrior',
-    flavor:'"Where others shatter, I endure."',
-    lore:'A veteran of a hundred campaigns. The Warrior is the hammer that never bends — raw power backed by iron flesh and unbreakable will.',
-    baseAtk:8,baseDef:5,baseHp:160,baseMana:30,baseSpd:1.0,baseCrit:5,baseSpell:0,
-    hints:['⚔ Highest Attack','🛡 Best Defense','❤ Most HP'],
-  },
-  mage:{
-    icon:'🔮',name:'Void Mage',
-    flavor:'"Power without mercy. Magic without limit."',
-    lore:'A scholar who delved too deep into forbidden lore. The Mage commands devastating arcane forces but must protect fragile flesh and manage precious mana with care.',
-    baseAtk:4,baseDef:2,baseHp:90,baseMana:120,baseSpd:1.0,baseCrit:12,baseSpell:14,
-    hints:['🔮 Spell Damage','💥 High Crits','✦ Mana Scaling'],
-  },
-  rogue:{
-    icon:'🗡',name:'Shadow Rogue',
-    flavor:'"Strike unseen. Vanish before the blood hits the ground."',
-    lore:'An assassin born in the slums of a fallen city. The Rogue relies on blistering speed, crippling critical strikes, and the ability to ghost through death itself.',
-    baseAtk:6,baseDef:2,baseHp:110,baseMana:70,baseSpd:1.6,baseCrit:22,baseSpell:0,
-    hints:['⚡ Fastest Attacks','💥 Best Crits','👤 Dodge Chance'],
-  },
-  paladin:{
-    icon:'✝',name:'Fallen Paladin',
-    flavor:'"Even shattered faith leaves a mark."',
-    lore:'The order of Paladins was destroyed by the Ashen King. One survivor channels divine wrath through cracked armor, fueled by grief and righteous fury in equal measure.',
-    baseAtk:7,baseDef:4,baseHp:130,baseMana:80,baseSpd:1.0,baseCrit:8,baseSpell:8,
-    hints:['✝ Holy Damage','🛡 Strong Defense','💚 Self-Healing'],
-  },
-  ranger:{
-    icon:'🏹',name:'Cursed Ranger',
-    flavor:'"The wilds remember every injustice done to them."',
-    lore:'A tracker who witnessed the Rotwood\'s corruption firsthand and was changed by it. The Ranger strikes from range with nature-imbued arrows and uncanny precision.',
-    baseAtk:6,baseDef:3,baseHp:105,baseMana:85,baseSpd:1.35,baseCrit:18,baseSpell:5,
-    hints:['🏹 Ranged Attacks','🌿 Nature Magic','⚡ High Speed'],
-  },
+  warrior:{icon:'⚔',name:'Ironclad Warrior',flavor:'"Where others shatter, I endure."',lore:'A veteran of a hundred campaigns. The Warrior is the hammer that never bends — raw power backed by iron flesh and unbreakable will.',baseAtk:8,baseDef:5,baseHp:160,baseMana:30,baseSpd:1.0,baseCrit:5,baseSpell:0,hints:['⚔ Highest Attack','🛡 Best Defense','❤ Most HP']},
+  mage:{icon:'🔮',name:'Void Mage',flavor:'"Power without mercy. Magic without limit."',lore:'A scholar who delved too deep into forbidden lore. The Mage commands devastating arcane forces but must protect fragile flesh and manage precious mana with care.',baseAtk:4,baseDef:2,baseHp:90,baseMana:120,baseSpd:1.0,baseCrit:12,baseSpell:14,hints:['🔮 Spell Damage','💥 High Crits','✦ Mana Scaling']},
+  rogue:{icon:'🗡',name:'Shadow Rogue',flavor:'"Strike unseen. Vanish before the blood hits the ground."',lore:'An assassin born in the slums of a fallen city. The Rogue relies on blistering speed, crippling critical strikes, and the ability to ghost through death itself.',baseAtk:6,baseDef:2,baseHp:110,baseMana:70,baseSpd:1.6,baseCrit:22,baseSpell:0,hints:['⚡ Fastest Attacks','💥 Best Crits','👤 Dodge Chance']},
+  paladin:{icon:'✝',name:'Fallen Paladin',flavor:'"Even shattered faith leaves a mark."',lore:'The order of Paladins was destroyed by the Ashen King. One survivor channels divine wrath through cracked armor, fueled by grief and righteous fury in equal measure.',baseAtk:7,baseDef:4,baseHp:130,baseMana:80,baseSpd:1.0,baseCrit:8,baseSpell:8,hints:['✝ Holy Damage','🛡 Strong Defense','💚 Self-Healing']},
+  ranger:{icon:'🏹',name:'Cursed Ranger',flavor:'"The wilds remember every injustice done to them."',lore:"A tracker who witnessed the Rotwood's corruption firsthand and was changed by it. The Ranger strikes from range with nature-imbued arrows and uncanny precision.",baseAtk:6,baseDef:3,baseHp:105,baseMana:85,baseSpd:1.35,baseCrit:18,baseSpell:5,hints:['🏹 Ranged Attacks','🌿 Nature Magic','⚡ High Speed']},
 };
 
-/* ===========================================
-   SKILL TREES — 5 trees, tiered branching
-=========================================== */
+/* ===============================================
+   SKILL TREES
+=============================================== */
 const SKTREES={
-  offense:{label:'Offense',ico:'⚔',
-    tiers:[
-      [{id:'heavy',name:'Heavy Strike',ico:'💥',desc:'+4 ATK per rank',max:6,eff:'atk',val:4}],
-      [{id:'execute',name:'Execute',ico:'🗡',desc:'+6% crit per rank',max:5,eff:'crit',val:6,req:'heavy'},
-       {id:'cleave',name:'Cleave',ico:'⚔',desc:'Hits multiple foes: +2 DMG per rank',max:4,eff:'atk',val:2,req:'heavy'}],
-      [{id:'berserk',name:'Berserker',ico:'🔥',desc:'<30% HP → +70% ATK',max:1,eff:'special',req:'execute',cap:true},
-       {id:'overpower',name:'Overpower',ico:'💢',desc:'Every 5th hit: ×3 damage',max:1,eff:'special',req:'execute',cap:true}],
-    ]
-  },
-  defense:{label:'Defense',ico:'🛡',
-    tiers:[
-      [{id:'ironskin',name:'Iron Skin',ico:'🛡',desc:'+3 DEF per rank',max:6,eff:'def',val:3}],
-      [{id:'vigor',name:'Vigor',ico:'❤',desc:'+22 Max HP per rank',max:5,eff:'maxHp',val:22,req:'ironskin'},
-       {id:'fortress',name:'Fortress',ico:'🏰',desc:'Block 18% enemy damage',max:1,eff:'block',val:18,req:'ironskin',cap:true}],
-      [{id:'regen',name:'Regeneration',ico:'💚',desc:'Heal 2% max HP per kill',max:4,eff:'regen',val:2,req:'vigor'},
-       {id:'secondwind',name:'Second Wind',ico:'🌬',desc:'At 0 HP once: revive at 40% HP',max:1,eff:'special',req:'vigor',cap:true}],
-    ]
-  },
-  magic:{label:'Magic',ico:'🔮',
-    tiers:[
-      [{id:'arcane',name:'Arcane Surge',ico:'✨',desc:'+6 Spell DMG per rank',max:6,eff:'spell',val:6}],
-      [{id:'manawell',name:'Mana Well',ico:'✦',desc:'+22 Max Mana per rank',max:5,eff:'maxMana',val:22,req:'arcane'},
-       {id:'soulburn',name:'Soul Burn',ico:'🌑',desc:'Spells deal +35% damage',max:1,eff:'special',req:'arcane',cap:true}],
-      [{id:'drain',name:'Life Drain',ico:'🩸',desc:'+3% lifesteal per rank',max:4,eff:'life',val:3,req:'manawell'},
-       {id:'voidbolt',name:'Void Bolt',ico:'⚫',desc:'5% chance: instant kill <20% HP enemy',max:1,eff:'special',req:'manawell',cap:true}],
-    ]
-  },
-  agility:{label:'Agility',ico:'⚡',
-    tiers:[
-      [{id:'swift',name:'Swiftness',ico:'⚡',desc:'+0.12 ATK speed per rank',max:5,eff:'spd',val:0.12}],
-      [{id:'dodge',name:'Shadow Step',ico:'👤',desc:'+8% dodge per rank',max:4,eff:'dodge',val:8,req:'swift'},
-       {id:'flurry',name:'Flurry',ico:'🌀',desc:'Crits trigger +2 bonus hits',max:1,eff:'special',req:'swift',cap:true}],
-      [{id:'shadowform',name:'Shadowform',ico:'🌫',desc:'+18% to ALL stats',max:1,eff:'allstats',val:18,req:'dodge',cap:true}],
-    ]
-  },
-  holy:{label:'Holy',ico:'✝',
-    tiers:[
-      [{id:'smite',name:'Holy Smite',ico:'✝',desc:'+5 holy damage per rank',max:6,eff:'spell',val:5}],
-      [{id:'blessed',name:'Blessed Armor',ico:'🌟',desc:'+4 DEF, +0.05 SPD per rank',max:4,eff:'both',req:'smite'},
-       {id:'consecrate',name:'Consecrate',ico:'🕊',desc:'+5% ATK heals you per rank',max:3,eff:'life',val:5,req:'smite'}],
-      [{id:'divine',name:'Divine Shield',ico:'⛨',desc:'Negate one fatal hit (resets on respawn)',max:1,eff:'special',req:'blessed',cap:true},
-       {id:'radiance',name:'Radiance',ico:'☀',desc:'+20% gold & XP from all sources',max:1,eff:'special',req:'consecrate',cap:true}],
-    ]
-  },
+  offense:{label:'Offense',ico:'⚔',tiers:[
+    [{id:'heavy',name:'Heavy Strike',ico:'💥',desc:'+4 ATK per rank',max:6,eff:'atk',val:4}],
+    [{id:'execute',name:'Execute',ico:'🗡',desc:'+6% crit per rank',max:5,eff:'crit',val:6,req:'heavy'},{id:'cleave',name:'Cleave',ico:'⚔',desc:'+2 bonus DMG per rank',max:4,eff:'atk',val:2,req:'heavy'}],
+    [{id:'berserk',name:'Berserker',ico:'🔥',desc:'<30% HP → +70% ATK',max:1,eff:'special',req:'execute',cap:true},{id:'overpower',name:'Overpower',ico:'💢',desc:'Every 5th hit: ×3 damage',max:1,eff:'special',req:'execute',cap:true}],
+  ]},
+  defense:{label:'Defense',ico:'🛡',tiers:[
+    [{id:'ironskin',name:'Iron Skin',ico:'🛡',desc:'+3 DEF per rank',max:6,eff:'def',val:3}],
+    [{id:'vigor',name:'Vigor',ico:'❤',desc:'+22 Max HP per rank',max:5,eff:'maxHp',val:22,req:'ironskin'},{id:'fortress',name:'Fortress',ico:'🏰',desc:'Block 18% enemy damage',max:1,eff:'block',val:18,req:'ironskin',cap:true}],
+    [{id:'regen',name:'Regeneration',ico:'💚',desc:'Heal 2% HP per kill',max:4,eff:'regen',val:2,req:'vigor'},{id:'secondwind',name:'Second Wind',ico:'🌬',desc:'Revive once at 40% HP',max:1,eff:'special',req:'vigor',cap:true}],
+  ]},
+  magic:{label:'Magic',ico:'🔮',tiers:[
+    [{id:'arcane',name:'Arcane Surge',ico:'✨',desc:'+6 Spell DMG per rank',max:6,eff:'spell',val:6}],
+    [{id:'manawell',name:'Mana Well',ico:'✦',desc:'+22 Max Mana per rank',max:5,eff:'maxMana',val:22,req:'arcane'},{id:'soulburn',name:'Soul Burn',ico:'🌑',desc:'Spells deal +35% damage',max:1,eff:'special',req:'arcane',cap:true}],
+    [{id:'drain',name:'Life Drain',ico:'🩸',desc:'+3% lifesteal per rank',max:4,eff:'life',val:3,req:'manawell'},{id:'voidbolt',name:'Void Bolt',ico:'⚫',desc:'5% chance: instakill <20% HP',max:1,eff:'special',req:'manawell',cap:true}],
+  ]},
+  agility:{label:'Agility',ico:'⚡',tiers:[
+    [{id:'swift',name:'Swiftness',ico:'⚡',desc:'+0.12 ATK speed per rank',max:5,eff:'spd',val:0.12}],
+    [{id:'dodge',name:'Shadow Step',ico:'👤',desc:'+8% dodge per rank',max:4,eff:'dodge',val:8,req:'swift'},{id:'flurry',name:'Flurry',ico:'🌀',desc:'Crits trigger +2 bonus hits',max:1,eff:'special',req:'swift',cap:true}],
+    [{id:'shadowform',name:'Shadowform',ico:'🌫',desc:'+18% to ALL stats',max:1,eff:'allstats',val:18,req:'dodge',cap:true}],
+  ]},
+  holy:{label:'Holy',ico:'✝',tiers:[
+    [{id:'smite',name:'Holy Smite',ico:'✝',desc:'+5 holy DMG per rank',max:6,eff:'spell',val:5}],
+    [{id:'blessed',name:'Blessed Armor',ico:'🌟',desc:'+4 DEF, +0.05 SPD per rank',max:4,eff:'both',req:'smite'},{id:'consecrate',name:'Consecrate',ico:'🕊',desc:'+5% ATK heals per rank',max:3,eff:'life',val:5,req:'smite'}],
+    [{id:'divine',name:'Divine Shield',ico:'⛨',desc:'Negate one fatal hit',max:1,eff:'special',req:'blessed',cap:true},{id:'radiance',name:'Radiance',ico:'☀',desc:'+20% gold & XP',max:1,eff:'special',req:'consecrate',cap:true}],
+  ]},
 };
 
-/* ===========================================
-   QUESTS
-=========================================== */
+/* ===============================================
+   QUESTS & BOONS
+=============================================== */
 const QUESTS=[
   {id:'q_s1',cat:'story',ico:'📖',name:'The First Step',desc:'Your journey begins. Leave your mark on the Ashen Fields.',type:'kills',target:10,rew:{g:50,sp:2},done:false},
   {id:'q_s2',cat:'story',ico:'📖',name:'Into the Dark',desc:'Descend through the zones to reach the Catacombs.',type:'zone',target:3,rew:{g:400,sp:7},done:false},
-  {id:'q_s3',cat:'story',ico:'📖',name:'The Long March',desc:'Journey beyond the Shadowmere to the Sorcerer\'s domain.',type:'zone',target:5,rew:{g:2000,sp:15},done:false},
+  {id:'q_s3',cat:'story',ico:'📖',name:'The Long March',desc:"Journey beyond the Shadowmere to the Sorcerer's domain.",type:'zone',target:5,rew:{g:2000,sp:15},done:false},
   {id:'q_s4',cat:'story',ico:'📖',name:'The Throne Room',desc:'Reach the heart of the Infernal Core.',type:'zone',target:8,rew:{g:12000,sp:50},done:false},
   {id:'q_k1',cat:'slayer',ico:'💀',name:'First Blood',desc:'Slay your first enemies and prove yourself worthy.',type:'kills',target:10,rew:{g:50,sp:2},done:false},
   {id:'q_k2',cat:'slayer',ico:'💀',name:'Slaughterer',desc:'One thousand foes shall fall before you.',type:'kills',target:1000,rew:{g:2000,sp:10},done:false},
@@ -613,17 +952,13 @@ const QUESTS=[
   {id:'q_m2',cat:'mastery',ico:'✨',name:'Skill Master',desc:'The skill trees bend to your will.',type:'sktotal',target:20,rew:{g:2500,sp:14},done:false},
   {id:'q_m3',cat:'mastery',ico:'✨',name:'Skill Lord',desc:'All paths of power walk through you.',type:'sktotal',target:40,rew:{g:8000,sp:30},done:false},
   {id:'q_g1',cat:'wealth',ico:'💰',name:'Coin Gatherer',desc:'Wealth is power. Begin accumulating.',type:'gtotal',target:1000,rew:{g:0,sp:3},done:false},
-  {id:'q_g2',cat:'wealth',ico:'💰',name:'Treasure Lord',desc:'The old kingdom\'s vaults hold less than you.',type:'gtotal',target:15000,rew:{g:0,sp:10},done:false},
+  {id:'q_g2',cat:'wealth',ico:'💰',name:'Treasure Lord',desc:"The old kingdom's vaults hold less than you.",type:'gtotal',target:15000,rew:{g:0,sp:10},done:false},
   {id:'q_g3',cat:'wealth',ico:'💰',name:'Vault Sovereign',desc:'Gold beyond reckoning flows through your hands.',type:'gtotal',target:100000,rew:{g:0,sp:25},done:false},
   {id:'q_b1',cat:'mastery',ico:'⚗',name:'Boon Seeker',desc:'Acquire your first permanent boon.',type:'boons',target:1,rew:{g:800,sp:4},done:false},
   {id:'q_b2',cat:'mastery',ico:'⚗',name:'Boon Collector',desc:'Collect five permanent boons.',type:'boons',target:5,rew:{g:3000,sp:12},done:false},
   {id:'q_p1',cat:'prestige',ico:'🔄',name:'First Ascension',desc:'Die to be reborn. Embrace the cycle.',type:'prestige',target:1,rew:{g:0,sp:30},done:false},
   {id:'q_p2',cat:'prestige',ico:'🔄',name:'Eternal Cycle',desc:'Three times reborn. Three times stronger.',type:'prestige',target:3,rew:{g:0,sp:75},done:false},
 ];
-
-/* ===========================================
-   BOONS
-=========================================== */
 const BOONS=[
   {id:'b1',ico:'💪',name:'Iron Discipline',desc:'+10% base ATK permanently.',cost:500,rarity:'common',cat:'combat'},
   {id:'b2',ico:'🌑',name:'Shadow Harvest',desc:'+15% gold from all enemies.',cost:300,rarity:'common',cat:'wealth'},
@@ -635,34 +970,22 @@ const BOONS=[
   {id:'b8',ico:'⚡',name:'Static Surge',desc:'Critical hits trigger 2 extra attacks.',cost:1800,rarity:'rare',cat:'combat'},
   {id:'b9',ico:'🐉',name:'Dragonfire Pact',desc:'ATK +35%. Enemies have +40% HP.',cost:1600,rarity:'epic',cat:'combat'},
   {id:'b10',ico:'👑',name:'Sovereign Mark',desc:'+6 to ALL stats per zone level.',cost:2200,rarity:'epic',cat:'growth'},
-  {id:'b11',ico:'⚗',name:'Alchemist\'s Greed',desc:'Each prestige grants +12% gold permanently.',cost:2500,rarity:'epic',cat:'wealth'},
-  {id:'b12',ico:'🌌',name:'Void Conduit',desc:'20% chance per attack to trigger a free spell.',cost:3200,rarity:'epic',cat:'combat'},
-  {id:'b13',ico:'💀',name:'Death\'s Bargain',desc:'Once per minute: upon death, revive at 40% HP.',cost:5000,rarity:'legendary',cat:'survival'},
-  {id:'b14',ico:'🌟',name:'Fate\'s Chosen',desc:'ALL stats permanently increased by 22%.',cost:5500,rarity:'legendary',cat:'growth'},
-  {id:'b15',ico:'🔥',name:'Pyre Ascendant',desc:'Every 10th kill triggers a chain explosion: 6× ATK.',cost:8000,rarity:'legendary',cat:'combat'},
-  {id:'b16',ico:'🕯',name:'Soul Lantern',desc:'Enemies drop +50% XP when zone is 4 or above.',cost:1400,rarity:'rare',cat:'growth'},
-  {id:'b17',ico:'⚔',name:'War Covenant',desc:'Kills in quick succession grant stacking +3% ATK (max 30%, resets after 5s without kill).',cost:2000,rarity:'epic',cat:'combat'},
-  {id:'b18',ico:'🧿',name:'Ward of the Ancients',desc:'+20% block. Blocked damage fuels a once-per-10s reflect strike.',cost:2800,rarity:'epic',cat:'survival'},
+  {id:'b11',ico:'⚗',name:"Alchemist's Greed",desc:'Each prestige grants +12% gold permanently.',cost:2500,rarity:'epic',cat:'wealth'},
+  {id:'b12',ico:'🌌',name:'Void Conduit',desc:'20% chance per attack: free spell.',cost:3200,rarity:'epic',cat:'combat'},
+  {id:'b13',ico:'💀',name:"Death's Bargain",desc:'Once per minute: revive at 40% HP upon death.',cost:5000,rarity:'legendary',cat:'survival'},
+  {id:'b14',ico:'🌟',name:"Fate's Chosen",desc:'ALL stats permanently increased by 22%.',cost:5500,rarity:'legendary',cat:'growth'},
+  {id:'b15',ico:'🔥',name:'Pyre Ascendant',desc:'Every 10th kill: chain explosion 6× ATK.',cost:8000,rarity:'legendary',cat:'combat'},
+  {id:'b16',ico:'🕯',name:'Soul Lantern',desc:'Enemies drop +50% XP in zones 4+.',cost:1400,rarity:'rare',cat:'growth'},
+  {id:'b17',ico:'⚔',name:'War Covenant',desc:'Kill streaks stack +3% ATK (max 30%, resets after 5s).',cost:2000,rarity:'epic',cat:'combat'},
+  {id:'b18',ico:'🧿',name:'Ward of the Ancients',desc:'+20% block. Blocked damage fuels a reflect strike.',cost:2800,rarity:'epic',cat:'survival'},
 ];
 
-/* ===========================================
+/* ===============================================
    GAME STATE
-=========================================== */
+=============================================== */
 const SAVE='ashen_v7';
 let G=null;
-function mkState(){return{
-  cls:'warrior',selCls:null,lv:1,xp:0,xpNext:100,
-  hp:160,maxHp:160,mana:30,maxMana:30,
-  gold:0,gtotal:0,kills:0,deaths:0,
-  zone:1,zoneKills:0,zoneTarget:10,
-  sp:0,prestige:0,pbonus:1.0,
-  sk:{},quests:QUESTS.map(q=>({...q})),
-  boons:{},boonCount:0,
-  idle:false,lastSave:Date.now(),
-  sktotal:0,
-  chapters:STORY_CHAPTERS.map(c=>({...c,objs:c.objs.map(o=>({...o}))})),
-  chainKills:0,chainTimer:0,divineReady:true,deathBargain:true,deathBargainTimer:0,
-};}
+function mkState(){return{cls:'warrior',selCls:null,lv:1,xp:0,xpNext:100,hp:160,maxHp:160,mana:30,maxMana:30,gold:0,gtotal:0,kills:0,deaths:0,zone:1,zoneKills:0,zoneTarget:10,sp:0,prestige:0,pbonus:1.0,sk:{},quests:QUESTS.map(q=>({...q})),boons:{},boonCount:0,idle:false,lastSave:Date.now(),sktotal:0,chapters:STORY_CHAPTERS.map(c=>({...c,objs:c.objs.map(o=>({...o}))})),chainKills:0,divineReady:true,deathBargain:true};}
 function saveG(){try{localStorage.setItem(SAVE,JSON.stringify({...G,idle:false,lastSave:Date.now()}));}catch(e){}}
 function loadG(){
   try{
@@ -676,79 +999,46 @@ function loadG(){
     }
   }catch(e){}G=mkState();return false;
 }
-function clearSavePrompt(){
-  openModal('New Game','Are you sure you want to start over? All progress will be lost.','This cannot be undone.',()=>{localStorage.removeItem(SAVE);G=mkState();buildClassCards();showScr('s1');closeModal();},true);
-}
+function clearSavePrompt(){openModal('New Game','Are you sure you want to start over? All progress will be lost.','This cannot be undone.',()=>{localStorage.removeItem(SAVE);G=mkState();buildClassCards();showScr('s1');closeModal();},true);}
 
-/* ===========================================
+/* ===============================================
    COMPUTED STATS
-=========================================== */
+=============================================== */
 function getStats(){
   const c=CLASSES[G.cls];
   let atk=c.baseAtk,def=c.baseDef,spd=c.baseSpd,crit=c.baseCrit;
   let life=0,spell=c.baseSpell||0,maxHp=c.baseHp,maxMana=c.baseMana,dodge=0,block=0;
   const lv=G.lv,sk=G.sk;
   atk+=(lv-1)*2.2;def+=(lv-1)*1.1;maxHp+=(lv-1)*13;
-  if(sk.heavy) atk+=sk.heavy*4;
-  if(sk.cleave) atk+=sk.cleave*2;
-  if(sk.ironskin) def+=sk.ironskin*3;
-  if(sk.vigor) maxHp+=sk.vigor*22;
-  if(sk.arcane) spell+=sk.arcane*6;
-  if(sk.smite) spell+=sk.smite*5;
-  if(sk.manawell) maxMana+=sk.manawell*22;
-  if(sk.swift) spd+=sk.swift*0.12;
-  if(sk.dodge) dodge+=sk.dodge*8;
-  if(sk.execute) crit+=sk.execute*6;
-  if(sk.drain) life+=sk.drain*3;
-  if(sk.consecrate) life+=sk.consecrate*5;
-  if(sk.fortress) block+=18;
-  if(sk.blessed){def+=sk.blessed*4;spd+=sk.blessed*0.05;}
-  if(sk.soulburn) spell=Math.round(spell*1.35);
+  if(sk.heavy)atk+=sk.heavy*4;if(sk.cleave)atk+=sk.cleave*2;if(sk.ironskin)def+=sk.ironskin*3;
+  if(sk.vigor)maxHp+=sk.vigor*22;if(sk.arcane)spell+=sk.arcane*6;if(sk.smite)spell+=sk.smite*5;
+  if(sk.manawell)maxMana+=sk.manawell*22;if(sk.swift)spd+=sk.swift*0.12;if(sk.dodge)dodge+=sk.dodge*8;
+  if(sk.execute)crit+=sk.execute*6;if(sk.drain)life+=sk.drain*3;if(sk.consecrate)life+=sk.consecrate*5;
+  if(sk.fortress)block+=18;if(sk.blessed){def+=sk.blessed*4;spd+=sk.blessed*0.05;}
+  if(sk.soulburn)spell=Math.round(spell*1.35);
   if(sk.shadowform){atk*=1.18;def*=1.18;maxHp=Math.round(maxHp*1.18);}
-  if(G.boons.b1) atk*=1.1;
-  if(G.boons.b5) spd+=0.3;
-  if(G.boons.b6) spell*=1.28;
-  if(G.boons.b7) life+=3;
-  if(G.boons.b9) atk*=1.35;
-  if(G.boons.b10){const zb=G.zone*6;atk+=zb;def+=zb;maxHp+=zb*3;}
-  if(G.boons.b14){atk*=1.22;def*=1.22;maxHp=Math.round(maxHp*1.22);}
-  if(G.boons.b18) block+=20;
-  if(G.boons.b17&&G.chainKills>0){atk*=1+Math.min(G.chainKills,10)*0.03;}
+  if(G.boons.b1)atk*=1.1;if(G.boons.b5)spd+=0.3;if(G.boons.b6)spell*=1.28;if(G.boons.b7)life+=3;
+  if(G.boons.b9)atk*=1.35;if(G.boons.b10){const zb=G.zone*6;atk+=zb;def+=zb;maxHp+=zb*3;}
+  if(G.boons.b14){atk*=1.22;def*=1.22;maxHp=Math.round(maxHp*1.22);}if(G.boons.b18)block+=20;
+  if(G.boons.b17&&G.chainKills>0)atk*=1+Math.min(G.chainKills,10)*0.03;
   atk*=G.pbonus;def*=G.pbonus;maxHp=Math.round(maxHp*G.pbonus);
-  if(G.boons.radiance){/* handled via xp/gold multiplier */}
-  return{
-    atk:Math.round(atk*10)/10,def:Math.round(def*10)/10,
-    spd:Math.round(Math.max(.5,spd)*100)/100,
-    crit:Math.round(crit),life:Math.round(life),
-    spell:Math.round(spell),maxHp:Math.round(maxHp),
-    maxMana:Math.round(maxMana),dodge:Math.round(dodge),block:Math.round(block),
-  };
+  return{atk:Math.round(atk*10)/10,def:Math.round(def*10)/10,spd:Math.round(Math.max(.5,spd)*100)/100,crit:Math.round(crit),life:Math.round(life),spell:Math.round(spell),maxHp:Math.round(maxHp),maxMana:Math.round(maxMana),dodge:Math.round(dodge),block:Math.round(block)};
 }
 function xpFor(lv){return Math.floor(100*Math.pow(1.28,lv-1));}
 function atkInterval(){return Math.max(200,Math.round(1000/getStats().spd));}
 function allSkList(){return Object.values(SKTREES).flatMap(t=>t.tiers.flat());}
 
-/* ===========================================
+/* ===============================================
    CANVAS
-=========================================== */
+=============================================== */
 let CV=null,CTX=null,raf=null;
 let PA={x:0,y:0,bob:0,aflash:0,hflash:0};
 let EA={x:0,y:0,bob:0,hflash:0,dead:false,deathT:0};
 let bgScroll=0,particles=[];
-
-function initCanvas(){
-  CV=document.getElementById('arena-cv');CTX=CV.getContext('2d');
-  resizeCv();window.addEventListener('resize',resizeCv);
-  cancelAnimationFrame(raf);loop();
-}
-function resizeCv(){
-  const w=document.getElementById('arena-wrap');
-  CV.width=w.clientWidth;CV.height=w.clientHeight;
-  PA.x=CV.width*.18;PA.y=CV.height*.44;
-  EA.x=CV.width*.68;EA.y=CV.height*.40;
-}
+function initCanvas(){CV=document.getElementById('arena-cv');CTX=CV.getContext('2d');resizeCv();window.addEventListener('resize',resizeCv);cancelAnimationFrame(raf);loop();}
+function resizeCv(){const w=document.getElementById('arena-wrap');CV.width=w.clientWidth;CV.height=w.clientHeight;PA.x=CV.width*.18;PA.y=CV.height*.44;EA.x=CV.width*.68;EA.y=CV.height*.40;}
 function loop(){
-  PA.bob+=.04;EA.bob+=.034;bgScroll=(bgScroll+.22)%CV.width;
+  PA.bob+=.04;EA.bob+=.034;bgScroll=(bgScroll+.22)%Math.max(CV.width,1);
   if(PA.aflash>.01)PA.aflash-=.08;else PA.aflash=0;
   if(PA.hflash>.01)PA.hflash-=.08;else PA.hflash=0;
   if(EA.hflash>.01)EA.hflash-=.08;else EA.hflash=0;
@@ -761,24 +1051,20 @@ function drawArena(){
   const ctx=CTX,W=CV.width,H=CV.height;
   const zi=Math.min((G?G.zone:1)-1,ZONES.length-1);
   const z=ZONES[zi];
-  const sky=ctx.createLinearGradient(0,0,0,H*.64);
-  sky.addColorStop(0,z.sky[0]);sky.addColorStop(1,z.sky[1]);
+  const sky=ctx.createLinearGradient(0,0,0,H*.64);sky.addColorStop(0,z.sky[0]);sky.addColorStop(1,z.sky[1]);
   ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
   if(zi>0){for(let i=0;i<20;i++){const sx=((i*117+bgScroll*.06)%W),sy=4+(i*41)%(H*.4);ctx.globalAlpha=.35+.25*Math.sin(Date.now()*.001+i);ctx.fillStyle='#ffffe0';ctx.fillRect(sx,sy,i%6===0?2:1,i%6===0?2:1);}ctx.globalAlpha=1;}
   ctx.fillStyle=z.hill;ctx.beginPath();ctx.moveTo(0,H*.55);
-  for(let x=0;x<=W;x+=5){ctx.lineTo(x,H*.55+Math.sin(x*.018+bgScroll*.0008)*13+Math.sin(x*.038)*6);}
+  for(let x=0;x<=W;x+=5)ctx.lineTo(x,H*.55+Math.sin(x*.018+bgScroll*.0008)*13+Math.sin(x*.038)*6);
   ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fill();
-  const gnd=ctx.createLinearGradient(0,H*.62,0,H);
-  gnd.addColorStop(0,z.ground);gnd.addColorStop(1,'#050302');
+  const gnd=ctx.createLinearGradient(0,H*.62,0,H);gnd.addColorStop(0,z.ground);gnd.addColorStop(1,'#050302');
   ctx.fillStyle=gnd;ctx.fillRect(0,H*.62,W,H*.38);
-  ctx.font='bold 8px Cinzel,serif';ctx.textAlign='right';
+  ctx.font=`bold ${Math.max(7,Math.round(W*.018))}px Cinzel,serif`;ctx.textAlign='right';
   ctx.fillStyle='rgba(240,192,48,.22)';ctx.fillText(z.name,W-6,13);ctx.textAlign='left';
-  particles.forEach(p=>{ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(p.x,p.y,p.size,p.size);});
-  ctx.globalAlpha=1;
+  particles.forEach(p=>{ctx.globalAlpha=Math.max(0,p.life);ctx.fillStyle=p.color;ctx.fillRect(p.x,p.y,p.size,p.size);});ctx.globalAlpha=1;
   if(G&&curEnemy){
     const es=ENEMIES[curEnemy.key];if(es){
-      const sc=Math.min(2.4,1.1+G.zone*.13);
-      const ey=EA.y+Math.sin(EA.bob)*2.5;
+      const sc=Math.min(2.4,1.1+G.zone*.13);const ey=EA.y+Math.sin(EA.bob)*2.5;
       ctx.save();
       if(EA.dead){ctx.globalAlpha=Math.max(0,1-EA.deathT);ctx.translate(EA.x,ey+EA.deathT*22);}
       else ctx.translate(EA.x,ey);
@@ -787,17 +1073,15 @@ function drawArena(){
       if(!EA.dead){
         const ep=eHP/eMaxHP;const bw=56*sc,bx=EA.x-bw/2+PX*sc,by=ey-8;
         ctx.fillStyle='rgba(0,0,0,.6)';ctx.fillRect(bx,by,bw,5);
-        ctx.fillStyle=ep>.5?'#38b038':ep>.25?'#c09018':'#d82828';
-        ctx.fillRect(bx,by,bw*Math.max(0,ep),5);
-        ctx.font='bold 7px Cinzel,serif';ctx.textAlign='center';
+        ctx.fillStyle=ep>.5?'#38b038':ep>.25?'#c09018':'#d82828';ctx.fillRect(bx,by,bw*Math.max(0,ep),5);
+        ctx.font=`bold ${Math.max(6,Math.round(W*.016))}px Cinzel,serif`;ctx.textAlign='center';
         ctx.fillStyle='rgba(232,210,120,.8)';ctx.fillText(curEnemy.name,EA.x+PX*1.5*sc,by-3);ctx.textAlign='left';
       }
     }
   }
   if(G){
     const py=PA.y+Math.sin(PA.bob)*2.5;
-    const pal=PAL[G.cls]||PAL.warrior;
-    const spr=(SPRITES[G.cls]||SPRITES.warrior)(pal);
+    const pal=PAL[G.cls]||PAL.warrior;const spr=(SPRITES[G.cls]||SPRITES.warrior)(pal);
     ctx.save();
     if(PA.hflash>.3)ctx.filter='brightness(2.8) sepia(1) hue-rotate(300deg)';
     if(PA.aflash>.55)ctx.filter='brightness(2.5)';
@@ -818,39 +1102,21 @@ function drawArena(){
 }
 function spawnParticles(x,y,col,n=8){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,s=1.5+Math.random()*3;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-1.8,color:col,size:PX,life:1});}}
 
-/* ===========================================
+/* ===============================================
    COMBAT
-=========================================== */
+=============================================== */
 let curEnemy=null,eHP=0,eMaxHP=0,atkTimer=null,atkCount=0;
-
-function spawnEnemy(){
-  const zi=Math.min(G.zone-1,ZONES.length-1);
-  const pool=ZONES[zi].enemies;
-  const key=pool[Math.floor(Math.random()*pool.length)];
-  const base=Math.round(28*Math.pow(1.6,G.zone-1));
-  eMaxHP=Math.round(base*(G.boons.b9?1.4:1));eHP=eMaxHP;
-  const nl=ENAMES[key];
-  curEnemy={key,name:nl[Math.floor(Math.random()*nl.length)]};
-  EA.dead=false;EA.deathT=0;updateZoneBar();
-}
+function spawnEnemy(){const zi=Math.min(G.zone-1,ZONES.length-1);const pool=ZONES[zi].enemies;const key=pool[Math.floor(Math.random()*pool.length)];const base=Math.round(28*Math.pow(1.6,G.zone-1));eMaxHP=Math.round(base*(G.boons.b9?1.4:1));eHP=eMaxHP;const nl=ENAMES[key];curEnemy={key,name:nl[Math.floor(Math.random()*nl.length)]};EA.dead=false;EA.deathT=0;updateZoneBar();}
 function doAttack(){
-  if(!G||G.hp<=0)return;
-  initAudio();
+  if(!G||G.hp<=0)return;initAudio();
   const st=getStats();atkCount++;PA.aflash=1;
   let dmg=st.atk*(0.82+Math.random()*.36);
   const isCrit=Math.random()*100<st.crit;
   if(isCrit)dmg*=2;
   if(G.sk.berserk&&G.hp/st.maxHp<.3)dmg*=1.7;
   if(G.sk.overpower&&atkCount%5===0){dmg*=3;showDmg('OVERPOWER!',true,'special');}
-  if(st.spell>0){
-    const sp=Math.round(st.spell*(.5+Math.random()*.5));
-    if(G.boons.b12&&Math.random()<.2) dmg+=sp*1.5;
-    else dmg+=sp;
-  }
-  if(G.boons.b15){
-    G._chainKillCt=(G._chainKillCt||0)+1;
-    if(G._chainKillCt%10===0&&eHP-Math.round(dmg)<=0){dmg*=6;showDmg('PYRE!',true,'special');}
-  }
+  if(st.spell>0){const sp=Math.round(st.spell*(.5+Math.random()*.5));dmg+=G.boons.b12&&Math.random()<.2?sp*1.5:sp;}
+  if(G.boons.b15){G._cc=(G._cc||0)+1;if(G._cc%10===0&&eHP-Math.round(dmg)<=0){dmg*=6;showDmg('PYRE!',true,'special');}}
   dmg=Math.round(dmg);
   SFX.hit();if(isCrit)SFX.crit();
   spawnParticles(EA.x,EA.y,isCrit?'#f0c030':st.spell>0?'#a050d0':'#c02010',isCrit?16:6);
@@ -858,7 +1124,6 @@ function doAttack(){
   if(st.life>0){const h=Math.round(dmg*st.life/100);if(h>0)G.hp=Math.min(st.maxHp,G.hp+h);}
   if(isCrit&&G.sk.flurry){setTimeout(()=>quickHit(),88);setTimeout(()=>quickHit(),176);}
   if(isCrit&&G.boons.b8){setTimeout(()=>quickHit(),80);setTimeout(()=>quickHit(),160);}
-  // voidbolt: instant kill below 20% HP
   if(G.sk.voidbolt&&Math.random()<.05&&eHP/eMaxHP<.2)eHP=0;
   if(eHP<=0){killEnemy();return;}
   const eDmgRaw=Math.max(1,(4+G.zone*2.5)*Math.pow(1.18,G.zone-1));
@@ -866,130 +1131,75 @@ function doAttack(){
   let eDmg=Math.max(0,Math.round(eDmgRaw-st.def-blocked));
   if(Math.random()*100<st.dodge){eDmg=0;showDmg(0,false,'dodge');}
   if(G.sk.divine&&G.divineReady&&G.hp-eDmg<=0){eDmg=0;G.divineReady=false;showDmg('DIVINE!',false,'dodge');}
-  if(eDmg>0){
-    G.hp=Math.max(0,G.hp-eDmg);PA.hflash=1;SFX.hurt();showDmg(eDmg,false,'enemy');
-    spawnParticles(PA.x+PX*4,PA.y+PX*5,'#c02020',4);
-  }
+  if(eDmg>0){G.hp=Math.max(0,G.hp-eDmg);PA.hflash=1;SFX.hurt();showDmg(eDmg,false,'enemy');spawnParticles(PA.x+PX*4,PA.y+PX*5,'#c02020',4);}
   if(G.hp<=0)die();else updateHUD();
 }
-function quickHit(){
-  if(!G||!curEnemy)return;
-  const st=getStats();let dmg=Math.round(st.atk*.5);
-  eHP=Math.max(0,eHP-dmg);PA.aflash=.62;
-  if(eHP<=0){killEnemy();return;}
-  showDmg(dmg,false,'hit');SFX.hit();updateHUD();
-}
+function quickHit(){if(!G||!curEnemy)return;const st=getStats();let dmg=Math.round(st.atk*.5);eHP=Math.max(0,eHP-dmg);PA.aflash=.62;if(eHP<=0){killEnemy();return;}showDmg(dmg,false,'hit');SFX.hit();updateHUD();}
 function killEnemy(){
-  G.kills++;G.zoneKills++;EA.dead=true;EA.deathT=0;
-  SFX.kill();spawnParticles(EA.x,EA.y,'#d4a020',20);
-  // Chain kill streak
-  G.chainKills=(G.chainKills||0)+1;
-  if(G.boons.b17){clearTimeout(G._chainTimer);G._chainTimer=setTimeout(()=>{G.chainKills=0;},5000);}
+  G.kills++;G.zoneKills++;EA.dead=true;EA.deathT=0;SFX.kill();spawnParticles(EA.x,EA.y,'#d4a020',20);
+  G.chainKills=(G.chainKills||0)+1;if(G.boons.b17){clearTimeout(G._ct);G._ct=setTimeout(()=>{G.chainKills=0;},5000);}
   let gold=Math.round((3+G.zone*3)*Math.pow(1.4,G.zone-1)*(0.8+Math.random()*.4));
-  if(G.boons.b2)gold=Math.round(gold*1.15);
-  if(G.boons.b9)gold=Math.round(gold*1.25);
-  if(G.boons.b11)gold=Math.round(gold*(1+G.prestige*0.12));
+  if(G.boons.b2)gold=Math.round(gold*1.15);if(G.boons.b9)gold=Math.round(gold*1.25);if(G.boons.b11)gold=Math.round(gold*(1+G.prestige*0.12));
   G.gold+=gold;G.gtotal+=gold;SFX.gold();
   let xpg=Math.round(9*Math.pow(1.45,G.zone-1));
-  if(G.boons.b3)xpg=Math.round(xpg*1.25);
-  if(G.boons.b16&&G.zone>=4)xpg=Math.round(xpg*1.5);
+  if(G.boons.b3)xpg=Math.round(xpg*1.25);if(G.boons.b16&&G.zone>=4)xpg=Math.round(xpg*1.5);
   if(G.sk.radiance){gold=Math.round(gold*1.2);xpg=Math.round(xpg*1.2);}
   G.xp+=xpg;
-  const st=getStats();
-  if(G.boons.b4)G.hp=st.maxHp;
-  if(G.sk.regen)G.hp=Math.min(st.maxHp,G.hp+Math.round(st.maxHp*G.sk.regen*.02));
-  while(G.xp>=G.xpNext){
-    G.xp-=G.xpNext;G.lv++;G.xpNext=xpFor(G.lv);G.sp++;
-    const nst=getStats();G.hp=nst.maxHp;G.divineReady=true;
-    SFX.lvlup();showLvlUp();
-  }
+  const st=getStats();if(G.boons.b4)G.hp=st.maxHp;if(G.sk.regen)G.hp=Math.min(st.maxHp,G.hp+Math.round(st.maxHp*G.sk.regen*.02));
+  while(G.xp>=G.xpNext){G.xp-=G.xpNext;G.lv++;G.xpNext=xpFor(G.lv);G.sp++;const nst=getStats();G.hp=nst.maxHp;G.divineReady=true;SFX.lvlup();showLvlUp();}
   if(G.zoneKills>=G.zoneTarget){
     G.zone=Math.min(G.zone+1,8);G.zoneKills=0;G.zoneTarget=Math.round(G.zoneTarget*1.22);
     const zn=ZONES[Math.min(G.zone-1,ZONES.length-1)].name;
-    toast(`🗺 Entered ${zn}!`);
-    document.getElementById('zone-name-lbl').textContent=zn;
-    document.getElementById('hud-zone-val').textContent=G.zone;
-    setStoryTicker(ZONES[Math.min(G.zone-1,ZONES.length-1)].story,true);
-    checkChapters();
+    toast('🗺 Entered '+zn+'!');
+    document.getElementById('zone-name-lbl').textContent=zn;document.getElementById('hud-zone-val').textContent=G.zone;
+    setStoryTicker(ZONES[Math.min(G.zone-1,ZONES.length-1)].story,true);checkChapters();
   }
-  checkQuests();checkChapters();
-  setTimeout(spawnEnemy,480);updateHUD();
+  checkQuests();checkChapters();setTimeout(spawnEnemy,480);updateHUD();
   if(curTab==='quests'||curTab==='story')renderTab();
 }
 function die(){
   G.deaths++;SFX.die();spawnParticles(PA.x+PX*4,PA.y+PX*5,'#c02020',22);
-  if(G.boons.b13&&G.deathBargain){
-    const st=getStats();G.hp=Math.round(st.maxHp*.4);G.deathBargain=false;
-    showDmg('REBORN!',true,'special');
-    setTimeout(()=>{G.deathBargain=true;},60000);
-    spawnEnemy();updateHUD();return;
-  }
-  if(G.sk.secondwind&&G._secondwindReady!==false){
-    const st=getStats();G.hp=Math.round(st.maxHp*.4);G._secondwindReady=false;
-    showDmg('2ND WIND!',true,'dodge');spawnEnemy();updateHUD();return;
-  }
-  const st=getStats();G.hp=Math.round(st.maxHp*.5);
-  spawnEnemy();updateHUD();
+  if(G.boons.b13&&G.deathBargain){const st=getStats();G.hp=Math.round(st.maxHp*.4);G.deathBargain=false;showDmg('REBORN!',true,'special');setTimeout(()=>{G.deathBargain=true;},60000);spawnEnemy();updateHUD();return;}
+  if(G.sk.secondwind&&G._swr!==false){const st=getStats();G.hp=Math.round(st.maxHp*.4);G._swr=false;showDmg('2ND WIND!',true,'dodge');spawnEnemy();updateHUD();return;}
+  const st=getStats();G.hp=Math.round(st.maxHp*.5);spawnEnemy();updateHUD();
 }
-function toggleAuto(){
-  initAudio();G.idle=!G.idle;
-  const b=document.getElementById('btn-auto');
-  b.textContent=G.idle?'AUTO ON':'AUTO OFF';b.className=G.idle?'on':'';b.id='btn-auto';
-  if(G.idle)startIdle();else stopIdle();
-}
+function toggleAuto(){initAudio();G.idle=!G.idle;const b=document.getElementById('btn-auto');b.textContent=G.idle?'AUTO ON':'AUTO OFF';b.className=G.idle?'on':'';b.id='btn-auto';if(G.idle)startIdle();else stopIdle();}
 function startIdle(){stopIdle();atkTimer=setInterval(doAttack,atkInterval());}
 function stopIdle(){if(atkTimer){clearInterval(atkTimer);atkTimer=null;}}
 function doAttackTouch(e){e.preventDefault();doAttack();}
 
-/* ===========================================
+/* ===============================================
    HUD
-=========================================== */
-function fmt(n){return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':n;}
+=============================================== */
+function fmt(n){return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':String(n);}
 function updateHUD(){
-  if(!G)return;
-  const st=getStats();
+  if(!G)return;const st=getStats();
   const hp=Math.max(0,Math.min(100,G.hp/st.maxHp*100));
   const mp=Math.max(0,Math.min(100,G.mana/st.maxMana*100));
   const xp=Math.max(0,Math.min(100,G.xp/G.xpNext*100));
-  document.getElementById('b-hp').style.width=hp+'%';
-  document.getElementById('b-mp').style.width=mp+'%';
-  document.getElementById('b-xp').style.width=xp+'%';
-  document.getElementById('v-hp').textContent=Math.round(G.hp)+'/'+st.maxHp;
-  document.getElementById('v-mp').textContent=Math.round(G.mana)+'/'+st.maxMana;
-  document.getElementById('v-xp').textContent=G.xp+'/'+G.xpNext;
-  document.getElementById('hud-gold-val').textContent=fmt(G.gold);
-  document.getElementById('hud-lv-val').textContent=G.lv;
-  document.getElementById('hud-cls-name').textContent=CLASSES[G.cls].name.split(' ')[0];
-  document.getElementById('hud-zone-val').textContent=G.zone;
-  updateZoneBar();
-  const sp=document.getElementById('sp-badge');if(sp)sp.textContent='SP: '+G.sp;
+  document.getElementById('b-hp').style.width=hp+'%';document.getElementById('b-mp').style.width=mp+'%';document.getElementById('b-xp').style.width=xp+'%';
+  document.getElementById('v-hp').textContent=Math.round(G.hp)+'/'+st.maxHp;document.getElementById('v-mp').textContent=Math.round(G.mana)+'/'+st.maxMana;document.getElementById('v-xp').textContent=G.xp+'/'+G.xpNext;
+  document.getElementById('hud-gold-val').textContent=fmt(G.gold);document.getElementById('hud-lv-val').textContent=G.lv;document.getElementById('hud-cls-name').textContent=CLASSES[G.cls].name.split(' ')[0];document.getElementById('hud-zone-val').textContent=G.zone;
+  updateZoneBar();const sp=document.getElementById('sp-badge');if(sp)sp.textContent='SP: '+G.sp;
 }
 function updateZoneBar(){const pct=G?Math.min(100,(G.zoneKills/G.zoneTarget)*100):0;const el=document.getElementById('zone-prog-fill');if(el)el.style.width=pct+'%';}
 
-/* ===========================================
+/* ===============================================
    STORY TICKER
-=========================================== */
-let _tickerTimer=null;
-const TICKER_LINES=['The realm holds its breath...','Old bones stir in the dark.','Something watches from the shadows.','Power grows in the ruins of the old kingdom.','Each kill brings you closer to the truth.','The Ashen King\'s influence spreads like corruption.','Whispers speak of a crown that grants dominion over death.','Even the earth here tastes of ancient sorrow.'];
-function setStoryTicker(msg,highlight=false){
-  const el=document.getElementById('story-txt');
-  if(el)el.textContent=msg;
-  if(highlight){const b=document.getElementById('story-ticker');if(b){b.style.background='linear-gradient(90deg,#140c04,#1c1208,#140c04)';b.style.borderBottomColor='#5c4a1e';setTimeout(()=>{b.style.background='';b.style.borderBottomColor='';},4000);}}
+=============================================== */
+const TLINES=['The realm holds its breath...','Old bones stir in the dark.','Something watches from the shadows.','Power grows in the ruins of the old kingdom.','Each kill brings you closer to the truth.',"The Ashen King's influence spreads like corruption.",'Whispers speak of a crown that grants dominion over death.','Even the earth here tastes of ancient sorrow.'];
+function setStoryTicker(msg,hl=false){
+  const el=document.getElementById('story-txt');if(el)el.textContent=msg;
+  if(hl){const b=document.getElementById('story-ticker');if(b){b.style.background='linear-gradient(90deg,#140c04,#1c1208,#140c04)';b.style.borderBottomColor='#5c4a1e';setTimeout(()=>{b.style.background='';b.style.borderBottomColor='';},4000);}}
 }
-function startTickerCycle(){
-  let i=0;
-  function next(){setStoryTicker(TICKER_LINES[i%TICKER_LINES.length]);i++;_tickerTimer=setTimeout(next,8000);}
-  next();
-}
+let _ti=0;function startTicker(){(function n(){setStoryTicker(TLINES[_ti%TLINES.length]);_ti++;setTimeout(n,8000);})();}
 
-/* ===========================================
+/* ===============================================
    TABS
-=========================================== */
+=============================================== */
 let curTab='story',skSub='offense',qFilter='all',boonCat='all';
 function openTab(t){
-  curTab=t;
-  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
-  // clear dot on tab
+  curTab=t;document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
   const tb=document.getElementById('tb-'+t);if(tb){tb.classList.add('on');const dot=tb.querySelector('.tab-dot');if(dot)dot.remove();}
   renderTab();
 }
@@ -1001,181 +1211,127 @@ function renderTab(){
   else if(curTab==='boons')el.innerHTML=buildBoons();
   else if(curTab==='stats')el.innerHTML=buildStats();
 }
-function notifyTab(t){
-  if(curTab===t)return;
-  const tb=document.getElementById('tb-'+t);if(!tb||tb.querySelector('.tab-dot'))return;
-  const dot=document.createElement('div');dot.className='tab-dot';tb.appendChild(dot);
-}
+function notifyTab(t){if(curTab===t)return;const tb=document.getElementById('tb-'+t);if(!tb||tb.querySelector('.tab-dot'))return;const dot=document.createElement('div');dot.className='tab-dot';tb.appendChild(dot);}
 
-/* ===========================================
+/* ===============================================
    STORY TAB
-=========================================== */
-function chapObjVal(o){
-  if(o.t==='kills')return G.kills;if(o.t==='level')return G.lv;
-  if(o.t==='zone')return G.zone;if(o.t==='gtotal')return G.gtotal;
-  if(o.t==='sktotal')return G.sktotal||0;if(o.t==='prestige')return G.prestige;
-  if(o.t==='boons')return G.boonCount||0;return 0;
-}
+=============================================== */
+function chapV(o){if(o.t==='kills')return G.kills;if(o.t==='level')return G.lv;if(o.t==='zone')return G.zone;if(o.t==='gtotal')return G.gtotal;if(o.t==='sktotal')return G.sktotal||0;if(o.t==='prestige')return G.prestige;if(o.t==='boons')return G.boonCount||0;return 0;}
 function buildStory(){
   let h='<div class="sec"><div class="sec-hdr">THE ASHEN CHRONICLES</div><div class="story-list">';
   G.chapters.forEach((ch,i)=>{
-    const prev=i===0||G.chapters[i-1].done;
-    const locked=!prev&&!ch.done;
-    const active=!ch.done&&prev;
-    const allDone=ch.objs.every(o=>chapObjVal(o)>=o.tar);
+    const prev=i===0||G.chapters[i-1].done,locked=!prev&&!ch.done,active=!ch.done&&prev;
     const cls='chapter-card'+(ch.done?' complete':locked?' locked':active?' active':'');
-    const rew=[ch.rew.g>0&&`💰${ch.rew.g}`,ch.rew.sp>0&&`⭐${ch.rew.sp} SP`].filter(Boolean).join(' ');
+    const rew=[ch.rew.g>0&&'💰'+ch.rew.g,ch.rew.sp>0&&'⭐'+ch.rew.sp+' SP'].filter(Boolean).join(' ');
     h+=`<div class="${cls}">
-      <div class="ch-hdr">
-        <span class="ch-num">Ch.${i+1}</span>
-        <span class="ch-ico">${ch.done?'✅':ch.ico}</span>
+      <div class="ch-hdr"><span class="ch-num">Ch.${i+1}</span><span class="ch-ico">${ch.done?'✅':ch.ico}</span>
         <div class="ch-info"><div class="ch-title">${ch.title}</div><div class="ch-zone">Zone ${ch.zone} · ${ZONES[ch.zone-1].name}</div></div>
         ${locked?'<span class="ch-lock">🔒</span>':''}
       </div>
       <div class="ch-body">
         <div class="ch-quote">${ch.quote}</div>
         <div class="ch-desc">${ch.desc}</div>
-        <div class="ch-objs">
-          ${ch.objs.map(o=>{const v=chapObjVal(o);const pct=Math.min(100,(v/o.tar)*100);const done2=v>=o.tar;return`<div class="ch-obj"><span class="ch-obj-ico">${done2?'✅':'⭕'}</span><span class="ch-obj-txt">${o.n}</span><div class="ch-obj-bar"><div class="ch-obj-fill" style="width:${pct}%"></div></div><span class="ch-obj-val">${Math.min(v,o.tar).toLocaleString()}/${o.tar.toLocaleString()}</span></div>`;}).join('')}
-        </div>
+        <div class="ch-objs">${ch.objs.map(o=>{const v=chapV(o);const pct=Math.min(100,(v/o.tar)*100);const d2=v>=o.tar;return`<div class="ch-obj"><span class="ch-obj-ico">${d2?'✅':'⭕'}</span><span class="ch-obj-txt">${o.n}</span><div class="ch-obj-bar"><div class="ch-obj-fill" style="width:${pct}%"></div></div><span class="ch-obj-val">${Math.min(v,o.tar).toLocaleString()}/${o.tar.toLocaleString()}</span></div>`;}).join('')}</div>
       </div>
-      ${ch.done?`<div class="ch-complete">✦ CHAPTER COMPLETE</div>`:`<div class="ch-rew">📦 Reward: ${rew}</div>`}
+      ${ch.done?'<div class="ch-complete">✦ CHAPTER COMPLETE</div>':`<div class="ch-rew">📦 Reward: ${rew}</div>`}
     </div>`;
   });
   return h+'</div></div>';
 }
 function checkChapters(){
   G.chapters.forEach((ch,i)=>{
-    if(ch.done)return;
-    const prev=i===0||G.chapters[i-1].done;if(!prev)return;
-    if(ch.objs.every(o=>chapObjVal(o)>=o.tar)){
-      ch.done=true;
-      G.gold+=ch.rew.g;G.gtotal+=ch.rew.g;G.sp+=ch.rew.sp;
-      SFX.chapter();toast(`📖 Chapter ${i+1}: "${ch.title}" complete! +${ch.rew.sp}SP`);
-      setStoryTicker(`📖 Chapter complete: "${ch.title}"`,true);
-      notifyTab('story');
+    if(ch.done)return;const prev=i===0||G.chapters[i-1].done;if(!prev)return;
+    if(ch.objs.every(o=>chapV(o)>=o.tar)){
+      ch.done=true;G.gold+=ch.rew.g;G.gtotal+=ch.rew.g;G.sp+=ch.rew.sp;
+      SFX.chapter();toast('📖 Ch.'+(i+1)+' "'+ch.title+'" complete! +'+ch.rew.sp+'SP');
+      setStoryTicker('📖 Chapter complete: "'+ch.title+'"',true);notifyTab('story');
       if(i+1<G.chapters.length)G.chapters[i+1].unlocked=true;
       if(curTab==='story')renderTab();
     }
   });
 }
 
-/* ===========================================
-   SKILL TREES
-=========================================== */
+/* ===============================================
+   SKILLS
+=============================================== */
 function buildSkills(){
   const tree=SKTREES[skSub];
   const tabs=Object.entries(SKTREES).map(([k,t])=>`<div class="sk-tree-tab${skSub===k?' on':''}" onclick="setSkSub('${k}')"><span>${t.ico}</span>${t.label}</div>`).join('');
-  let h=`<div class="sec">
-    <div class="sec-hdr">SKILL TREES <span class="sp-badge" id="sp-badge">SP: ${G.sp}</span></div>
-    <div class="sk-tree-tabs">${tabs}</div>
-    <div class="sk-tier-wrap">`;
-
+  let h=`<div class="sec"><div class="sec-hdr">SKILL TREES <span class="sp-badge" id="sp-badge">SP: ${G.sp}</span></div><div class="sk-tree-tabs">${tabs}</div><div class="sk-tier-wrap">`;
   tree.tiers.forEach((tier,ti)=>{
-    if(ti>0){
-      if(tier.length===1)h+=`<div class="sk-connector"><div></div></div>`;
-      else h+=`<div class="sk-connector fork"></div>`;
-    }
-    const rowCls=`sk-row sk-row-${Math.min(tier.length,3)}`;
-    h+=`<div class="${rowCls}">`;
+    if(ti>0){h+=tier.length===1?'<div class="sk-connector"></div>':'<div class="sk-connector fork"></div>';}
+    h+=`<div class="sk-row sk-row-${Math.min(tier.length,3)}">`;
     tier.forEach(sk=>{
-      const cur=G.sk[sk.id]||0;const maxed=cur>=sk.max;
-      const locked=sk.req&&!(G.sk[sk.req]>=1);
-      const cardCls='sk-card'+(sk.cap?' capstone':'')+(maxed?' maxed':locked?' locked':cur>0?' unlocked':'');
+      const cur=G.sk[sk.id]||0,maxed=cur>=sk.max,locked=sk.req&&!(G.sk[sk.req]>=1);
+      const cc='sk-card'+(sk.cap?' capstone':'')+(maxed?' maxed':locked?' locked':cur>0?' unlocked':'');
       const pips=Array.from({length:sk.max},(_,i)=>`<div class="pip${i<cur?' '+(cur===sk.max?'onmax':'on'):''}"></div>`).join('');
-      const reqName=sk.req?allSkList().find(s=>s.id===sk.req)?.name:'';
-      h+=`<div class="${cardCls}" onclick="buySkill('${sk.id}')">
+      const rn=sk.req?allSkList().find(s=>s.id===sk.req)?.name:'';
+      h+=`<div class="${cc}" onclick="buySkill('${sk.id}')">
         ${sk.cap?'<div class="sk-cap-tag">CAPSTONE</div>':''}
-        <div class="sk-ico">${sk.ico}</div>
-        <div class="sk-name">${sk.name}</div>
+        <div class="sk-ico">${sk.ico}</div><div class="sk-name">${sk.name}</div>
         <div class="sk-desc">${sk.desc}</div>
-        ${locked&&reqName?`<div class="sk-req-warn">Req: ${reqName}</div>`:''}
-        <div class="sk-pips">${pips}</div>
-        <div class="sk-rank">${cur}/${sk.max}</div>
+        ${locked&&rn?`<div class="sk-req-warn">Req: ${rn}</div>`:''}
+        <div class="sk-pips">${pips}</div><div class="sk-rank">${cur}/${sk.max}</div>
       </div>`;
     });
-    h+=`</div>`;
+    h+='</div>';
   });
   return h+'</div></div>';
 }
 function setSkSub(s){skSub=s;renderTab();}
 function buySkill(id){
-  initAudio();
-  if(G.sp<=0){toast('No skill points — level up to earn more!');return;}
+  initAudio();if(G.sp<=0){toast('No skill points — level up!');return;}
   const sk=allSkList().find(s=>s.id===id);if(!sk)return;
   const cur=G.sk[id]||0;if(cur>=sk.max){toast('Already maxed!');return;}
   if(sk.req&&!(G.sk[sk.req]>=1)){toast('Unlock prerequisite first!');return;}
   G.sp--;G.sk[id]=(G.sk[id]||0)+1;G.sktotal=(G.sktotal||0)+1;
-  if(G.sk.secondwind)G._secondwindReady=true;
-  if(G.idle)startIdle();SFX.skill();
+  if(G.sk.secondwind)G._swr=true;if(G.idle)startIdle();SFX.skill();
   checkQuests();checkChapters();renderTab();updateHUD();saveG();
 }
 
-/* ===========================================
+/* ===============================================
    QUESTS
-=========================================== */
-const Q_CATS=['all','story','slayer','mastery','wealth','prestige'];
-function qVal(q){
-  if(q.type==='kills')return G.kills;if(q.type==='level')return G.lv;
-  if(q.type==='zone')return G.zone;if(q.type==='gtotal')return G.gtotal;
-  if(q.type==='sktotal')return G.sktotal||0;if(q.type==='prestige')return G.prestige;
-  if(q.type==='boons')return G.boonCount||0;return 0;
-}
+=============================================== */
+const QCATS=['all','story','slayer','mastery','wealth','prestige'];
+function qVal(q){if(q.type==='kills')return G.kills;if(q.type==='level')return G.lv;if(q.type==='zone')return G.zone;if(q.type==='gtotal')return G.gtotal;if(q.type==='sktotal')return G.sktotal||0;if(q.type==='prestige')return G.prestige;if(q.type==='boons')return G.boonCount||0;return 0;}
 function buildQuests(){
-  const cats=`<div class="filter-row">${Q_CATS.map(c=>`<div class="f-btn${qFilter===c?' on':''}" onclick="setQFilter('${c}')">${c[0].toUpperCase()+c.slice(1)}</div>`).join('')}</div>`;
+  const cats=`<div class="filter-row">${QCATS.map(c=>`<div class="f-btn${qFilter===c?' on':''}" onclick="setQFilter('${c}')">${c[0].toUpperCase()+c.slice(1)}</div>`).join('')}</div>`;
   const items=G.quests.filter(q=>qFilter==='all'||q.cat===qFilter);
   let h=`<div class="sec"><div class="sec-hdr">QUEST LOG</div>${cats}<div class="q-list">`;
   items.forEach(q=>{
-    const v=qVal(q);const pct=Math.min(100,(v/q.target)*100);const active=!q.done&&v>0;
-    const rew=[q.rew.g>0&&`💰${q.rew.g}`,q.rew.sp>0&&`⭐${q.rew.sp}SP`].filter(Boolean);
+    const v=qVal(q),pct=Math.min(100,(v/q.target)*100),active=!q.done&&v>0;
+    const rew=[q.rew.g>0&&'💰'+q.rew.g,q.rew.sp>0&&'⭐'+q.rew.sp+'SP'].filter(Boolean);
     h+=`<div class="q-card${q.done?' done':active?' in-progress':''}">
       <div class="q-ico">${q.done?'✅':q.ico}</div>
       <div class="q-body">
-        <div class="q-name">${q.name}</div>
-        <div class="q-cat">${q.cat}</div>
+        <div class="q-name">${q.name}</div><div class="q-cat">${q.cat}</div>
         <div class="q-desc">${q.desc}</div>
-        ${q.done
-          ?'<div class="q-done-lbl">✦ COMPLETE</div>'
-          :`<div class="q-bar-wrap"><div class="q-bar" style="width:${pct}%"></div></div>
-            <div class="q-prog">${Math.min(v,q.target).toLocaleString()} / ${q.target.toLocaleString()}</div>
-            <div class="q-rew">${rew.map(r=>`<span class="q-rew-tag">${r}</span>`).join('')}</div>`
-        }
+        ${q.done?'<div class="q-done-lbl">✦ COMPLETE</div>':`<div class="q-bar-wrap"><div class="q-bar" style="width:${pct}%"></div></div><div class="q-prog">${Math.min(v,q.target).toLocaleString()} / ${q.target.toLocaleString()}</div><div class="q-rew">${rew.map(r=>`<span class="q-rew-tag">${r}</span>`).join('')}</div>`}
       </div>
     </div>`;
   });
   return h+'</div></div>';
 }
 function setQFilter(f){qFilter=f;renderTab();}
-function checkQuests(){
-  G.quests.forEach(q=>{
-    if(q.done)return;
-    if(qVal(q)>=q.target){
-      q.done=true;G.gold+=q.rew.g;G.gtotal+=q.rew.g;G.sp+=q.rew.sp;
-      SFX.quest();toast(`📜 "${q.name}" complete! +${q.rew.sp}SP`);
-      notifyTab('quests');
-    }
-  });
-}
+function checkQuests(){G.quests.forEach(q=>{if(q.done)return;if(qVal(q)>=q.target){q.done=true;G.gold+=q.rew.g;G.gtotal+=q.rew.g;G.sp+=q.rew.sp;SFX.quest();toast('📜 "'+q.name+'" complete! +'+q.rew.sp+'SP');notifyTab('quests');}});}
 
-/* ===========================================
+/* ===============================================
    BOONS
-=========================================== */
-const BOON_CATS=['all','combat','survival','wealth','growth'];
+=============================================== */
+const BCATS=['all','combat','survival','wealth','growth'];
 function buildBoons(){
-  const cats=`<div class="filter-row">${BOON_CATS.map(c=>`<div class="f-btn${boonCat===c?' on':''}" onclick="setBoonCat('${c}')">${c[0].toUpperCase()+c.slice(1)}</div>`).join('')}</div>`;
+  const cats=`<div class="filter-row">${BCATS.map(c=>`<div class="f-btn${boonCat===c?' on':''}" onclick="setBoonCat('${c}')">${c[0].toUpperCase()+c.slice(1)}</div>`).join('')}</div>`;
   const sorted=[...BOONS].sort((a,b)=>({common:0,rare:1,epic:2,legendary:3}[a.rarity])-({common:0,rare:1,epic:2,legendary:3}[b.rarity]));
   const filtered=sorted.filter(b=>boonCat==='all'||b.cat===boonCat);
   let h=`<div class="sec"><div class="sec-hdr">PERMANENT BOONS</div>${cats}<div class="boon-list">`;
   filtered.forEach(b=>{
-    const owned=!!G.boons[b.id];const cant=!owned&&G.gold<b.cost;
-    const elite=b.rarity==='epic'||b.rarity==='legendary';
-    const cls='boon-card'+(owned?' owned':cant?' cant':' can')+(elite?' elite':'');
+    const owned=!!G.boons[b.id],cant=!owned&&G.gold<b.cost;
+    const cls='boon-card'+(owned?' owned':cant?' cant':' can')+((b.rarity==='epic'||b.rarity==='legendary')?' elite':'');
     h+=`<div class="${cls}" onpointerdown="${owned||cant?'':  `buyBoon('${b.id}')`}">
       <div class="boon-rar ${b.rarity}">${b.rarity}</div>
       <div class="boon-ico">${b.ico}</div>
       <div class="boon-body">
-        <div class="boon-name">${b.name}</div>
-        <div class="boon-desc">${b.desc}</div>
+        <div class="boon-name">${b.name}</div><div class="boon-desc">${b.desc}</div>
         ${owned?'<div class="boon-own-lbl">✓ Acquired</div>':`<div class="boon-cost">💰 ${fmt(b.cost)}</div>`}
       </div>
     </div>`;
@@ -1184,103 +1340,85 @@ function buildBoons(){
 }
 function setBoonCat(c){boonCat=c;renderTab();}
 function buyBoon(id){
-  initAudio();
-  const b=BOONS.find(x=>x.id===id);if(!b||G.boons[id])return;
+  initAudio();const b=BOONS.find(x=>x.id===id);if(!b||G.boons[id])return;
   if(G.gold<b.cost){toast('Not enough gold!');return;}
-  G.gold-=b.cost;G.boons[id]=true;G.boonCount=(G.boonCount||0)+1;
-  SFX.boon();if(G.idle)startIdle();
-  toast(`⚗ ${b.name} acquired!`);renderTab();updateHUD();
-  checkQuests();checkChapters();saveG();
+  G.gold-=b.cost;G.boons[id]=true;G.boonCount=(G.boonCount||0)+1;SFX.boon();if(G.idle)startIdle();
+  toast('⚗ '+b.name+' acquired!');renderTab();updateHUD();checkQuests();checkChapters();saveG();
 }
 
-/* ===========================================
+/* ===============================================
    STATS
-=========================================== */
+=============================================== */
 function buildStats(){
-  const st=getStats();const gain=Math.max(1,Math.floor(G.lv/5));
+  const st=getStats(),gain=Math.max(1,Math.floor(G.lv/5));
   const sr=(l,v)=>`<div class="stat-row"><span class="stat-lbl">${l}</span><span class="stat-val">${v}</span></div>`;
-  return`<div class="sec">
-    <div class="stat-grp">
-      <div class="stat-grp-title">⚔ COMBAT STATS</div>
-      ${sr('⚔ Attack',st.atk)}${sr('🛡 Defense',st.def)}${sr('⚡ Speed',st.spd+'×')}
-      ${sr('💥 Crit %',st.crit+'%')}${sr('🔮 Spell DMG',st.spell)}${sr('🩸 Lifesteal',st.life+'%')}
-      ${sr('👤 Dodge',st.dodge+'%')}${sr('🏰 Block',st.block+'%')}
-    </div>
-    <div class="stat-grp">
-      <div class="stat-grp-title">📊 LIFETIME STATS</div>
-      ${sr('💀 Total Kills',G.kills.toLocaleString())}${sr('💰 Gold Earned',G.gtotal.toLocaleString())}
-      ${sr('💀 Deaths',G.deaths)}${sr('✨ Prestige',G.prestige)}
-      ${sr('⚗ Boons',G.boonCount||0)}${sr('📈 Stat Bonus','+'+Math.round((G.pbonus-1)*100)+'%')}
-      ${sr('📜 Quests',G.quests.filter(q=>q.done).length+'/'+G.quests.length)}
-      ${sr('📖 Chapters',G.chapters.filter(c=>c.done).length+'/'+G.chapters.length)}
+  return`<div class="sec"><div class="sec-hdr">STATISTICS</div>
+    <div class="stats-grid">
+      <div class="stat-grp">
+        <div class="stat-grp-title">⚔ COMBAT</div>
+        ${sr('⚔ Attack',st.atk)}${sr('🛡 Defense',st.def)}${sr('⚡ Speed',st.spd+'×')}
+        ${sr('💥 Crit %',st.crit+'%')}${sr('🔮 Spell',st.spell)}${sr('🩸 Lifesteal',st.life+'%')}
+        ${sr('👤 Dodge',st.dodge+'%')}${sr('🏰 Block',st.block+'%')}
+      </div>
+      <div class="stat-grp">
+        <div class="stat-grp-title">📊 LIFETIME</div>
+        ${sr('💀 Kills',G.kills.toLocaleString())}${sr('💰 Gold Earned',G.gtotal.toLocaleString())}
+        ${sr('💀 Deaths',G.deaths)}${sr('✨ Prestige',G.prestige)}
+        ${sr('⚗ Boons',G.boonCount||0)}${sr('📈 Stat Bonus','+'+Math.round((G.pbonus-1)*100)+'%')}
+        ${sr('📜 Quests',G.quests.filter(q=>q.done).length+'/'+G.quests.length)}
+        ${sr('📖 Chapters',G.chapters.filter(c=>c.done).length+'/'+G.chapters.length)}
+      </div>
     </div>
     <div class="prestige-box">
       <div class="pres-title">✨ Prestige Ascension</div>
       <div class="pres-desc">Sacrifice your progress to be reborn with greater power. Earn <strong style="color:var(--gold)">${gain}</strong> prestige point${gain>1?'s':''}, increasing ALL stats by <strong style="color:var(--gold)">${gain*5}%</strong> permanently. Boons are kept.</div>
-      <div class="pres-warn">⚠ Resets: level, gold, skill points, skills, zone. Boons survive.</div>
+      <div class="pres-warn">⚠ Resets: level, gold, skill points, skills, zone.</div>
       <button class="btn-prestige" onclick="openPrestige()">✨ ASCEND — GAIN ${gain} POINT${gain>1?'S':''}</button>
     </div>
   </div>`;
 }
 
-/* ===========================================
+/* ===============================================
    PRESTIGE
-=========================================== */
-function openPrestige(){
-  const gain=Math.max(1,Math.floor(G.lv/5));
-  openModal('✨ Prestige Ascension',
-    `Gain ${gain} prestige point${gain>1?'s':''}, permanently increasing all stats by ${gain*5}%.`,
-    '⚠ Your level, gold, skill points, skills, and zone will reset. Boons persist.',
-    doPrestige,true);
-}
+=============================================== */
+function openPrestige(){const gain=Math.max(1,Math.floor(G.lv/5));openModal('✨ Prestige Ascension',`Gain ${gain} prestige point${gain>1?'s':''}, permanently increasing all stats by ${gain*5}%.`,'⚠ Your level, gold, skill points, skills, and zone will reset. Boons persist.',doPrestige,true);}
 function doPrestige(){
-  const gain=Math.max(1,Math.floor(G.lv/5));
-  G.prestige+=gain;G.pbonus=1+G.prestige*.05;
-  G.lv=1;G.xp=0;G.xpNext=100;G.sp=0;G.sk={};G.zone=1;G.zoneKills=0;G.zoneTarget=10;G.gold=0;G.sktotal=0;G.chainKills=0;G.divineReady=true;G._secondwindReady=true;
+  const gain=Math.max(1,Math.floor(G.lv/5));G.prestige+=gain;G.pbonus=1+G.prestige*.05;
+  G.lv=1;G.xp=0;G.xpNext=100;G.sp=0;G.sk={};G.zone=1;G.zoneKills=0;G.zoneTarget=10;G.gold=0;G.sktotal=0;G.chainKills=0;G.divineReady=true;G._swr=true;
   const st=getStats();G.hp=st.maxHp;G.mana=CLASSES[G.cls].baseMana;
   spawnEnemy();closeModal();checkQuests();checkChapters();SFX.prestige();
-  toast(`✨ Prestige ${G.prestige}! +${Math.round((G.pbonus-1)*100)}% stats!`);
-  updateHUD();renderTab();saveG();
+  toast('✨ Prestige '+G.prestige+'! +'+Math.round((G.pbonus-1)*100)+'% stats!');updateHUD();renderTab();saveG();
 }
 
-/* ===========================================
+/* ===============================================
    DAMAGE NUMBERS
-=========================================== */
+=============================================== */
 function showDmg(val,isCrit,type){
   const ov=document.getElementById('arena-ov');if(!ov)return;
   const el=document.createElement('div');
   el.className='dmg-num '+(isCrit?'crit':type==='heal'?'heal':type==='dodge'?'dodge':type==='spell'?'spell':type==='special'?'special':type==='enemy'?'enemy':'hit');
-  const W=CV?CV.width:300,H=CV?CV.height:180;
-  const isEnemy=type==='enemy';
-  const bx=isEnemy?(PA.x+Math.random()*14):(EA.x+Math.random()*14);
-  const by=isEnemy?(PA.y+3):(EA.y-5);
-  el.style.left=Math.max(2,Math.min(W-70,bx))+'px';
-  el.style.top=Math.max(0,Math.min(H-24,by))+'px';
+  const W=CV?CV.width:300,H=CV?CV.height:180;const isEn=type==='enemy';
+  const bx=isEn?(PA.x+Math.random()*14):(EA.x+Math.random()*14);const by=isEn?(PA.y+3):(EA.y-5);
+  el.style.left=Math.max(2,Math.min(W-70,bx))+'px';el.style.top=Math.max(0,Math.min(H-24,by))+'px';
   el.textContent=type==='dodge'?'DODGE':typeof val==='string'?val:type==='heal'?'+'+val:(isCrit?'★':'')+val;
   ov.appendChild(el);setTimeout(()=>el.remove(),840);
 }
 
-/* ===========================================
+/* ===============================================
    CLASS SELECT
-=========================================== */
+=============================================== */
 function buildClassCards(){
   const list=document.getElementById('cls-list');if(!list)return;list.innerHTML='';
   Object.entries(CLASSES).forEach(([k,c])=>{
     const card=document.createElement('div');
     card.className='cls-card'+(G.selCls===k?' sel':'');card.id='cls-'+k;card.onclick=()=>pickClass(k);
     const wrap=document.createElement('div');wrap.className='cls-sprite-wrap';
-    const cv=document.createElement('canvas');cv.width=66;cv.height=66;
+    const cv=document.createElement('canvas');cv.width=76;cv.height=76;
     const cx=cv.getContext('2d');cx.imageSmoothingEnabled=false;
     const pal=PAL[k]||PAL.warrior;const spr=(SPRITES[k]||SPRITES.warrior)(pal);
-    spr.forEach((row,ry)=>row.forEach((col,rx)=>{if(!col)return;cx.fillStyle=col;cx.fillRect(3+rx*PX*1.38,3+ry*PX*1.38,PX*1.38,PX*1.38);}));
+    spr.forEach((row,ry)=>row.forEach((col,rx)=>{if(!col)return;cx.fillStyle=col;cx.fillRect(3+rx*PX*1.5,3+ry*PX*1.5,PX*1.5,PX*1.5);}));
     wrap.appendChild(cv);card.appendChild(wrap);
-    card.insertAdjacentHTML('beforeend',`
-      <div class="cls-text">
-        <div class="cls-name">${c.icon} ${c.name}</div>
-        <div class="cls-flavor">${c.flavor}</div>
-        <div class="cls-lore">${c.lore}</div>
-        <div class="cls-stats">${c.hints.map(h=>`<span class="cls-stat">${h}</span>`).join('')}</div>
-      </div>`);
+    card.insertAdjacentHTML('beforeend',`<div class="cls-text"><div class="cls-name">${c.icon} ${c.name}</div><div class="cls-flavor">${c.flavor}</div><div class="cls-lore">${c.lore}</div><div class="cls-stats">${c.hints.map(h=>`<span class="cls-stat">${h}</span>`).join('')}</div></div>`);
     list.appendChild(card);
   });
 }
@@ -1295,76 +1433,63 @@ function confirmClass(){
   if(!G.selCls)return;
   document.getElementById('hud-av').textContent=CLASSES[G.cls].icon;
   showScr('s2');initCanvas();spawnEnemy();updateHUD();openTab('story');renderTab();
-  setStoryTicker('Your legend begins in the Ashen Fields. Slay your first enemies.',true);
-  startBGM();if(G.idle)startIdle();setInterval(saveG,30000);
+  setStoryTicker('Your legend begins in the Ashen Fields.',true);startBGM();if(G.idle)startIdle();setInterval(saveG,30000);
 }
 
-/* ===========================================
+/* ===============================================
    MODAL
-=========================================== */
-function openModal(title,body,warn,cb,showCancel=true){
-  document.getElementById('modal-title').textContent=title;
-  document.getElementById('modal-body').textContent=body;
-  document.getElementById('modal-warn').textContent=warn||'';
+=============================================== */
+function openModal(title,body,warn,cb,sc=true){
+  document.getElementById('modal-title').textContent=title;document.getElementById('modal-body').textContent=body;document.getElementById('modal-warn').textContent=warn||'';
   document.getElementById('modal-ok').onclick=()=>{if(cb){cb();closeModal();}else closeModal();};
-  document.querySelectorAll('.m-btn.cancel').forEach(b=>b.style.display=showCancel?'':'none');
+  document.querySelectorAll('.m-btn.cancel').forEach(b=>b.style.display=sc?'':'none');
   document.getElementById('modal').classList.add('open');
 }
 function closeModal(){document.getElementById('modal').classList.remove('open');}
 
-/* ===========================================
+/* ===============================================
    SCREEN FLOW
-=========================================== */
+=============================================== */
 function showScr(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id)?.classList.add('on');}
 function gotoClassSelect(){
-  initAudio();
-  const had=loadG();
+  initAudio();const had=loadG();
   if(had&&G.selCls){
     document.getElementById('hud-av').textContent=CLASSES[G.cls].icon;
     showScr('s2');initCanvas();spawnEnemy();updateHUD();openTab('story');renderTab();
-    setStoryTicker(ZONES[Math.min(G.zone-1,ZONES.length-1)].story);
-    startBGM();if(G.idle)startIdle();setInterval(saveG,30000);
+    setStoryTicker(ZONES[Math.min(G.zone-1,ZONES.length-1)].story);startBGM();if(G.idle)startIdle();setInterval(saveG,30000);
   }else{G=mkState();buildClassCards();showScr('s1');}
 }
 
-/* ===========================================
+/* ===============================================
    TOAST & LEVEL UP
-=========================================== */
+=============================================== */
 let toastT;
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),3200);}
 let lvlT;
 function showLvlUp(){
   const el=document.getElementById('lvlup');
   document.getElementById('lvlup-txt').textContent='LEVEL '+G.lv+'!';
-  document.getElementById('lvlup-sub').textContent='+1 SKILL POINT';
   el.classList.add('show');clearTimeout(lvlT);lvlT=setTimeout(()=>el.classList.remove('show'),1600);
 }
 
-/* ===========================================
-   BGM
-=========================================== */
-function startBGM(){
-  if(!AC)return;
-  const mel=[220,261,330,196,220,246,220,196];let i=0;
-  (function n(){if(audioOn){const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);o.type='triangle';o.frequency.value=mel[i%mel.length];g.gain.setValueAtTime(.024,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.38);o.start();o.stop(AC.currentTime+.38);}i++;setTimeout(n,i%4===0?950:480);})();
-}
-
-/* ===========================================
+/* ===============================================
    TITLE FX
-=========================================== */
+=============================================== */
 function titleFX(){
   const cv=document.getElementById('s0-cv');if(!cv)return;
   cv.width=window.innerWidth;cv.height=window.innerHeight;
   const ctx=cv.getContext('2d');
   const embers=Array.from({length:65},()=>({x:Math.random()*cv.width,y:cv.height+Math.random()*80,spd:.7+Math.random()*2.2,sz:1+Math.random()*1.8,drift:(Math.random()-.5)*.55,life:0,maxLife:.45+Math.random()*.85}));
-  (function fr(){
+  function fr(){
     ctx.clearRect(0,0,cv.width,cv.height);
     const g=ctx.createRadialGradient(cv.width/2,cv.height*.68,0,cv.width/2,cv.height*.68,cv.width*.75);
     g.addColorStop(0,'rgba(110,35,8,.3)');g.addColorStop(.5,'rgba(55,12,4,.1)');g.addColorStop(1,'transparent');
     ctx.fillStyle=g;ctx.fillRect(0,0,cv.width,cv.height);
     embers.forEach(e=>{e.y-=e.spd;e.x+=e.drift;e.life+=.018;if(e.y<-10||e.life>e.maxLife){e.y=cv.height+10;e.x=Math.random()*cv.width;e.life=0;}const a=Math.sin(e.life/e.maxLife*Math.PI);ctx.globalAlpha=a*.72;ctx.fillStyle=e.life<e.maxLife*.45?'#e07018':'#b02808';ctx.fillRect(e.x,e.y,e.sz,e.sz);});
     ctx.globalAlpha=1;requestAnimationFrame(fr);
-  })();
+  }
+  fr();
+  window.addEventListener('resize',()=>{cv.width=window.innerWidth;cv.height=window.innerHeight;});
 }
 window.addEventListener('load',()=>titleFX());
 </script>
