@@ -3,1125 +3,1715 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ashen Throne — Idle RPG</title>
-<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Ashen Throne</title>
+<link href="https://fonts.googleapis.com/css2?family=MedievalSharp&family=IM+Fell+English:ital@0;1&family=Cinzel:wght@400;600;900&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0a0a0f;
-    --bg2: #0f0f1a;
-    --bg3: #141420;
-    --panel: #12121e;
-    --border: #2a2a3e;
-    --border-glow: #4a3a6e;
-    --gold: #c9a44a;
-    --gold-light: #e8c56a;
-    --silver: #9aa3b2;
-    --red: #8b2a2a;
-    --red-light: #c04040;
-    --green: #2a6b3a;
-    --green-light: #4a9b5a;
-    --blue: #2a3a6b;
-    --blue-light: #4a6aab;
-    --purple: #4a2a6b;
-    --purple-light: #8a5aab;
-    --text: #d4c9b8;
-    --text-dim: #7a7260;
-    --text-bright: #f0e8d4;
-  }
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;user-select:none}
+:root{
+  --parchment:#1a1208;
+  --parchment2:#221a0e;
+  --parchment3:#2a2010;
+  --gold:#d4a017;
+  --gold2:#f0c030;
+  --gold3:#8a6010;
+  --ember:#c84820;
+  --ember2:#e06030;
+  --stone:#3a3428;
+  --stone2:#4a4438;
+  --green:#2a5a1a;
+  --green2:#50a030;
+  --blue:#1a2a5a;
+  --blue2:#3060c0;
+  --purple:#3a1a5a;
+  --purple2:#8040c0;
+  --text:#e8d8a8;
+  --text2:#b09060;
+  --text3:#786040;
+  --hp:#c02020;
+  --hp2:#e04040;
+  --mana:#2040c0;
+  --xp:#208040;
+  --shadow:rgba(0,0,0,0.8);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:#000;font-family:'IM Fell English',Georgia,serif}
 
-- { box-sizing: border-box; margin: 0; padding: 0; }
+/* ===== SCREENS ===== */
+#game{width:100%;height:100%;position:relative;overflow:hidden;background:var(–parchment)}
 
-body {
-background: var(–bg);
-color: var(–text);
-font-family: ‘Crimson Pro’, Georgia, serif;
-font-size: 15px;
-min-height: 100vh;
-overflow-x: hidden;
+/* Grain overlay */
+#game::after{content:’’;position:fixed;inset:0;opacity:.04;pointer-events:none;z-index:9999;
+background-image:url(“data:image/svg+xml,%3Csvg viewBox=‘0 0 256 256’ xmlns=‘http://www.w3.org/2000/svg’%3E%3Cfilter id=‘noise’%3E%3CfeTurbulence type=‘fractalNoise’ baseFrequency=‘0.9’ numOctaves=‘4’ stitchTiles=‘stitch’/%3E%3C/filter%3E%3Crect width=‘100%25’ height=‘100%25’ filter=‘url(%23noise)’/%3E%3C/svg%3E”);
+background-repeat:repeat;background-size:128px}
+
+/* ===== CANVAS AREA ===== */
+#arena-wrap{position:relative;width:100%;height:220px;overflow:hidden;flex-shrink:0}
+#arena{width:100%;height:100%;display:block}
+
+/* ===== SCREENS ===== */
+.screen{position:absolute;inset:0;display:none;flex-direction:column}
+.screen.active{display:flex}
+
+/* ===== TITLE SCREEN ===== */
+#screen-title{
+background:radial-gradient(ellipse at 50% 30%, #2a1a08 0%, #0a0800 70%);
+align-items:center;justify-content:center;gap:0;
+}
+.title-bg{position:absolute;inset:0;overflow:hidden}
+.title-bg canvas{width:100%;height:100%}
+.title-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;gap:16px;padding:20px}
+.game-logo{font-family:‘Cinzel’,serif;font-size:3rem;font-weight:900;color:var(–gold2);
+text-shadow:0 0 40px rgba(212,160,23,0.8),0 4px 8px #000,0 0 80px rgba(200,72,32,0.4);
+letter-spacing:4px;line-height:1;text-align:center}
+.game-subtitle{font-family:‘Cinzel’,serif;font-size:.85rem;color:var(–text2);letter-spacing:8px;text-transform:uppercase}
+.title-divider{width:200px;height:1px;background:linear-gradient(90deg,transparent,var(–gold3),transparent);margin:8px 0}
+.ember-particle{position:absolute;width:2px;border-radius:50%;animation:rise linear infinite;opacity:0}
+@keyframes rise{0%{transform:translateY(0) translateX(0);opacity:1}100%{transform:translateY(-100vh) translateX(var(–drift));opacity:0}}
+.btn-title{
+font-family:‘Cinzel’,serif;font-size:1.1rem;color:var(–parchment);
+background:linear-gradient(180deg,var(–gold2),var(–gold3));
+border:none;border-radius:3px;padding:14px 48px;cursor:pointer;
+box-shadow:0 4px 12px rgba(0,0,0,0.6),inset 0 1px 0 rgba(255,255,255,0.2);
+transition:all .2s;letter-spacing:2px;
+}
+.btn-title:active{transform:scale(0.97);box-shadow:0 2px 6px rgba(0,0,0,0.6)}
+
+/* ===== CLASS SELECT ===== */
+#screen-class{background:var(–parchment);padding:16px;gap:12px;overflow-y:auto}
+.screen-header{font-family:‘Cinzel’,serif;font-size:1.1rem;color:var(–gold);text-align:center;letter-spacing:3px;
+padding-bottom:10px;border-bottom:1px solid var(–stone)}
+.class-cards{display:flex;flex-direction:column;gap:10px}
+.class-card{
+background:var(–parchment2);border:2px solid var(–stone);border-radius:6px;
+padding:14px;display:flex;align-items:center;gap:14px;cursor:pointer;
+transition:all .2s;position:relative;overflow:hidden;
+}
+.class-card::before{content:’’;position:absolute;inset:0;opacity:0;transition:opacity .2s;
+background:linear-gradient(135deg,rgba(212,160,23,0.1),transparent)}
+.class-card:active,.class-card.selected{border-color:var(–gold);background:var(–parchment3)}
+.class-card:active::before,.class-card.selected::before{opacity:1}
+.class-sprite{width:64px;height:64px;flex-shrink:0}
+.class-sprite canvas{width:64px;height:64px;image-rendering:pixelated}
+.class-info{flex:1}
+.class-name{font-family:‘Cinzel’,serif;font-size:1rem;color:var(–gold2);margin-bottom:4px}
+.class-flavor{font-style:italic;font-size:.8rem;color:var(–text2);line-height:1.4;margin-bottom:8px}
+.class-stats-row{display:flex;gap:8px;flex-wrap:wrap}
+.cstat{font-size:.75rem;color:var(–text3);display:flex;align-items:center;gap:3px}
+.cstat b{color:var(–text)}
+
+/* ===== MAIN GAME ===== */
+#screen-game{background:var(–parchment);flex-direction:column;height:100%}
+
+/* Top HUD */
+#hud-top{
+background:linear-gradient(180deg,rgba(0,0,0,0.7),rgba(0,0,0,0.3));
+padding:8px 10px 6px;display:flex;align-items:center;gap:8px;flex-shrink:0;
+border-bottom:1px solid var(–stone);
+}
+.hud-avatar{width:36px;height:36px;border:2px solid var(–gold3);border-radius:50%;
+background:var(–parchment2);display:flex;align-items:center;justify-content:center;
+font-size:1.2rem;flex-shrink:0}
+.hud-bars{flex:1;display:flex;flex-direction:column;gap:3px}
+.hud-bar-row{display:flex;align-items:center;gap:6px}
+.hud-bar{flex:1;height:7px;background:rgba(0,0,0,0.5);border-radius:3px;overflow:hidden;border:1px solid rgba(255,255,255,0.1)}
+.hud-bar-fill{height:100%;border-radius:3px;transition:width .3s}
+.bar-hp .hud-bar-fill{background:linear-gradient(90deg,#801010,var(–hp2));box-shadow:0 0 6px rgba(224,64,64,0.4)}
+.bar-mana .hud-bar-fill{background:linear-gradient(90deg,#102080,var(–blue2));box-shadow:0 0 6px rgba(48,96,192,0.4)}
+.bar-xp .hud-bar-fill{background:linear-gradient(90deg,#106030,var(–xp));box-shadow:0 0 6px rgba(32,128,64,0.4)}
+.hud-bar-label{font-size:.65rem;color:var(–text3);width:18px;text-align:right;flex-shrink:0}
+.hud-right{display:flex;flex-direction:column;align-items:flex-end;gap:2px}
+.hud-gold{font-family:‘Cinzel’,serif;font-size:.8rem;color:var(–gold);display:flex;align-items:center;gap:3px}
+.hud-level{font-family:‘Cinzel’,serif;font-size:.75rem;color:var(–text2)}
+.hud-zone-badge{font-size:.65rem;color:var(–ember2);background:rgba(200,72,32,0.15);
+border:1px solid var(–ember);border-radius:3px;padding:1px 5px}
+
+/* Arena */
+#arena-section{position:relative;flex-shrink:0}
+#arena-wrap{height:200px}
+
+/* Combat overlay */
+#combat-overlay{position:absolute;inset:0;pointer-events:none;z-index:10}
+.damage-number{position:absolute;font-family:‘Cinzel’,serif;font-size:1.1rem;font-weight:600;
+pointer-events:none;animation:floatDmg .8s forwards;white-space:nowrap}
+.damage-number.crit{font-size:1.4rem;color:var(–gold2)}
+.damage-number.hit{color:var(–hp2)}
+.damage-number.heal{color:var(–green2)}
+.damage-number.enemy{color:var(–ember2)}
+@keyframes floatDmg{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-60px)}}
+
+/* Attack button */
+#attack-btn-wrap{position:absolute;bottom:10px;right:10px;z-index:20}
+#attack-btn{
+width:64px;height:64px;border-radius:50%;
+background:radial-gradient(circle at 40% 35%,var(–ember2),var(–ember));
+border:3px solid var(–gold3);cursor:pointer;
+box-shadow:0 4px 16px rgba(200,72,32,0.6),inset 0 1px 0 rgba(255,255,255,0.2);
+display:flex;align-items:center;justify-content:center;font-size:1.6rem;
+transition:all .1s;
+}
+#attack-btn:active{transform:scale(0.9);box-shadow:0 2px 8px rgba(200,72,32,0.4)}
+
+/* Auto toggle */
+#auto-btn{
+position:absolute;bottom:10px;left:10px;z-index:20;
+background:rgba(0,0,0,0.6);border:2px solid var(–stone2);border-radius:20px;
+color:var(–text2);font-family:‘Cinzel’,serif;font-size:.65rem;letter-spacing:1px;
+padding:5px 10px;cursor:pointer;transition:all .2s;
+}
+#auto-btn.on{border-color:var(–green2);color:var(–green2);box-shadow:0 0 10px rgba(80,160,48,0.3)}
+
+/* Zone advance */
+#zone-btn{
+position:absolute;bottom:10px;left:50%;transform:translateX(-50%);z-index:20;
+background:rgba(0,0,0,0.6);border:2px solid var(–gold3);border-radius:20px;
+color:var(–gold);font-family:‘Cinzel’,serif;font-size:.65rem;letter-spacing:1px;
+padding:5px 14px;cursor:pointer;transition:all .2s;
 }
 
-body::before {
-content: ‘’;
-position: fixed;
-inset: 0;
-background:
-radial-gradient(ellipse 60% 40% at 20% 10%, rgba(74,42,107,0.12) 0%, transparent 60%),
-radial-gradient(ellipse 40% 60% at 80% 80%, rgba(139,42,42,0.08) 0%, transparent 50%);
-pointer-events: none;
-z-index: 0;
+/* Bottom tabs */
+#tabs{display:flex;background:var(–parchment2);border-top:1px solid var(–stone);border-bottom:1px solid var(–stone);flex-shrink:0}
+.tab{flex:1;padding:8px 4px;text-align:center;cursor:pointer;transition:all .2s;
+display:flex;flex-direction:column;align-items:center;gap:2px;
+border-right:1px solid var(–stone);font-size:1.2rem}
+.tab:last-child{border-right:none}
+.tab-label{font-size:.55rem;color:var(–text3);letter-spacing:1px;text-transform:uppercase}
+.tab.active{background:var(–parchment3);border-bottom:2px solid var(–gold)}
+.tab.active .tab-label{color:var(–gold)}
+
+/* Tab content */
+#tab-content{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
+#tab-content::-webkit-scrollbar{width:3px}
+#tab-content::-webkit-scrollbar-thumb{background:var(–stone2)}
+
+/* ===== SKILLS TAB ===== */
+.skill-section{padding:10px}
+.skill-tree-header{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+.skill-tree-title{font-family:‘Cinzel’,serif;font-size:.85rem;color:var(–gold);letter-spacing:2px}
+.sp-badge{background:var(–parchment3);border:1px solid var(–gold3);border-radius:12px;
+padding:3px 10px;font-family:‘Cinzel’,serif;font-size:.8rem;color:var(–gold2);margin-left:auto}
+
+.skill-tab-bar{display:flex;gap:4px;padding:0 10px;margin-bottom:8px}
+.stab{flex:1;padding:6px;text-align:center;background:var(–parchment2);border:1px solid var(–stone);
+border-radius:4px;font-size:.7rem;color:var(–text3);cursor:pointer;letter-spacing:1px;font-family:‘Cinzel’,serif;transition:all .2s}
+.stab.active{background:var(–parchment3);border-color:var(–gold);color:var(–gold)}
+
+.skill-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 10px 10px}
+.skill-node{
+background:var(–parchment2);border:2px solid var(–stone);border-radius:6px;
+padding:10px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;
+display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;
+}
+.skill-node::after{content:’’;position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,0.03),transparent);pointer-events:none}
+.skill-node:active:not(.locked){transform:scale(0.97)}
+.skill-node.unlocked{border-color:var(–gold3)}
+.skill-node.maxed{border-color:var(–gold2);background:rgba(212,160,23,0.1)}
+.skill-node.locked{opacity:.4;cursor:not-allowed}
+.skill-icon-wrap{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.4rem;
+background:var(–parchment3);border:2px solid var(–stone2);transition:all .2s}
+.skill-node.unlocked .skill-icon-wrap{border-color:var(–gold3);box-shadow:0 0 10px rgba(212,160,23,0.2)}
+.skill-node.maxed .skill-icon-wrap{border-color:var(–gold2);box-shadow:0 0 14px rgba(212,160,23,0.4)}
+.skill-node-name{font-family:‘Cinzel’,serif;font-size:.7rem;color:var(–text);letter-spacing:.5px}
+.skill-node-desc{font-size:.65rem;color:var(–text3);font-style:italic;line-height:1.3}
+.skill-node-level{font-size:.65rem;color:var(–gold);font-family:‘Cinzel’,serif}
+.skill-lock-icon{position:absolute;top:4px;right:4px;font-size:.7rem;opacity:.6}
+.skill-pips{display:flex;gap:2px;margin-top:2px}
+.pip{width:8px;height:4px;border-radius:2px;background:var(–stone2);transition:background .2s}
+.pip.filled{background:var(–gold)}
+.pip.filled.max{background:var(–gold2)}
+
+/* ===== QUESTS TAB ===== */
+.quest-section{padding:10px;display:flex;flex-direction:column;gap:8px}
+.quest-card{
+background:var(–parchment2);border:1px solid var(–stone);border-radius:6px;
+padding:12px;display:flex;gap:12px;align-items:flex-start;
+}
+.quest-card.done{border-color:var(–gold3);background:rgba(212,160,23,0.06)}
+.quest-icon-wrap{width:42px;height:42px;border-radius:50%;background:var(–parchment3);
+border:2px solid var(–stone2);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.quest-card.done .quest-icon-wrap{border-color:var(–gold3)}
+.quest-body{flex:1}
+.quest-name{font-family:‘Cinzel’,serif;font-size:.8rem;color:var(–text);margin-bottom:3px}
+.quest-desc{font-size:.7rem;color:var(–text3);font-style:italic;margin-bottom:6px}
+.quest-prog-bar{height:5px;background:var(–stone);border-radius:3px;overflow:hidden;margin-bottom:4px}
+.quest-prog-fill{height:100%;background:linear-gradient(90deg,var(–gold3),var(–gold));border-radius:3px;transition:width .4s}
+.quest-prog-text{font-size:.65rem;color:var(–text3)}
+.quest-reward{font-size:.7rem;color:var(–gold);margin-top:4px}
+.quest-complete-badge{font-size:.65rem;color:var(–gold2);font-family:‘Cinzel’,serif;letter-spacing:1px}
+
+/* ===== BOONS TAB ===== */
+.boons-section{padding:10px;display:flex;flex-direction:column;gap:8px}
+.boon-card{
+background:var(–parchment2);border:1px solid var(–stone);border-radius:6px;
+padding:12px;display:flex;gap:12px;align-items:center;cursor:pointer;transition:all .2s;
+}
+.boon-card.owned{border-color:var(–green2);background:rgba(42,90,26,0.12);cursor:default}
+.boon-card.cant-afford{opacity:.5;cursor:not-allowed}
+.boon-card:not(.owned):not(.cant-afford):active{transform:scale(0.98)}
+.boon-icon{width:44px;height:44px;border-radius:8px;background:var(–parchment3);
+border:2px solid var(–stone2);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0}
+.boon-card.owned .boon-icon{border-color:var(–green2)}
+.boon-body{flex:1}
+.boon-name{font-family:‘Cinzel’,serif;font-size:.8rem;color:var(–text);margin-bottom:3px}
+.boon-desc{font-size:.7rem;color:var(–text3);font-style:italic}
+.boon-cost{font-size:.75rem;color:var(–gold);margin-top:4px;font-family:‘Cinzel’,serif}
+.boon-owned{font-size:.7rem;color:var(–green2);margin-top:4px}
+
+/* ===== STATS TAB ===== */
+.stats-section{padding:10px;display:flex;flex-direction:column;gap:8px}
+.stat-group{background:var(–parchment2);border:1px solid var(–stone);border-radius:6px;padding:12px}
+.stat-group-title{font-family:‘Cinzel’,serif;font-size:.75rem;color:var(–gold);letter-spacing:2px;
+margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(–stone)}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;
+border-bottom:1px solid rgba(58,52,40,0.4)}
+.stat-row:last-child{border-bottom:none}
+.stat-label{font-size:.75rem;color:var(–text3);display:flex;align-items:center;gap:5px}
+.stat-val{font-size:.8rem;color:var(–gold2);font-family:‘Cinzel’,serif}
+.prestige-section{background:var(–parchment2);border:1px solid var(–stone);border-radius:6px;padding:12px}
+.prestige-title{font-family:‘Cinzel’,serif;font-size:.85rem;color:var(–gold2);margin-bottom:8px}
+.prestige-desc{font-size:.75rem;color:var(–text3);font-style:italic;line-height:1.5;margin-bottom:12px}
+.btn-prestige{
+width:100%;padding:12px;background:linear-gradient(180deg,rgba(138,96,16,0.4),rgba(58,52,40,0.6));
+border:2px solid var(–gold3);border-radius:5px;color:var(–gold);font-family:‘Cinzel’,serif;
+font-size:.85rem;letter-spacing:2px;cursor:pointer;transition:all .2s;
+}
+.btn-prestige:active{transform:scale(0.98)}
+
+/* ===== NOTIFICATIONS ===== */
+#toast{
+position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-80px);
+background:var(–parchment2);border:1px solid var(–gold3);border-radius:6px;
+padding:10px 16px;font-family:‘Cinzel’,serif;font-size:.75rem;color:var(–gold);
+transition:transform .3s cubic-bezier(.34,1.56,.64,1);z-index:1000;
+box-shadow:0 4px 16px rgba(0,0,0,0.6);white-space:nowrap;letter-spacing:1px;
+}
+#toast.show{transform:translateX(-50%) translateY(0)}
+
+/* ===== LEVEL UP SPLASH ===== */
+#levelup-splash{
+position:fixed;inset:0;z-index:500;pointer-events:none;
+display:flex;align-items:center;justify-content:center;
+opacity:0;transition:opacity .3s;
+}
+#levelup-splash.show{opacity:1}
+.levelup-text{
+font-family:‘Cinzel’,serif;font-size:2rem;font-weight:900;color:var(–gold2);
+text-shadow:0 0 30px var(–gold),0 0 60px var(–gold2),0 4px 8px #000;
+animation:levelPop .8s forwards;
+}
+@keyframes levelPop{0%{transform:scale(0.5);opacity:0}50%{transform:scale(1.1)}70%{transform:scale(0.95)}100%{transform:scale(1);opacity:1}}
+
+/* ===== CONFIRM MODAL ===== */
+#modal{
+position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:800;
+display:none;align-items:center;justify-content:center;padding:20px;
+}
+#modal.open{display:flex}
+.modal-box{background:var(–parchment2);border:2px solid var(–gold3);border-radius:8px;
+padding:24px;max-width:320px;width:100%;text-align:center}
+.modal-title{font-family:‘Cinzel’,serif;font-size:1.1rem;color:var(–gold2);margin-bottom:8px}
+.modal-desc{font-size:.8rem;color:var(–text2);line-height:1.6;margin-bottom:16px;font-style:italic}
+.modal-warn{font-size:.75rem;color:var(–ember2);margin-bottom:16px}
+.modal-btns{display:flex;gap:10px}
+.modal-btn{flex:1;padding:11px;border-radius:5px;cursor:pointer;font-family:‘Cinzel’,serif;font-size:.8rem;letter-spacing:1px;border:none;transition:all .2s}
+.modal-btn.confirm{background:linear-gradient(180deg,var(–gold2),var(–gold3));color:var(–parchment)}
+.modal-btn.cancel{background:var(–stone);color:var(–text2);border:1px solid var(–stone2)}
+
+/* ===== AUDIO BUTTON ===== */
+#audio-btn{
+position:fixed;top:8px;right:8px;z-index:200;
+width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,0.5);
+border:1px solid var(–stone2);color:var(–text3);font-size:.9rem;
+cursor:pointer;display:flex;align-items:center;justify-content:center;
+display:none;
 }
 
-#app { position: relative; z-index: 1; max-width: 1400px; margin: 0 auto; padding: 10px; }
+/* scrollbar */
+#tab-content::-webkit-scrollbar{width:3px}
+#tab-content::-webkit-scrollbar-track{background:var(–parchment)}
+#tab-content::-webkit-scrollbar-thumb{background:var(–stone2);border-radius:3px}
 
-/* HEADER */
-header {
-text-align: center;
-padding: 18px 0 10px;
-border-bottom: 1px solid var(–border);
-margin-bottom: 12px;
-}
-header h1 {
-font-family: ‘Cinzel Decorative’, serif;
-font-size: 2rem;
-color: var(–gold);
-letter-spacing: 3px;
-text-shadow: 0 0 30px rgba(201,164,74,0.4), 0 2px 4px #000;
-}
-header p { color: var(–text-dim); font-style: italic; font-size: 13px; margin-top: 2px; }
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+.shake{animation:shake .3s}
 
-/* TOP STATUS BAR */
-#status-bar {
-display: flex;
-gap: 8px;
-flex-wrap: wrap;
-margin-bottom: 10px;
-align-items: center;
-}
-.stat-chip {
-background: var(–panel);
-border: 1px solid var(–border);
-border-radius: 4px;
-padding: 4px 10px;
-font-size: 13px;
-display: flex;
-align-items: center;
-gap: 6px;
-}
-.stat-chip span { color: var(–gold); font-weight: 600; }
-.prestige-chip { border-color: var(–purple-light); }
-.prestige-chip span { color: var(–purple-light); }
-
-/* MAIN GRID */
-#main-grid {
-display: grid;
-grid-template-columns: 260px 1fr 280px;
-grid-template-rows: auto auto;
-gap: 10px;
-}
-
-/* PANELS */
-.panel {
-background: var(–panel);
-border: 1px solid var(–border);
-border-radius: 6px;
-padding: 14px;
-}
-.panel-title {
-font-family: ‘Cinzel Decorative’, serif;
-font-size: 0.75rem;
-color: var(–gold);
-letter-spacing: 2px;
-text-transform: uppercase;
-margin-bottom: 12px;
-padding-bottom: 8px;
-border-bottom: 1px solid var(–border);
-}
-
-/* CHARACTER PANEL */
-#char-panel { grid-column: 1; grid-row: 1 / 3; }
-
-.char-avatar {
-width: 80px; height: 80px;
-margin: 0 auto 10px;
-border-radius: 50%;
-border: 2px solid var(–border-glow);
-display: flex; align-items: center; justify-content: center;
-font-size: 2.5rem;
-background: radial-gradient(circle at 40% 35%, var(–bg3), var(–bg));
-box-shadow: 0 0 20px rgba(74,42,107,0.3);
-}
-
-.char-name {
-text-align: center;
-font-family: ‘Cinzel Decorative’, serif;
-color: var(–text-bright);
-font-size: 1rem;
-margin-bottom: 2px;
-}
-.char-class {
-text-align: center;
-color: var(–purple-light);
-font-style: italic;
-font-size: 13px;
-margin-bottom: 12px;
-}
-
-.bar-wrap { margin-bottom: 8px; }
-.bar-label { display: flex; justify-content: space-between; font-size: 12px; color: var(–text-dim); margin-bottom: 3px; }
-.bar { height: 8px; background: var(–bg); border-radius: 4px; overflow: hidden; border: 1px solid var(–border); }
-.bar-fill { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
-.bar-hp .bar-fill { background: linear-gradient(90deg, var(–red), var(–red-light)); }
-.bar-xp .bar-fill { background: linear-gradient(90deg, #3a5a8b, #6a9acb); }
-.bar-mana .bar-fill { background: linear-gradient(90deg, var(–purple), var(–purple-light)); }
-
-.char-stats { margin-top: 12px; }
-.stat-row { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; border-bottom: 1px solid rgba(42,42,62,0.5); }
-.stat-row:last-child { border-bottom: none; }
-.stat-row .val { color: var(–gold-light); }
-
-/* CLASS SELECT */
-.class-select-wrap { margin-top: 14px; }
-.class-btn {
-display: block; width: 100%;
-background: var(–bg3); border: 1px solid var(–border);
-color: var(–text); cursor: pointer;
-padding: 7px 10px; border-radius: 4px;
-text-align: left; font-family: ‘Crimson Pro’, serif;
-font-size: 13px; margin-bottom: 5px;
-transition: all 0.2s;
-}
-.class-btn:hover { border-color: var(–gold); color: var(–gold-light); }
-.class-btn.active { background: rgba(74,42,107,0.3); border-color: var(–purple-light); color: var(–purple-light); }
-.class-btn .class-icon { margin-right: 6px; }
-
-/* COMBAT / IDLE PANEL */
-#combat-panel { grid-column: 2; grid-row: 1; }
-
-.enemy-area {
-display: flex; align-items: center; gap: 14px;
-background: var(–bg3); border: 1px solid var(–border);
-border-radius: 6px; padding: 12px; margin-bottom: 12px;
-}
-.enemy-icon { font-size: 2.2rem; }
-.enemy-info { flex: 1; }
-.enemy-name { font-family: ‘Cinzel Decorative’, serif; font-size: 0.8rem; color: var(–red-light); margin-bottom: 4px; }
-.enemy-zone { font-size: 12px; color: var(–text-dim); font-style: italic; }
-
-.combat-log {
-background: var(–bg);
-border: 1px solid var(–border);
-border-radius: 4px;
-padding: 10px;
-height: 140px;
-overflow-y: auto;
-font-size: 13px;
-line-height: 1.6;
-margin-bottom: 10px;
-}
-.combat-log::-webkit-scrollbar { width: 4px; }
-.combat-log::-webkit-scrollbar-thumb { background: var(–border-glow); border-radius: 2px; }
-.log-hit { color: var(–red-light); }
-.log-crit { color: var(–gold); font-weight: 600; }
-.log-loot { color: var(–green-light); }
-.log-level { color: var(–purple-light); font-style: italic; }
-.log-dim { color: var(–text-dim); }
-
-.idle-controls { display: flex; gap: 8px; flex-wrap: wrap; }
-.btn {
-padding: 8px 16px; border-radius: 4px; cursor: pointer;
-font-family: ‘Crimson Pro’, serif; font-size: 14px;
-border: 1px solid; transition: all 0.2s; letter-spacing: 0.5px;
-}
-.btn-primary { background: rgba(74,42,107,0.4); border-color: var(–purple-light); color: var(–purple-light); }
-.btn-primary:hover { background: rgba(74,42,107,0.7); box-shadow: 0 0 10px rgba(138,90,171,0.3); }
-.btn-gold { background: rgba(201,164,74,0.15); border-color: var(–gold); color: var(–gold); }
-.btn-gold:hover { background: rgba(201,164,74,0.3); }
-.btn-danger { background: rgba(139,42,42,0.3); border-color: var(–red-light); color: var(–red-light); }
-.btn-danger:hover { background: rgba(139,42,42,0.5); }
-.btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-.speed-indicator {
-display: flex; gap: 5px; align-items: center;
-font-size: 12px; color: var(–text-dim); margin-top: 8px;
-}
-.speed-dot { width: 8px; height: 8px; border-radius: 50%; background: var(–border); }
-.speed-dot.active { background: var(–green-light); box-shadow: 0 0 6px var(–green-light); }
-
-/* SKILL TREE */
-#skill-panel { grid-column: 3; grid-row: 1 / 3; }
-
-.skill-points-display {
-display: flex; align-items: center; justify-content: space-between;
-background: var(–bg3); border: 1px solid var(–border-glow);
-border-radius: 4px; padding: 8px 12px; margin-bottom: 12px;
-font-size: 13px;
-}
-.skill-points-display strong { color: var(–gold); font-size: 1.1rem; }
-
-.skill-tree {
-display: flex; flex-direction: column; gap: 6px;
-}
-.skill-category { margin-bottom: 8px; }
-.skill-cat-label {
-font-size: 11px; color: var(–text-dim); letter-spacing: 2px;
-text-transform: uppercase; margin-bottom: 6px;
-padding-bottom: 3px; border-bottom: 1px solid var(–border);
-}
-.skill-node {
-display: flex; align-items: center; gap: 10px;
-background: var(–bg3); border: 1px solid var(–border);
-border-radius: 4px; padding: 8px 10px;
-cursor: pointer; transition: all 0.2s; margin-bottom: 4px;
-position: relative;
-}
-.skill-node:hover:not(.locked):not(.maxed) { border-color: var(–gold); }
-.skill-node.unlocked { border-color: var(–purple-light); background: rgba(74,42,107,0.15); }
-.skill-node.maxed { border-color: var(–gold); background: rgba(201,164,74,0.1); }
-.skill-node.locked { opacity: 0.4; cursor: not-allowed; }
-.skill-icon { font-size: 1.3rem; min-width: 24px; text-align: center; }
-.skill-info { flex: 1; }
-.skill-name { font-size: 13px; color: var(–text-bright); }
-.skill-desc { font-size: 11px; color: var(–text-dim); font-style: italic; }
-.skill-level {
-font-size: 11px; color: var(–gold);
-min-width: 36px; text-align: right;
-}
-
-/* QUESTS PANEL */
-#quest-panel { grid-column: 2; grid-row: 2; }
-
-.quest-list { display: flex; flex-direction: column; gap: 8px; }
-.quest-item {
-background: var(–bg3); border: 1px solid var(–border);
-border-radius: 4px; padding: 10px 12px;
-display: flex; align-items: center; gap: 10px;
-}
-.quest-item.complete { border-color: var(–gold); background: rgba(201,164,74,0.05); }
-.quest-item.available { border-color: var(–border); }
-.quest-icon { font-size: 1.3rem; }
-.quest-info { flex: 1; }
-.quest-name { font-size: 13px; color: var(–text-bright); }
-.quest-progress { font-size: 12px; color: var(–text-dim); margin-top: 2px; }
-.quest-reward { font-size: 12px; color: var(–gold); margin-top: 2px; }
-.quest-bar-wrap { height: 4px; background: var(–bg); border-radius: 2px; margin-top: 4px; }
-.quest-bar-fill { height: 100%; background: linear-gradient(90deg, var(–gold), var(–gold-light)); border-radius: 2px; transition: width 0.5s; }
-.btn-sm { padding: 4px 10px; font-size: 12px; }
-
-/* BOOSTS / SHOP */
-#boost-section {
-grid-column: 1 / 4;
-margin-top: 2px;
-}
-#boost-section .panel-title { margin-bottom: 10px; }
-.boost-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
-.boost-card {
-background: var(–bg3); border: 1px solid var(–border);
-border-radius: 5px; padding: 10px 12px;
-display: flex; align-items: flex-start; gap: 10px;
-transition: all 0.2s;
-}
-.boost-card:not(.owned):hover { border-color: var(–gold); }
-.boost-card.owned { border-color: var(–green-light); background: rgba(42,107,58,0.1); }
-.boost-icon { font-size: 1.6rem; }
-.boost-info { flex: 1; }
-.boost-name { font-size: 13px; color: var(–text-bright); }
-.boost-desc { font-size: 11px; color: var(–text-dim); font-style: italic; margin-top: 2px; }
-.boost-cost { font-size: 12px; color: var(–gold); margin-top: 4px; }
-.boost-owned-label { font-size: 11px; color: var(–green-light); margin-top: 4px; }
-
-/* NOTIFICATION TOAST */
-#toast {
-position: fixed; bottom: 20px; right: 20px;
-background: var(–panel); border: 1px solid var(–gold);
-border-radius: 5px; padding: 10px 16px;
-font-size: 13px; color: var(–gold);
-opacity: 0; transform: translateY(10px);
-transition: all 0.3s; pointer-events: none;
-z-index: 999;
-}
-#toast.show { opacity: 1; transform: translateY(0); }
-
-/* PRESTIGE MODAL */
-#prestige-modal {
-display: none; position: fixed; inset: 0;
-background: rgba(0,0,0,0.8); z-index: 100;
-align-items: center; justify-content: center;
-}
-#prestige-modal.open { display: flex; }
-.modal-box {
-background: var(–panel); border: 1px solid var(–gold);
-border-radius: 8px; padding: 28px 32px;
-max-width: 420px; text-align: center;
-}
-.modal-box h2 { font-family: ‘Cinzel Decorative’, serif; color: var(–gold); margin-bottom: 10px; }
-.modal-box p { color: var(–text); font-size: 14px; line-height: 1.6; margin-bottom: 16px; }
-.modal-actions { display: flex; gap: 10px; justify-content: center; }
-
-/* ANIMATIONS */
-@keyframes pulse-gold {
-0%, 100% { text-shadow: 0 0 10px rgba(201,164,74,0.3); }
-50% { text-shadow: 0 0 20px rgba(201,164,74,0.6); }
-}
-.gold-pulse { animation: pulse-gold 2s infinite; }
-
-@keyframes float {
-0%, 100% { transform: translateY(0); }
-50% { transform: translateY(-3px); }
-}
-
-/* Scrollbar */
-::-webkit-scrollbar { width: 4px; height: 4px; }
-::-webkit-scrollbar-track { background: var(–bg); }
-::-webkit-scrollbar-thumb { background: var(–border-glow); }
-
-/* TABS for skill tree */
-.tab-bar { display: flex; gap: 4px; margin-bottom: 10px; }
-.tab-btn {
-flex: 1; padding: 5px; background: var(–bg3);
-border: 1px solid var(–border); border-radius: 3px;
-font-family: ‘Crimson Pro’, serif; font-size: 12px;
-color: var(–text-dim); cursor: pointer; transition: all 0.2s;
-}
-.tab-btn.active { background: rgba(74,42,107,0.3); border-color: var(–purple-light); color: var(–purple-light); }
-
-.zone-badge {
-display: inline-block; background: rgba(42,42,107,0.4);
-border: 1px solid var(–blue-light); border-radius: 3px;
-padding: 2px 8px; font-size: 11px; color: var(–blue-light); margin-left: 8px;
-}
+/* Pixel art font for numbers */
+.pixel-num{font-family:‘Courier New’,monospace;font-weight:bold}
 </style>
 
 </head>
 <body>
-<div id="app">
-  <header>
-    <h1 class="gold-pulse">⚔ Ashen Throne ⚔</h1>
-    <p>An idle realm where darkness hungers and legends are forged</p>
-  </header>
+<div id="game">
 
-  <div id="status-bar">
-    <div class="stat-chip">⚔ Kills: <span id="stat-kills">0</span></div>
-    <div class="stat-chip">💰 Gold: <span id="stat-gold">0</span></div>
-    <div class="stat-chip">💀 Deaths: <span id="stat-deaths">0</span></div>
-    <div class="stat-chip">🏆 Zone: <span id="stat-zone">1</span></div>
-    <div class="stat-chip">⏱ Offline: <span id="stat-offline">0s</span></div>
-    <div class="stat-chip prestige-chip">✨ Prestige: <span id="stat-prestige">0</span></div>
-    <button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="openPrestige()">Prestige</button>
+  <!-- TITLE SCREEN -->
+
+  <div class="screen active" id="screen-title">
+    <div class="title-bg"><canvas id="title-canvas"></canvas></div>
+    <div class="title-content">
+      <div style="font-size:4rem;filter:drop-shadow(0 0 20px rgba(200,72,32,0.8))">🏰</div>
+      <div class="game-logo">ASHEN<br>THRONE</div>
+      <div class="title-divider"></div>
+      <div class="game-subtitle">Gothic Idle RPG</div>
+      <div style="height:20px"></div>
+      <button class="btn-title" onclick="startGame()">⚔ ENTER REALM</button>
+      <div style="font-size:.7rem;color:var(--text3);font-style:italic;margin-top:8px">Progress saves automatically</div>
+    </div>
   </div>
 
-  <div id="main-grid">
-    <!-- CHARACTER PANEL -->
-    <div class="panel" id="char-panel">
-      <div class="panel-title">⚰ The Hollow</div>
-      <div class="char-avatar" id="char-avatar">🗡</div>
-      <div class="char-name" id="char-name">Unnamed</div>
-      <div class="char-class" id="char-class">Choose your path</div>
+  <!-- CLASS SELECT -->
 
-```
-  <div class="bar-wrap">
-    <div class="bar-label"><span>HP</span><span id="hp-text">100 / 100</span></div>
-    <div class="bar bar-hp"><div class="bar-fill" id="hp-bar" style="width:100%"></div></div>
-  </div>
-  <div class="bar-wrap">
-    <div class="bar-label"><span>Mana</span><span id="mana-text">50 / 50</span></div>
-    <div class="bar bar-mana"><div class="bar-fill" id="mana-bar" style="width:100%"></div></div>
-  </div>
-  <div class="bar-wrap">
-    <div class="bar-label"><span>XP — Lv.<span id="char-level">1</span></span><span id="xp-text">0 / 100</span></div>
-    <div class="bar bar-xp"><div class="bar-fill" id="xp-bar" style="width:0%"></div></div>
+  <div class="screen" id="screen-class">
+    <div class="screen-header">Choose Your Path</div>
+    <div class="class-cards" id="class-cards" style="padding:10px"></div>
+    <div style="padding:10px;padding-top:0">
+      <button class="btn-title" style="width:100%;padding:12px" id="confirm-class-btn" onclick="confirmClass()" disabled>Begin Journey</button>
+    </div>
   </div>
 
-  <div class="char-stats">
-    <div class="stat-row"><span>⚔ Attack</span><span class="val" id="s-atk">5</span></div>
-    <div class="stat-row"><span>🛡 Defense</span><span class="val" id="s-def">2</span></div>
-    <div class="stat-row"><span>⚡ Speed</span><span class="val" id="s-spd">1.0</span></div>
-    <div class="stat-row"><span>🎯 Crit %</span><span class="val" id="s-crit">5</span></div>
-    <div class="stat-row"><span>🩸 Lifesteal</span><span class="val" id="s-life">0</span></div>
-    <div class="stat-row"><span>🧿 Spell Dmg</span><span class="val" id="s-spell">0</span></div>
-  </div>
+  <!-- MAIN GAME -->
 
-  <div class="class-select-wrap">
-    <div style="font-size:11px;color:var(--text-dim);margin-bottom:6px;letter-spacing:1px">CHOOSE CLASS</div>
-    <button class="class-btn active" onclick="selectClass('warrior')" id="cls-warrior"><span class="class-icon">⚔</span>Ironclad Warrior</button>
-    <button class="class-btn" onclick="selectClass('mage')" id="cls-mage"><span class="class-icon">🔮</span>Void Mage</button>
-    <button class="class-btn" onclick="selectClass('rogue')" id="cls-rogue"><span class="class-icon">🗡</span>Shadow Rogue</button>
-  </div>
-</div>
-
-<!-- COMBAT PANEL -->
-<div class="panel" id="combat-panel">
-  <div class="panel-title">☠ The Battlefield</div>
-  <div class="enemy-area">
-    <div class="enemy-icon" id="enemy-icon">💀</div>
-    <div class="enemy-info">
-      <div class="enemy-name" id="enemy-name">Grave Rat</div>
-      <div style="margin: 4px 0;">
-        <div class="bar-label" style="margin-bottom:2px"><span style="font-size:11px;color:var(--text-dim)">Enemy HP</span><span id="enemy-hp-text" style="font-size:11px;color:var(--text-dim)">20 / 20</span></div>
-        <div class="bar bar-hp" style="height:6px"><div class="bar-fill" id="enemy-hp-bar" style="width:100%"></div></div>
+  <div class="screen" id="screen-game">
+    <!-- HUD -->
+    <div id="hud-top">
+      <div class="hud-avatar" id="hud-avatar">⚔</div>
+      <div class="hud-bars">
+        <div class="hud-bar-row">
+          <div class="hud-bar-label" style="color:#e04040">♥</div>
+          <div class="hud-bar bar-hp"><div class="hud-bar-fill" id="bar-hp" style="width:100%"></div></div>
+          <div style="font-size:.6rem;color:var(--text3);width:60px;text-align:right" id="label-hp">100/100</div>
+        </div>
+        <div class="hud-bar-row">
+          <div class="hud-bar-label" style="color:#3060c0">✦</div>
+          <div class="hud-bar bar-mana"><div class="hud-bar-fill" id="bar-mana" style="width:100%"></div></div>
+          <div style="font-size:.6rem;color:var(--text3);width:60px;text-align:right" id="label-mana">50/50</div>
+        </div>
+        <div class="hud-bar-row">
+          <div class="hud-bar-label" style="color:#208040">★</div>
+          <div class="hud-bar bar-xp"><div class="hud-bar-fill" id="bar-xp" style="width:0%"></div></div>
+          <div style="font-size:.6rem;color:var(--text3);width:60px;text-align:right" id="label-xp">0/100</div>
+        </div>
       </div>
-      <div class="enemy-zone">Zone <span id="enemy-zone">1</span> — <span id="enemy-zone-name">The Ashen Fields</span></div>
+      <div class="hud-right">
+        <div class="hud-gold">💰 <span id="hud-gold">0</span></div>
+        <div class="hud-level">Lv.<span id="hud-level">1</span></div>
+        <div class="hud-zone-badge">Zone <span id="hud-zone">1</span></div>
+      </div>
     </div>
-    <div style="text-align:center">
-      <div style="font-size:11px;color:var(--text-dim)">Next Zone</div>
-      <div id="zone-progress" style="font-size:13px;color:var(--gold)">0 / 10</div>
+
+```
+<!-- Arena -->
+<div id="arena-section">
+  <div id="arena-wrap">
+    <canvas id="arena"></canvas>
+    <div id="combat-overlay"></div>
+    <button id="auto-btn" onclick="toggleAuto()">AUTO OFF</button>
+    <button id="zone-btn" onclick="advanceZone()">→ ZONE</button>
+    <div id="attack-btn-wrap">
+      <div id="attack-btn" ontouchstart="touchAttack(event)" onmousedown="touchAttack(event)">⚔</div>
     </div>
   </div>
+</div>
 
-  <div class="combat-log" id="combat-log">
-    <div class="log-dim">The realm awaits your command, hero...</div>
+<!-- Tabs -->
+<div id="tabs">
+  <div class="tab active" onclick="switchTab('combat')" id="tab-combat">
+    <span>⚔</span><span class="tab-label">Skills</span>
   </div>
-
-  <div class="idle-controls">
-    <button class="btn btn-primary" id="toggle-btn" onclick="toggleIdle()">▶ Begin Idle</button>
-    <button class="btn btn-gold" onclick="manualAttack()">⚔ Strike</button>
-    <button class="btn" style="border-color:var(--border);color:var(--text-dim)" onclick="advanceZone()">→ Next Zone</button>
+  <div class="tab" onclick="switchTab('quests')" id="tab-quests">
+    <span>📜</span><span class="tab-label">Quests</span>
   </div>
-  <div class="speed-indicator">
-    Attack speed: <span id="speed-label">1.0x</span>
-    <div class="speed-dot" id="dot1"></div>
-    <div class="speed-dot" id="dot2"></div>
-    <div class="speed-dot" id="dot3"></div>
-    <div class="speed-dot" id="dot4"></div>
-    <div class="speed-dot" id="dot5"></div>
+  <div class="tab" onclick="switchTab('boons')" id="tab-boons">
+    <span>⚗</span><span class="tab-label">Boons</span>
+  </div>
+  <div class="tab" onclick="switchTab('stats')" id="tab-stats">
+    <span>📊</span><span class="tab-label">Stats</span>
   </div>
 </div>
 
-<!-- SKILL TREE PANEL -->
-<div class="panel" id="skill-panel">
-  <div class="panel-title">🌳 Skill Tree</div>
-  <div class="skill-points-display">
-    <span>Skill Points</span>
-    <strong id="sp-display">0</strong>
-  </div>
-  <div class="tab-bar">
-    <button class="tab-btn active" onclick="setSkillTab('combat')" id="tab-combat">Combat</button>
-    <button class="tab-btn" onclick="setSkillTab('passive')" id="tab-passive">Passive</button>
-    <button class="tab-btn" onclick="setSkillTab('class')" id="tab-class">Class</button>
-  </div>
-  <div id="skill-tree-content" class="skill-tree"></div>
-</div>
-
-<!-- QUEST PANEL -->
-<div class="panel" id="quest-panel">
-  <div class="panel-title">📜 Quest Log</div>
-  <div class="quest-list" id="quest-list"></div>
-</div>
+<!-- Tab Content -->
+<div id="tab-content"></div>
 ```
 
   </div>
 
-  <!-- BOOSTS SECTION -->
-
-  <div id="boost-section" style="margin-top:10px">
-    <div class="panel">
-      <div class="panel-title">⚗ Unlockable Boons</div>
-      <div class="boost-grid" id="boost-grid"></div>
-    </div>
-  </div>
 </div>
 
-<!-- PRESTIGE MODAL -->
-
-<div id="prestige-modal">
-  <div class="modal-box">
-    <h2>✨ Prestige</h2>
-    <p>Sacrifice your progress and return stronger. Your level, gold, and skills reset — but you keep Prestige Points, permanent boosts, and the wisdom you have earned.</p>
-    <p style="color:var(--gold)">You will gain <strong id="prestige-gain">1</strong> Prestige Point.<br>Bonus: +5% all stats per Prestige level.</p>
-    <div class="modal-actions">
-      <button class="btn btn-gold" onclick="doPrestige()">✨ Ascend</button>
-      <button class="btn" style="border-color:var(--border);color:var(--text-dim)" onclick="closePrestige()">Cancel</button>
-    </div>
-  </div>
-</div>
+<!-- TOAST -->
 
 <div id="toast"></div>
+<!-- LEVEL UP -->
+<div id="levelup-splash"><div class="levelup-text">LEVEL UP!</div></div>
+<!-- MODAL -->
+<div id="modal">
+  <div class="modal-box">
+    <div class="modal-title" id="modal-title">Prestige</div>
+    <div class="modal-desc" id="modal-desc">Are you sure?</div>
+    <div class="modal-warn" id="modal-warn"></div>
+    <div class="modal-btns">
+      <button class="modal-btn confirm" id="modal-confirm">Confirm</button>
+      <button class="modal-btn cancel" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+<!-- AUDIO BTN -->
+<div id="audio-btn" onclick="toggleAudio()">🔊</div>
 
 <script>
-// ============================================================
-// GAME STATE
-// ============================================================
-const SAVE_KEY = 'ashen_throne_v1';
+// =====================================================
+// AUDIO ENGINE — Web Audio API 16-bit style
+// =====================================================
+let audioCtx = null, audioEnabled = false;
+function initAudio(){
+  try{
+    audioCtx = new(window.AudioContext||window.webkitAudioContext)();
+    audioEnabled = true;
+    document.getElementById('audio-btn').style.display='flex';
+  }catch(e){}
+}
+function toggleAudio(){
+  audioEnabled=!audioEnabled;
+  document.getElementById('audio-btn').textContent=audioEnabled?'🔊':'🔇';
+}
 
-const CLASSES = {
-  warrior: { icon: '⚔', name: 'Ironclad Warrior', avatar: '🛡', atk: 7, def: 4, maxHp: 140, maxMana: 30, spd: 1.0, crit: 5, color: '#c04040' },
-  mage:    { icon: '🔮', name: 'Void Mage',        avatar: '🔮', atk: 4, def: 2, maxHp: 90,  maxMana: 100, spd: 1.0, crit: 10, spell: 8, color: '#8a5aab' },
-  rogue:   { icon: '🗡', name: 'Shadow Rogue',      avatar: '🗡', atk: 6, def: 2, maxHp: 110, maxMana: 60, spd: 1.4, crit: 20, color: '#4a9b5a' },
+function playTone(freq, type='square', dur=0.1, vol=0.15, delay=0){
+  if(!audioCtx||!audioEnabled) return;
+  const osc=audioCtx.createOscillator();
+  const gain=audioCtx.createGain();
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.type=type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime+delay);
+  gain.gain.setValueAtTime(vol, audioCtx.currentTime+delay);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+delay+dur);
+  osc.start(audioCtx.currentTime+delay);
+  osc.stop(audioCtx.currentTime+delay+dur+0.01);
+}
+
+function playNoise(dur=0.05, vol=0.1, delay=0){
+  if(!audioCtx||!audioEnabled) return;
+  const buf=audioCtx.createBuffer(1, audioCtx.sampleRate*dur, audioCtx.sampleRate);
+  const d=buf.getChannelData(0);
+  for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1);
+  const src=audioCtx.createBufferSource();
+  const gain=audioCtx.createGain();
+  const filter=audioCtx.createBiquadFilter();
+  filter.type='bandpass'; filter.frequency.value=800;
+  src.buffer=buf; src.connect(filter); filter.connect(gain); gain.connect(audioCtx.destination);
+  gain.gain.setValueAtTime(vol, audioCtx.currentTime+delay);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+delay+dur);
+  src.start(audioCtx.currentTime+delay);
+}
+
+const SFX = {
+  hit:()=>{playNoise(0.05,0.2); playTone(150,'square',0.05,0.1,0.02)},
+  crit:()=>{playTone(300,'square',0.04,0.2); playTone(600,'square',0.04,0.2,0.04); playTone(900,'square',0.04,0.15,0.08)},
+  die:()=>{playTone(200,'sawtooth',0.08,0.15); playTone(150,'sawtooth',0.1,0.15,0.06); playTone(100,'sawtooth',0.15,0.1,0.12)},
+  enemyDie:()=>{playTone(400,'square',0.05,0.12); playTone(300,'square',0.05,0.12,0.05); playTone(200,'square',0.08,0.1,0.1)},
+  levelup:()=>{[400,500,600,800].forEach((f,i)=>playTone(f,'square',0.08,0.18,i*0.08))},
+  gold:()=>{playTone(800,'sine',0.06,0.1); playTone(1200,'sine',0.04,0.08,0.06)},
+  skill:()=>{playTone(600,'triangle',0.06,0.12); playTone(900,'triangle',0.08,0.1,0.05)},
+  quest:()=>{[500,700,900,700,900].forEach((f,i)=>playTone(f,'square',0.06,0.15,i*0.07))},
+  prestige:()=>{[200,300,400,600,800,1000,800].forEach((f,i)=>playTone(f,'square',0.1,0.2,i*0.1))},
+  hurt:()=>{playTone(180,'sawtooth',0.06,0.12); playNoise(0.04,0.08,0.02)},
 };
 
-const ZONES = [
-  { name: 'The Ashen Fields', icon: '🌾', enemies: ['Grave Rat','Skeletal Hound','Blighted Crow'], hp: 20, goldMin: 2, goldMax: 5 },
-  { name: 'Catacombs of Mourn', icon: '💀', enemies: ['Rotting Zealot','Bone Archer','Crypt Crawler'], hp: 50, goldMin: 5, goldMax: 12 },
-  { name: 'Frostbitten Wastes', icon: '❄', enemies: ['Frost Wraith','Ice Golem','Frozen Knight'], hp: 110, goldMin: 12, goldMax: 25 },
-  { name: 'Shadowmere Swamp', icon: '🌿', enemies: ['Plague Toad','Swamp Specter','Bog Witch'], hp: 230, goldMin: 25, goldMax: 55 },
-  { name: 'The Obsidian Keep', icon: '🏯', enemies: ['Lava Sentinel','Shadow Drake','Iron Lich'], hp: 500, goldMin: 55, goldMax: 120 },
+// Background music — simple looping arpeggio
+let bgMusicHandle = null;
+function startBgMusic(){
+  if(!audioCtx||!audioEnabled) return;
+  const notes=[220,277,330,440,370,330,277,220];
+  let i=0;
+  function playNext(){
+    if(!audioEnabled){bgMusicHandle=setTimeout(playNext,600);return}
+    const osc=audioCtx.createOscillator();
+    const gain=audioCtx.createGain();
+    osc.connect(gain); gain.connect(audioCtx.destination);
+    osc.type='triangle'; osc.frequency.value=notes[i%notes.length];
+    gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+0.3);
+    osc.start(); osc.stop(audioCtx.currentTime+0.3);
+    i++;
+    bgMusicHandle=setTimeout(playNext, i%4===0?800:400);
+  }
+  bgMusicHandle=setTimeout(playNext,1000);
+}
+
+// =====================================================
+// CANVAS RENDERING — Pixel-art style sprites
+// =====================================================
+const PIXEL = 3; // scale factor
+
+function drawPixelArt(ctx, sprite, x, y, scale=1){
+  const s=PIXEL*scale;
+  sprite.forEach((row,ry)=>row.forEach((col,rx)=>{
+    if(!col) return;
+    ctx.fillStyle=col;
+    ctx.fillRect(x+rx*s, y+ry*s, s, s);
+  }));
+}
+
+// Color palettes
+const PAL = {
+  warrior: {skin:'#d4906a',armor:'#5a6880',armor2:'#8090a8',sword:'#c0c8d0',sword2:'#e0e8f0',hair:'#403020',belt:'#a06020',eye:'#201810'},
+  mage: {skin:'#d4906a',robe:'#4a1a6a',robe2:'#7040a0',staff:'#806040',staff2:'#c0a060',gem:'#a020e0',hair:'#1a1a3a',eye:'#6020c0'},
+  rogue: {skin:'#c07850',cloak:'#202020',cloak2:'#383838',blade:'#c8d0d8',blade2:'#e8f0f8',hair:'#181210',eye:'#201810'},
+};
+
+const SPRITES = {
+  warrior: (p)=>[
+    [0,0,0,p.hair,p.hair,p.hair,0,0,0],
+    [0,0,p.hair,p.skin,p.skin,p.skin,p.hair,0,0],
+    [0,0,p.skin,p.skin,p.skin,p.skin,p.skin,0,0],
+    [0,0,p.skin,p.eye,p.skin,p.eye,p.skin,0,0],
+    [0,0,p.skin,p.skin,p.skin,p.skin,p.skin,0,0],
+    [0,p.armor2,p.armor,p.belt,p.belt,p.belt,p.armor,p.armor2,0],
+    [p.armor,p.armor2,p.armor,p.armor,p.armor,p.armor,p.armor,p.armor2,p.armor],
+    [0,p.armor,p.armor2,p.armor,p.armor,p.armor,p.armor2,p.armor,0],
+    [0,p.armor,p.armor,p.armor2,p.armor2,p.armor2,p.armor,p.armor,0],
+    [0,p.armor2,p.armor,0,0,0,p.armor,p.armor2,0],
+    [0,p.armor,p.armor,0,0,0,p.armor,p.armor,0],
+    [0,p.armor2,p.armor2,0,0,0,p.armor2,p.armor2,0],
+  ],
+  mage: (p)=>[
+    [0,0,p.hair,p.hair,p.hair,p.hair,p.hair,0,0],
+    [0,p.hair,p.skin,p.skin,p.skin,p.skin,p.skin,p.hair,0],
+    [0,0,p.skin,p.skin,p.skin,p.skin,p.skin,0,0],
+    [0,0,p.skin,p.eye,p.skin,p.eye,p.skin,0,0],
+    [0,0,p.skin,p.skin,p.skin,p.skin,p.skin,0,0],
+    [0,p.robe2,p.robe,p.robe,p.robe,p.robe,p.robe,p.robe2,0],
+    [p.robe,p.robe2,p.robe,p.robe,p.robe,p.robe,p.robe,p.robe2,p.robe],
+    [0,p.robe,p.robe2,p.gem,p.robe,p.gem,p.robe2,p.robe,0],
+    [0,p.robe,p.robe,p.robe2,p.robe2,p.robe2,p.robe,p.robe,0],
+    [0,p.robe2,p.robe,0,0,0,p.robe,p.robe2,0],
+    [0,p.robe,p.robe,0,0,0,p.robe,p.robe,0],
+    [0,p.robe2,p.robe2,0,0,0,p.robe2,p.robe2,0],
+  ],
+  rogue: (p)=>[
+    [0,0,p.hair,p.hair,p.hair,p.hair,0,0,0],
+    [0,p.cloak2,p.skin,p.skin,p.skin,p.skin,p.cloak2,0,0],
+    [0,0,p.skin,p.skin,p.skin,p.skin,p.skin,0,0],
+    [0,0,p.cloak,p.eye,p.skin,p.eye,p.skin,0,0],
+    [0,0,p.skin,p.skin,p.skin,p.skin,p.skin,0,0],
+    [0,p.cloak2,p.cloak,p.cloak,p.cloak,p.cloak,p.cloak,p.cloak2,0],
+    [p.cloak,p.cloak2,p.cloak,p.cloak,p.cloak,p.cloak,p.cloak,p.cloak2,p.blade],
+    [0,p.cloak,p.cloak2,p.cloak,p.cloak,p.cloak,p.cloak2,p.cloak,p.blade2],
+    [0,p.cloak,p.cloak,p.cloak2,p.cloak2,p.cloak2,p.cloak,p.cloak,p.blade],
+    [0,p.cloak2,p.cloak,0,0,0,p.cloak,p.cloak2,0],
+    [0,p.cloak,p.cloak,0,0,0,p.cloak,p.cloak,0],
+    [0,p.cloak2,p.cloak2,0,0,0,p.cloak2,p.cloak2,0],
+  ],
+};
+
+// Enemy sprites
+const ENEMY_SPRITES = {
+  rat:{
+    colors:['#603020','#804030','#a06040','#201010','#ff2020'],
+    draw(ctx,x,y,flip){
+      const c=this.colors;
+      const p=PIXEL;
+      if(flip){ctx.save();ctx.translate(x+7*p,0);ctx.scale(-1,1);x=0;}
+      [[0,0,0,c[0],c[0],0,c[1],0],[0,0,c[0],c[1],c[1],c[0],c[1],0],[0,c[0],c[1],c[2],c[2],c[1],c[0],0],
+       [c[0],c[1],c[2],c[3],c[2],c[2],c[1],c[0]],[0,c[0],c[1],c[2],c[1],c[1],c[0],0],
+       [0,0,c[0],c[0],c[0],c[0],0,0],[0,c[0],c[0],0,0,c[0],c[0],0]].forEach((row,ry)=>
+        row.forEach((col,rx)=>{if(!col)return;ctx.fillStyle=col;ctx.fillRect(x+rx*p,y+ry*p,p,p)}));
+      if(flip) ctx.restore();
+    }
+  },
+  skeleton:{
+    colors:['#d8d0b8','#b8b0a0','#e8e0d0','#201810','#c03020'],
+    draw(ctx,x,y,flip){
+      const c=this.colors;const p=PIXEL;
+      if(flip){ctx.save();ctx.translate(x+8*p,0);ctx.scale(-1,1);x=0;}
+      [[0,c[0],c[0],c[0],c[0],c[0],0,0],[0,c[2],c[0],c[0],c[0],c[2],0,0],
+       [0,c[0],c[3],c[0],c[3],c[0],0,0],[0,c[0],c[0],c[0],c[0],c[0],0,0],
+       [0,c[1],c[2],c[2],c[2],c[1],0,0],[c[1],c[0],c[1],c[0],c[1],c[0],c[1],0],
+       [0,c[1],c[0],c[0],c[0],c[1],0,0],[0,c[0],c[1],0,c[1],c[0],0,0],
+       [0,c[1],c[0],0,c[0],c[1],0,0],[0,c[0],c[1],0,c[1],c[0],0,0]].forEach((row,ry)=>
+        row.forEach((col,rx)=>{if(!col)return;ctx.fillStyle=col;ctx.fillRect(x+rx*p,y+ry*p,p,p)}));
+      if(flip) ctx.restore();
+    }
+  },
+  zombie:{
+    colors:['#507840','#406030','#203018','#201810','#c03020','#a8c888'],
+    draw(ctx,x,y,flip){
+      const c=this.colors;const p=PIXEL;
+      if(flip){ctx.save();ctx.translate(x+9*p,0);ctx.scale(-1,1);x=0;}
+      [[0,c[0],c[1],c[0],c[0],c[1],0,0,0],[0,c[5],c[0],c[5],c[5],c[0],c[5],0,0],
+       [0,c[0],c[5],c[5],c[5],c[5],c[0],0,0],[0,c[0],c[3],c[5],c[3],c[5],c[0],0,0],
+       [0,c[0],c[5],c[5],c[5],c[5],c[0],0,0],[0,c[1],c[0],c[0],c[0],c[0],c[1],0,0],
+       [c[1],c[0],c[1],c[0],c[0],c[1],c[0],c[1],0],[0,c[0],c[1],c[0],c[0],c[1],c[0],0,0],
+       [0,c[1],c[0],0,0,c[0],c[1],0,0],[0,c[0],c[0],0,0,c[0],c[0],0,0]].forEach((row,ry)=>
+        row.forEach((col,rx)=>{if(!col)return;ctx.fillStyle=col;ctx.fillRect(x+rx*p,y+ry*p,p,p)}));
+      if(flip) ctx.restore();
+    }
+  },
+  wraith:{
+    colors:['#4040c0','#6060e0','#8080f8','#2020a0','#e0e0ff','#ffffff'],
+    draw(ctx,x,y,flip){
+      const c=this.colors;const p=PIXEL;
+      if(flip){ctx.save();ctx.translate(x+8*p,0);ctx.scale(-1,1);x=0;}
+      [[0,0,c[2],c[1],c[1],c[2],0,0],[0,c[1],c[5],c[2],c[2],c[5],c[1],0],
+       [0,c[1],c[2],c[5],c[2],c[2],c[1],0],[0,c[0],c[1],c[2],c[2],c[1],c[0],0],
+       [0,c[1],c[0],c[1],c[1],c[0],c[1],0],[c[3],c[0],c[1],c[0],c[0],c[1],c[0],c[3]],
+       [0,c[3],c[0],c[3],c[3],c[0],c[3],0],[0,0,c[3],0,0,c[3],0,0]].forEach((row,ry)=>
+        row.forEach((col,rx)=>{if(!col)return;ctx.fillStyle=col;ctx.fillRect(x+rx*p,y+ry*p,p,p)}));
+      if(flip) ctx.restore();
+    }
+  },
+  dragon:{
+    colors:['#802010','#c03020','#e04030','#401010','#ffa030','#ffcc60'],
+    draw(ctx,x,y,flip){
+      const c=this.colors;const p=PIXEL;
+      if(flip){ctx.save();ctx.translate(x+12*p,0);ctx.scale(-1,1);x=0;}
+      [[0,0,0,c[0],c[1],c[0],0,0,0,0,0,0],
+       [0,0,c[0],c[2],c[2],c[2],c[0],0,0,0,c[4],0],
+       [0,c[0],c[2],c[1],c[2],c[1],c[2],c[0],0,c[4],c[5],c[4]],
+       [c[0],c[2],c[2],c[3],c[2],c[3],c[2],c[2],c[0],c[4],c[5],c[4]],
+       [0,c[1],c[2],c[2],c[2],c[2],c[2],c[1],0,0,c[4],0],
+       [0,c[0],c[1],c[0],c[0],c[0],c[1],c[0],0,0,0,0],
+       [c[0],c[1],c[0],c[1],c[0],c[1],c[0],c[1],c[0],0,0,0],
+       [0,c[0],c[1],c[0],c[0],c[0],c[1],c[0],0,0,0,0],
+       [0,c[0],c[0],c[1],0,c[1],c[0],c[0],0,0,0,0]].forEach((row,ry)=>
+        row.forEach((col,rx)=>{if(!col)return;ctx.fillStyle=col;ctx.fillRect(x+rx*p,y+ry*p,p,p)}));
+      if(flip) ctx.restore();
+    }
+  },
+  lich:{
+    colors:['#1a1a2a','#3a2a5a','#6a4a9a','#a070d8','#e8e0ff','#c84820'],
+    draw(ctx,x,y,flip){
+      const c=this.colors;const p=PIXEL;
+      if(flip){ctx.save();ctx.translate(x+9*p,0);ctx.scale(-1,1);x=0;}
+      [[0,c[1],c[2],c[3],c[3],c[2],c[1],0,0],
+       [c[1],c[2],c[4],c[3],c[3],c[4],c[2],c[1],0],
+       [0,c[2],c[3],c[5],c[3],c[5],c[3],c[2],0],
+       [0,c[1],c[3],c[3],c[3],c[3],c[3],c[1],0],
+       [0,c[2],c[1],c[2],c[2],c[2],c[1],c[2],0],
+       [c[1],c[2],c[3],c[2],c[2],c[2],c[3],c[2],c[1]],
+       [0,c[1],c[2],c[3],c[2],c[3],c[2],c[1],0],
+       [0,c[2],c[1],0,0,0,c[1],c[2],0],
+       [0,c[1],c[2],0,0,0,c[2],c[1],0],
+       [0,c[1],c[1],0,0,0,c[1],c[1],0]].forEach((row,ry)=>
+        row.forEach((col,rx)=>{if(!col)return;ctx.fillStyle=col;ctx.fillRect(x+rx*p,y+ry*p,p,p)}));
+      if(flip) ctx.restore();
+    }
+  }
+};
+
+// Background parallax layers per zone
+const ZONE_BG = [
+  { sky:['#1a1208','#2a1a10'], ground:'#2a1e10', accent:'#3a2818', trees:'#1a1408', name:'Ashen Fields' },
+  { sky:['#120808','#1a1010'], ground:'#1a1208', accent:'#241810', trees:'#0e0808', name:'Catacombs' },
+  { sky:['#080c18','#101828'], ground:'#1a2030', accent:'#2030404', trees:'#080c18', name:'Frostmere' },
+  { sky:['#0c0818','#180c28'], ground:'#1a1028', accent:'#281838', trees:'#0c0818', name:'Shadowmere' },
+  { sky:['#180808','#200808'], ground:'#201010', accent:'#301818', trees:'#100808', name:'Obsidian Keep' },
+  { sky:['#0a0a18','#141428'], ground:'#181820', accent:'#282830', trees:'#0a0a14', name:'Spectral Wastes' },
+  { sky:['#180818','#200c20'], ground:'#201020', accent:'#2c1428', trees:'#100810', name:'Voidspire' },
+  { sky:['#100808','#180808'], ground:'#1c0c0c', accent:'#240c0c', trees:'#0c0404', name:'Infernal Core' },
 ];
 
-const SKILLS = {
-  combat: [
-    { id: 'heavy_blow', name: 'Heavy Blow', icon: '💥', desc: '+3 attack per level', max: 5, effect: 'atk', value: 3 },
-    { id: 'iron_skin',  name: 'Iron Skin',  icon: '🛡', desc: '+2 defense per level', max: 5, effect: 'def', value: 2 },
-    { id: 'swift',      name: 'Swiftness',  icon: '⚡', desc: '+0.1 attack speed per level', max: 5, effect: 'spd', value: 0.1 },
-    { id: 'executioner',name: 'Executioner',icon: '🗡', desc: '+5% crit chance per level', max: 3, effect: 'crit', value: 5, requires: 'heavy_blow' },
+const ZONE_ENEMIES = [
+  ['rat','rat','skeleton'],
+  ['skeleton','zombie','skeleton'],
+  ['zombie','wraith','zombie'],
+  ['wraith','wraith','lich'],
+  ['dragon','lich','dragon'],
+  ['lich','dragon','wraith'],
+  ['dragon','lich','dragon'],
+  ['lich','dragon','lich'],
+];
+
+// =====================================================
+// GAME DATA
+// =====================================================
+const CLASSES_DATA = {
+  warrior:{
+    icon:'⚔', name:'Ironclad Warrior', flavor:'"Unyielding as stone, fierce as flame"',
+    baseAtk:8, baseDef:5, baseHp:160, baseMana:30, baseSpd:1.0, baseCrit:5, baseSpell:0,
+    statHints:['⚔ High damage','🛡 Best defense','❤ Strong HP'],
+    colors: PAL.warrior,
+  },
+  mage:{
+    icon:'🔮', name:'Void Mage', flavor:'"From darkness, power without limit"',
+    baseAtk:4, baseDef:2, baseHp:90, baseMana:120, baseSpd:1.0, baseCrit:12, baseSpell:14,
+    statHints:['🔮 Spell damage','💥 High crit','✦ Mana scaling'],
+    colors: PAL.mage,
+  },
+  rogue:{
+    icon:'🗡', name:'Shadow Rogue', flavor:'"Strike unseen, vanish like smoke"',
+    baseAtk:6, baseDef:2, baseHp:110, baseMana:70, baseSpd:1.6, baseCrit:22, baseSpell:0,
+    statHints:['🗡 Fast attacks','💥 High crit','👤 Dodge'],
+    colors: PAL.rogue,
+  },
+};
+
+const SKILL_TREES = {
+  offense:[
+    {id:'heavy',name:'Heavy Strike',icon:'💥',desc:'+4 ATK/lv',max:6,eff:'atk',val:4},
+    {id:'execution',name:'Execution',icon:'🗡',desc:'+6% crit/lv',max:5,eff:'crit',val:6,req:'heavy'},
+    {id:'berserker',name:'Berserker',icon:'🔥',desc:'<30% HP: +60% ATK',max:1,eff:'special'},
+    {id:'overpower',name:'Overpower',icon:'💢',desc:'Every 5th hit: 3× dmg',max:1,eff:'special',req:'execution'},
   ],
-  passive: [
-    { id: 'bloodthirst',name: 'Bloodthirst',icon: '🩸', desc: '+2% lifesteal per level', max: 4, effect: 'life', value: 2 },
-    { id: 'arcane_flow',name: 'Arcane Flow', icon: '✨', desc: '+5 spell dmg per level', max: 5, effect: 'spell', value: 5 },
-    { id: 'resilience', name: 'Resilience', icon: '💚', desc: '+15 max HP per level', max: 5, effect: 'maxHp', value: 15 },
-    { id: 'endurance',  name: 'Endurance',  icon: '🫀', desc: 'Regen 1% HP after each kill', max: 3, effect: 'regen', value: 1 },
+  defense:[
+    {id:'ironskin',name:'Iron Skin',icon:'🛡',desc:'+3 DEF/lv',max:6,eff:'def',val:3},
+    {id:'vigor',name:'Vigor',icon:'❤',desc:'+20 max HP/lv',max:5,eff:'maxHp',val:20},
+    {id:'regen',name:'Regeneration',icon:'💚',desc:'Regen 2% HP/kill',max:3,eff:'regen',val:2,req:'vigor'},
+    {id:'fortress',name:'Fortress',icon:'🏰',desc:'Block 15% dmg',max:1,eff:'block',val:15,req:'ironskin'},
   ],
-  class: [
-    { id: 'berserker',  name: 'Berserker',  icon: '🔥', desc: '+50% atk, -25% def at <30% HP', max: 1, effect: 'special', requires: null },
-    { id: 'soulbind',   name: 'Soul Bind',  icon: '🌑', desc: 'Spells also drain enemy mana', max: 1, effect: 'special', requires: null },
-    { id: 'shadowstep', name: 'Shadow Step',icon: '👤', desc: '+10% dodge chance', max: 1, effect: 'dodge', value: 10 },
-    { id: 'overpower',  name: 'Overpower',  icon: '⚔', desc: 'Every 5th attack deals 3x dmg', max: 1, effect: 'special', requires: null },
+  magic:[
+    {id:'arcane',name:'Arcane Surge',icon:'✨',desc:'+6 spell/lv',max:6,eff:'spell',val:6},
+    {id:'manapool',name:'Mana Pool',icon:'✦',desc:'+20 max mana/lv',max:5,eff:'maxMana',val:20},
+    {id:'soulburn',name:'Soul Burn',icon:'🌑',desc:'Spells deal +25% dmg',max:1,eff:'special',req:'arcane'},
+    {id:'lifedrain',name:'Life Drain',icon:'🩸',desc:'+3% lifesteal/lv',max:4,eff:'life',val:3},
+  ],
+  agility:[
+    {id:'swift',name:'Swiftness',icon:'⚡',desc:'+0.12 ATK spd/lv',max:5,eff:'spd',val:0.12},
+    {id:'dodge',name:'Shadow Step',icon:'👤',desc:'+8% dodge/lv',max:3,eff:'dodge',val:8},
+    {id:'flurry',name:'Flurry',icon:'🌀',desc:'+2 bonus hits/crit',max:1,eff:'special',req:'swift'},
+    {id:'shadow',name:'Shadowform',icon:'🌫',desc:'+20% all stats at night',max:1,eff:'special'},
   ],
 };
 
 const QUESTS = [
-  { id: 'q1', name: 'First Blood', icon: '🩸', desc: 'Slay 10 enemies', type: 'kills', target: 10, reward: { gold: 50, sp: 2 }, done: false },
-  { id: 'q2', name: 'Centennial Slaughter', icon: '💀', desc: 'Slay 100 enemies', type: 'kills', target: 100, reward: { gold: 300, sp: 5 }, done: false },
-  { id: 'q3', name: 'Level 5 Initiate', icon: '⬆', desc: 'Reach level 5', type: 'level', target: 5, reward: { gold: 100, sp: 3 }, done: false },
-  { id: 'q4', name: 'Zone Conqueror', icon: '🗺', desc: 'Reach Zone 3', type: 'zone', target: 3, reward: { gold: 500, sp: 8 }, done: false },
-  { id: 'q5', name: 'Wealthy Shade', icon: '💰', desc: 'Accumulate 1000 gold', type: 'goldTotal', target: 1000, reward: { gold: 0, sp: 5 }, done: false },
-  { id: 'q6', name: 'Gilded Legend', icon: '🏆', desc: 'Reach level 15', type: 'level', target: 15, reward: { gold: 2000, sp: 15 }, done: false },
+  {id:'q1',icon:'🩸',name:'First Blood',desc:'Slay 10 foes',type:'kills',target:10,reward:{gold:50,sp:2},done:false},
+  {id:'q2',icon:'💀',name:'Slaughterer',desc:'100 kills',type:'kills',target:100,reward:{gold:300,sp:5},done:false},
+  {id:'q3',icon:'💀',name:'Reaper',desc:'1000 kills',type:'kills',target:1000,reward:{gold:2000,sp:15},done:false},
+  {id:'q4',icon:'⬆',name:'Initiate',desc:'Reach level 5',type:'level',target:5,reward:{gold:100,sp:3},done:false},
+  {id:'q5',icon:'⬆',name:'Champion',desc:'Reach level 20',type:'level',target:20,reward:{gold:1000,sp:10},done:false},
+  {id:'q6',icon:'⬆',name:'Legend',desc:'Reach level 50',type:'level',target:50,reward:{gold:5000,sp:25},done:false},
+  {id:'q7',icon:'🗺',name:'Explorer',desc:'Reach Zone 3',type:'zone',target:3,reward:{gold:400,sp:8},done:false},
+  {id:'q8',icon:'🗺',name:'Conqueror',desc:'Reach Zone 6',type:'zone',target:6,reward:{gold:2000,sp:20},done:false},
+  {id:'q9',icon:'💰',name:'Miser',desc:'Earn 1000 gold',type:'goldTotal',target:1000,reward:{gold:0,sp:5},done:false},
+  {id:'q10',icon:'💰',name:'Wealthy',desc:'Earn 10000 gold',type:'goldTotal',target:10000,reward:{gold:0,sp:15},done:false},
+  {id:'q11',icon:'✨',name:'Awakened',desc:'Unlock 10 skills',type:'skills',target:10,reward:{gold:1500,sp:12},done:false},
+  {id:'q12',icon:'🔄',name:'Reborn',desc:'Prestige once',type:'prestige',target:1,reward:{gold:0,sp:30},done:false},
 ];
 
-const BOOSTS = [
-  { id: 'b1', name: 'Iron Discipline', icon: '💪', desc: '+10% base attack permanently', cost: 500, effect: 'atk_pct', value: 0.1 },
-  { id: 'b2', name: 'Shadow Cloak', icon: '🌑', desc: '+15% gold from enemies', cost: 300, effect: 'gold_pct', value: 0.15 },
-  { id: 'b3', name: 'Sorcerer\'s Lens', icon: '🔭', desc: '+20% XP gained', cost: 600, effect: 'xp_pct', value: 0.2 },
-  { id: 'b4', name: 'Blood Pact', icon: '🩸', desc: 'Start each fight at +20% HP', cost: 800, effect: 'hp_start', value: 0.2 },
-  { id: 'b5', name: 'Ethereal Gale', icon: '🌬', desc: '+0.2 attack speed', cost: 1000, effect: 'spd_bonus', value: 0.2 },
-  { id: 'b6', name: 'Cursed Greed', icon: '👑', desc: '+25% gold & +25% enemy HP', cost: 1500, effect: 'cursed_greed', value: 0.25 },
+const BOONS = [
+  {id:'b1',icon:'💪',name:'Iron Discipline',desc:'+10% base ATK',cost:500,eff:'atk_pct',val:0.1},
+  {id:'b2',icon:'🌑',name:'Shadow Harvest',desc:'+15% gold drops',cost:300,eff:'gold_pct',val:0.15},
+  {id:'b3',icon:'📚',name:'Ancient Wisdom',desc:'+20% XP gained',cost:600,eff:'xp_pct',val:0.2},
+  {id:'b4',icon:'🩸',name:'Blood Pact',desc:'Start fights at full HP',cost:800,eff:'hp_start'},
+  {id:'b5',icon:'🌬',name:'Ethereal Gale',desc:'+0.3 attack speed',cost:1200,eff:'spd_bonus',val:0.3},
+  {id:'b6',icon:'🐉',name:'Dragonfire',desc:'+30% ATK, +30% enemy HP',cost:1500,eff:'cursed'},
+  {id:'b7',icon:'🔮',name:'Soul Crystal',desc:'+25% spell damage',cost:1000,eff:'spell_pct',val:0.25},
+  {id:'b8',icon:'👑',name:'Sovereign\'s Mark',desc:'+5 all stats/zone',cost:2000,eff:'zone_scale'},
+  {id:'b9',icon:'⚡',name:'Static Surge',desc:'Crits chain to nearby',cost:1800,eff:'chain_crit'},
+  {id:'b10',icon:'🌿',name:'Life Root',desc:'+3% lifesteal',cost:900,eff:'life_bonus',val:0.03},
 ];
 
-let state = {
-  class: 'warrior',
-  name: 'The Hollow',
-  level: 1,
-  xp: 0,
-  xpNext: 100,
-  hp: 140,
-  maxHp: 140,
-  mana: 30,
-  maxMana: 30,
-  atk: 7, def: 4, spd: 1.0, crit: 5, life: 0, spell: 0, dodge: 0,
-  gold: 0,
-  goldTotal: 0,
-  kills: 0,
-  deaths: 0,
-  zone: 1,
-  zoneKills: 0,
-  zoneTarget: 10,
-  sp: 0,
-  prestige: 0,
-  prestigeBonus: 1.0,
-  skills: {},
-  quests: QUESTS.map(q => ({ ...q })),
-  boosts: {},
-  idle: false,
-  lastSave: Date.now(),
-};
+// =====================================================
+// GAME STATE
+// =====================================================
+const SAVE_KEY = 'ashen_v3';
+let G = null; // game state
 
-let enemyHp = 0, enemyMaxHp = 0, attackTimer = null, logLines = [];
-let currentEnemy = null;
-let skillTab = 'combat';
-let attackCount = 0;
-
-// ============================================================
-// INITIALIZATION & SAVE/LOAD
-// ============================================================
-function init() {
-  loadState();
-  spawnEnemy();
-  renderAll();
-  checkOffline();
-  setInterval(saveState, 30000);
-  if (state.idle) startIdle();
+function defaultState(){
+  return {
+    class:'warrior', name:'The Hollow', selectedClass:null,
+    level:1, xp:0, xpNext:100,
+    hp:160, maxHp:160, mana:30, maxMana:30,
+    gold:0, goldTotal:0, kills:0, deaths:0,
+    zone:1, zoneKills:0, zoneTarget:10,
+    sp:0, prestige:0, prestigeBonus:1.0,
+    skills:{}, quests:QUESTS.map(q=>({...q})),
+    boosts:{}, idle:false, lastSave:Date.now(),
+    totalSkillsUnlocked:0, muted:false,
+  };
 }
 
-function saveState() {
-  try {
-    localStorage.setItem(SAVE_KEY, JSON.stringify({ ...state, idle: false, lastSave: Date.now() }));
-  } catch(e) {}
+function saveGame(){
+  try{ localStorage.setItem(SAVE_KEY, JSON.stringify({...G, idle:false, lastSave:Date.now()})); }catch(e){}
 }
-
-function loadState() {
-  try {
-    const saved = localStorage.getItem(SAVE_KEY);
-    if (saved) {
-      const s = JSON.parse(saved);
-      Object.assign(state, s);
-      state.quests = QUESTS.map(q => {
-        const saved_q = (s.quests || []).find(x => x.id === q.id);
-        return saved_q ? { ...q, ...saved_q } : { ...q };
-      });
+function loadGame(){
+  try{
+    const d = localStorage.getItem(SAVE_KEY);
+    if(d){
+      const s = JSON.parse(d);
+      G = defaultState();
+      Object.assign(G, s);
+      G.quests = QUESTS.map(q=>{ const sq=(s.quests||[]).find(x=>x.id===q.id); return sq?{...q,...sq}:{...q}; });
+      return true;
     }
-  } catch(e) {}
+  }catch(e){}
+  G = defaultState();
+  return false;
 }
 
-function checkOffline() {
-  const elapsed = (Date.now() - (state.lastSave || Date.now())) / 1000;
-  if (elapsed > 30 && state.idle) {
-    const ticks = Math.floor(elapsed / getAttackInterval() * 1000);
-    const earned = Math.min(ticks, 3000);
-    for (let i = 0; i < earned; i++) simulateCombatTick(true);
-    document.getElementById('stat-offline').textContent = Math.floor(elapsed) + 's';
-    showToast(`Offline for ${Math.floor(elapsed)}s — fought ${earned} battles!`);
-  }
-}
-
-// ============================================================
+// =====================================================
 // COMPUTED STATS
-// ============================================================
-function getStats() {
-  const cls = CLASSES[state.class];
-  let atk = cls.atk, def = cls.def, spd = cls.spd, crit = cls.crit;
-  let life = 0, spell = cls.spell || 0, maxHp = cls.maxHp, dodge = 0;
+// =====================================================
+function getStats(){
+  const c = CLASSES_DATA[G.class];
+  let atk=c.baseAtk, def=c.baseDef, spd=c.baseSpd, crit=c.baseCrit;
+  let life=0, spell=c.baseSpell||0, maxHp=c.baseHp, maxMana=c.baseMana, dodge=0, block=0;
 
-  // Level scaling
-  atk += (state.level - 1) * 1.5;
-  def += (state.level - 1) * 0.8;
-  maxHp += (state.level - 1) * 10;
+  // Level scaling (exponential)
+  const lvScale = Math.pow(1.08, G.level - 1);
+  atk += (G.level-1)*2*lvScale*0.3;
+  def += (G.level-1)*1*lvScale*0.2;
+  maxHp += (G.level-1)*12;
 
   // Skills
-  if (state.skills['heavy_blow']) atk += state.skills['heavy_blow'] * 3;
-  if (state.skills['iron_skin']) def += state.skills['iron_skin'] * 2;
-  if (state.skills['swift']) spd += state.skills['swift'] * 0.1;
-  if (state.skills['executioner']) crit += state.skills['executioner'] * 5;
-  if (state.skills['bloodthirst']) life += state.skills['bloodthirst'] * 2;
-  if (state.skills['arcane_flow']) spell += state.skills['arcane_flow'] * 5;
-  if (state.skills['resilience']) maxHp += state.skills['resilience'] * 15;
-  if (state.skills['shadowstep']) dodge += 10;
+  const sk = G.skills;
+  if(sk.heavy)   atk  += sk.heavy*4;
+  if(sk.ironskin) def += sk.ironskin*3;
+  if(sk.vigor)   maxHp+=sk.vigor*20;
+  if(sk.arcane)  spell+=sk.arcane*6;
+  if(sk.manapool) maxMana+=sk.manapool*20;
+  if(sk.swift)   spd  +=sk.swift*0.12;
+  if(sk.dodge)   dodge+=sk.dodge*8;
+  if(sk.execution) crit+=sk.execution*6;
+  if(sk.lifedrain) life+=sk.lifedrain*3;
+  if(sk.fortress) block+=15;
+  if(sk.soulburn) spell=Math.round(spell*1.25);
 
   // Boosts
-  if (state.boosts['b1']) atk *= 1.1;
-  if (state.boosts['b5']) spd += 0.2;
+  if(G.boosts.b1) atk*=1.1;
+  if(G.boosts.b5) spd+=0.3;
+  if(G.boosts.b6){ atk*=1.3; }
+  if(G.boosts.b7) spell*=1.25;
+  if(G.boosts.b8){ const zb=G.zone*5; atk+=zb;def+=zb;maxHp+=zb*3; }
+  if(G.boosts.b10) life+=3;
 
   // Prestige
-  atk *= state.prestigeBonus;
-  def *= state.prestigeBonus;
-  maxHp *= state.prestigeBonus;
+  const pb=G.prestigeBonus;
+  atk*=pb; def*=pb; maxHp=Math.round(maxHp*pb);
 
-  return { atk: Math.round(atk * 10) / 10, def: Math.round(def * 10) / 10, spd: Math.round(spd * 10) / 10, crit: Math.round(crit), life: Math.round(life), spell: Math.round(spell), maxHp: Math.round(maxHp), dodge: Math.round(dodge) };
+  return {
+    atk:Math.round(atk*10)/10, def:Math.round(def*10)/10,
+    spd:Math.round(Math.max(0.5,spd)*100)/100,
+    crit:Math.round(crit), life:Math.round(life),
+    spell:Math.round(spell), maxHp:Math.round(maxHp),
+    maxMana:Math.round(maxMana), dodge:Math.round(dodge),
+    block:Math.round(block),
+  };
+}
+function xpForLevel(lv){ return Math.floor(100*Math.pow(1.28,lv-1)); }
+function attackInterval(){ return Math.max(250, Math.round(1000/getStats().spd)); }
+
+// =====================================================
+// CANVAS ENGINE
+// =====================================================
+let arenaCanvas, arenaCtx, animFrame=null;
+let playerAnim={x:0,y:0,bobPhase:0,attackFlash:0,hurtFlash:0};
+let enemyAnim={x:0,y:0,bobPhase:0,attackFlash:0,hurtFlash:0,deathAnim:0,dead:false};
+let bgOffset=0;
+let particles=[];
+
+function initArena(){
+  arenaCanvas = document.getElementById('arena');
+  arenaCtx = arenaCanvas.getContext('2d');
+  resizeArena();
+  window.addEventListener('resize', resizeArena);
+  renderLoop();
 }
 
-function getXpNext(level) { return Math.floor(100 * Math.pow(1.3, level - 1)); }
-function getAttackInterval() { return Math.max(300, Math.round(1000 / getStats().spd)); }
-
-// ============================================================
-// CLASS SELECTION
-// ============================================================
-function selectClass(cls) {
-  state.class = cls;
-  const stats = getStats();
-  state.hp = stats.maxHp;
-  state.maxHp = stats.maxHp;
-  state.mana = CLASSES[cls].maxMana;
-  state.maxMana = CLASSES[cls].maxMana;
-  document.querySelectorAll('.class-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('cls-' + cls).classList.add('active');
-  renderChar();
-  applyStats();
-  saveState();
+function resizeArena(){
+  const wrap = document.getElementById('arena-wrap');
+  arenaCanvas.width = wrap.clientWidth;
+  arenaCanvas.height = wrap.clientHeight;
+  // Set initial positions
+  const W=arenaCanvas.width, H=arenaCanvas.height;
+  playerAnim.x = W*0.22;
+  playerAnim.y = H*0.45;
+  enemyAnim.x = W*0.68;
+  enemyAnim.y = H*0.42;
 }
 
-// ============================================================
+function renderLoop(){
+  if(!arenaCanvas) return;
+  const now = performance.now();
+  playerAnim.bobPhase += 0.04;
+  enemyAnim.bobPhase += 0.035;
+  bgOffset = (bgOffset + 0.3) % arenaCanvas.width;
+  if(playerAnim.attackFlash > 0) playerAnim.attackFlash -= 0.08;
+  if(playerAnim.hurtFlash > 0) playerAnim.hurtFlash -= 0.08;
+  if(enemyAnim.attackFlash > 0) enemyAnim.attackFlash -= 0.08;
+  if(enemyAnim.hurtFlash > 0) enemyAnim.hurtFlash -= 0.08;
+  if(enemyAnim.dead && enemyAnim.deathAnim < 1) enemyAnim.deathAnim += 0.05;
+  drawArena();
+  // Update particles
+  particles = particles.filter(p=>{
+    p.life -= 0.04;
+    p.x += p.vx; p.y += p.vy;
+    p.vy += 0.15;
+    return p.life > 0;
+  });
+  animFrame = requestAnimationFrame(renderLoop);
+}
+
+function drawArena(){
+  const ctx=arenaCtx, W=arenaCanvas.width, H=arenaCanvas.height;
+  const zi = Math.min(G?G.zone-1:0, ZONE_BG.length-1);
+  const bg = ZONE_BG[zi];
+
+  // Sky gradient
+  const sky = ctx.createLinearGradient(0,0,0,H*0.6);
+  sky.addColorStop(0, bg.sky[0]);
+  sky.addColorStop(1, bg.sky[1]);
+  ctx.fillStyle = sky;
+  ctx.fillRect(0,0,W,H);
+
+  // Stars (for dark zones)
+  if(zi > 1){
+    ctx.fillStyle = 'rgba(255,255,240,0.4)';
+    for(let i=0;i<20;i++){
+      const sx=((i*137+bgOffset*0.1)%W), sy=(i*41)%H*0.4;
+      const ss=i%3===0?1.5:0.8;
+      ctx.fillRect(sx,sy,ss,ss);
+    }
+  }
+
+  // Distant hills/silhouettes
+  ctx.fillStyle = bg.trees;
+  ctx.beginPath();
+  ctx.moveTo(0,H*0.55);
+  for(let x=0;x<=W;x+=8){
+    const hn=Math.sin(x*0.02+bgOffset*0.002)*15 + Math.sin(x*0.05)*8;
+    ctx.lineTo(x, H*0.55+hn);
+  }
+  ctx.lineTo(W,H); ctx.lineTo(0,H); ctx.closePath();
+  ctx.fill();
+
+  // Ground
+  const grd = ctx.createLinearGradient(0,H*0.62,0,H);
+  grd.addColorStop(0, bg.ground);
+  grd.addColorStop(1, '#0a0804');
+  ctx.fillStyle = grd;
+  ctx.fillRect(0,H*0.62,W,H*0.38);
+
+  // Ground detail lines
+  ctx.strokeStyle = bg.accent;
+  ctx.lineWidth = 1;
+  for(let i=0;i<3;i++){
+    ctx.globalAlpha = 0.3;
+    ctx.beginPath();
+    ctx.moveTo(0,H*0.64+i*6);
+    ctx.lineTo(W,H*0.64+i*6);
+    ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+
+  // Zone name
+  ctx.fillStyle = 'rgba(232,216,168,0.25)';
+  ctx.font = '10px Cinzel, serif';
+  ctx.textAlign = 'right';
+  ctx.fillText(ZONE_BG[zi].name, W-8, 14);
+  ctx.textAlign = 'left';
+
+  // Kill progress bar (top of arena)
+  if(G){
+    const pct = G.zoneKills/G.zoneTarget;
+    ctx.fillStyle = 'rgba(0,0,0,0.3)';
+    ctx.fillRect(0,0,W,5);
+    const barGrad = ctx.createLinearGradient(0,0,W*pct,0);
+    barGrad.addColorStop(0,'#403010'); barGrad.addColorStop(1,'#c0a020');
+    ctx.fillStyle = barGrad;
+    ctx.fillRect(0,0,W*pct,5);
+  }
+
+  // Draw particles
+  particles.forEach(p=>{
+    ctx.globalAlpha = p.life;
+    ctx.fillStyle = p.color;
+    ctx.fillRect(p.x,p.y,p.size,p.size);
+  });
+  ctx.globalAlpha = 1;
+
+  // Draw enemy
+  if(G && currentEnemy && !enemyAnim.dead){
+    const es = ENEMY_SPRITES[currentEnemy.spriteKey];
+    if(es){
+      const ey = enemyAnim.y + Math.sin(enemyAnim.bobPhase)*2;
+      ctx.save();
+      if(enemyAnim.hurtFlash > 0){
+        ctx.globalAlpha = 1;
+        ctx.filter='brightness(3) saturate(0)';
+      }
+      if(enemyAnim.attackFlash > 0){
+        ctx.globalAlpha = 0.9;
+        ctx.filter='brightness(1.5) sepia(1) hue-rotate(0deg)';
+      }
+      const escale = 1 + (G.zone-1)*0.12;
+      ctx.save();
+      ctx.translate(enemyAnim.x, ey);
+      ctx.scale(escale,escale);
+      es.draw(ctx, 0, 0, true);
+      ctx.restore();
+      ctx.restore();
+
+      // Enemy HP bar
+      if(G){
+        const ehpPct = enemyHp/enemyMaxHp;
+        const bw=50, bh=4, bx=enemyAnim.x-bw/2*escale, by=ey-8;
+        ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(bx,by,bw*escale,bh);
+        ctx.fillStyle=ehpPct>0.5?'#40a020':ehpPct>0.25?'#a08020':'#c02020';
+        ctx.fillRect(bx,by,bw*escale*ehpPct,bh);
+        // Enemy name
+        ctx.fillStyle='rgba(232,216,168,0.7)';
+        ctx.font='8px Cinzel,serif';
+        ctx.textAlign='center';
+        ctx.fillText(currentEnemy.name, enemyAnim.x+PIXEL*4*escale, by-3);
+        ctx.textAlign='left';
+      }
+    }
+  } else if(enemyAnim.dead) {
+    // Death animation
+    ctx.globalAlpha = 1-enemyAnim.deathAnim;
+    const es = ENEMY_SPRITES[currentEnemy?.spriteKey];
+    if(es) es.draw(ctx, enemyAnim.x, enemyAnim.y + enemyAnim.deathAnim*20, true);
+    ctx.globalAlpha=1;
+  }
+
+  // Draw player
+  if(G){
+    const py = playerAnim.y + Math.sin(playerAnim.bobPhase)*2;
+    const playerSprite = SPRITES[G.class];
+    const pal = CLASSES_DATA[G.class].colors;
+    ctx.save();
+    if(playerAnim.hurtFlash>0){ ctx.filter='brightness(3) saturate(0) sepia(1) hue-rotate(310deg)'; }
+    if(playerAnim.attackFlash>0){ ctx.filter='brightness(1.8)'; }
+    drawPixelArt(ctx, playerSprite(pal), playerAnim.x, py);
+    ctx.restore();
+
+    // Player HP indicator
+    const stats=getStats();
+    const phpPct=G.hp/stats.maxHp;
+    ctx.fillStyle='rgba(0,0,0,0.5)'; ctx.fillRect(playerAnim.x,py-8,36,4);
+    ctx.fillStyle=phpPct>0.5?'#40a020':phpPct>0.25?'#a08020':'#c02020';
+    ctx.fillRect(playerAnim.x,py-8,36*phpPct,4);
+  }
+
+  // Attack animation — slash effect
+  if(playerAnim.attackFlash>0.5){
+    const prog=(playerAnim.attackFlash-0.5)*2;
+    const sx=playerAnim.x+30+prog*60, sy=playerAnim.y+5;
+    ctx.globalAlpha=prog*0.8;
+    ctx.strokeStyle='#e8d8a8';
+    ctx.lineWidth=PIXEL;
+    ctx.beginPath();
+    ctx.moveTo(sx,sy-10); ctx.lineTo(sx+20,sy+10);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(sx+5,sy-15); ctx.lineTo(sx+25,sy+5);
+    ctx.stroke();
+    ctx.globalAlpha=1;
+  }
+
+  // Spell effect (mage)
+  if(G?.class==='mage' && playerAnim.attackFlash>0.5){
+    const prog=(playerAnim.attackFlash-0.5)*2;
+    for(let i=0;i<5;i++){
+      const angle=(i/5)*Math.PI*2 + prog*5;
+      const r=20*prog;
+      const bx=playerAnim.x+30+r*Math.cos(angle);
+      const by=playerAnim.y+15+r*Math.sin(angle)*0.5;
+      ctx.globalAlpha=prog*0.7;
+      ctx.fillStyle=i%2===0?'#8040e0':'#c0a0f0';
+      ctx.fillRect(bx,by,PIXEL,PIXEL);
+    }
+    ctx.globalAlpha=1;
+  }
+}
+
+function spawnParticles(x,y,color,count=6){
+  for(let i=0;i<count;i++){
+    const angle=Math.random()*Math.PI*2;
+    const spd=1+Math.random()*3;
+    particles.push({
+      x,y,
+      vx:Math.cos(angle)*spd,vy:Math.sin(angle)*spd-2,
+      color,size:PIXEL,life:1,
+    });
+  }
+}
+
+// =====================================================
+// CLASS SELECT RENDERING
+// =====================================================
+function renderClassSelect(){
+  const container = document.getElementById('class-cards');
+  container.innerHTML = '';
+  Object.entries(CLASSES_DATA).forEach(([key,cls])=>{
+    const card = document.createElement('div');
+    card.className = 'class-card' + (G.selectedClass===key?' selected':'');
+    card.id = 'cls-card-'+key;
+    card.onclick = ()=>selectClass(key);
+    const cvWrap = document.createElement('div');
+    cvWrap.className = 'class-sprite';
+    const cv = document.createElement('canvas');
+    cv.width=64; cv.height=64;
+    const cx=cv.getContext('2d');
+    cx.imageSmoothingEnabled=false;
+    drawPixelArt(cx, SPRITES[key](cls.colors), 4, 4, 1.5);
+    cvWrap.appendChild(cv);
+    card.innerHTML = `
+      <div class="class-info">
+        <div class="class-name">${cls.name}</div>
+        <div class="class-flavor">${cls.flavor}</div>
+        <div class="class-stats-row">${cls.statHints.map(h=>`<div class="cstat"><b>${h}</b></div>`).join('')}</div>
+      </div>`;
+    card.prepend(cvWrap);
+    container.appendChild(card);
+  });
+}
+
+function selectClass(key){
+  G.selectedClass = key;
+  G.class = key;
+  document.querySelectorAll('.class-card').forEach(c=>c.classList.remove('selected'));
+  document.getElementById('cls-card-'+key)?.classList.add('selected');
+  document.getElementById('confirm-class-btn').disabled = false;
+  const cls = CLASSES_DATA[key];
+  const stats=getStats();
+  G.hp=stats.maxHp; G.maxHp=stats.maxHp;
+  G.mana=cls.baseMana; G.maxMana=cls.baseMana;
+}
+
+function confirmClass(){
+  if(!G.selectedClass) return;
+  showScreen('screen-game');
+  initArena();
+  spawnEnemy();
+  renderAll();
+  initAudio();
+  startBgMusic();
+  if(G.idle) startIdle();
+  setInterval(saveGame, 30000);
+}
+
+// =====================================================
 // COMBAT
-// ============================================================
-function spawnEnemy() {
-  const z = ZONES[Math.min(state.zone - 1, ZONES.length - 1)];
-  const enemies = z.enemies;
-  const name = enemies[Math.floor(Math.random() * enemies.length)];
-  const hpScale = Math.pow(1.5, state.zone - 1);
-  const boost = state.boosts['b6'] ? 1.25 : 1;
-  enemyMaxHp = Math.round(z.hp * hpScale * boost);
+// =====================================================
+let currentEnemy=null, enemyHp=0, enemyMaxHp=0;
+let attackTimer=null, attackCount=0;
+
+function spawnEnemy(){
+  const zi = Math.min(G.zone-1, ZONE_ENEMIES.length-1);
+  const pool = ZONE_ENEMIES[zi];
+  const spriteKey = pool[Math.floor(Math.random()*pool.length)];
+  const baseHp = Math.floor(25*Math.pow(1.6,G.zone-1));
+  const boost = G.boosts.b6?1.3:1;
+  enemyMaxHp = Math.round(baseHp*boost);
   enemyHp = enemyMaxHp;
-  currentEnemy = { name, zone: state.zone, zoneName: z.name, icon: z.icon, goldMin: z.goldMin, goldMax: z.goldMax };
-  renderEnemy();
+  const names = {
+    rat:['Grave Rat','Feral Rat','Diseased Rat'],
+    skeleton:['Skeleton Warrior','Bone Archer','Skeletal Guard'],
+    zombie:['Rotting Zombie','Plague Zombie','Undead Brute'],
+    wraith:['Frost Wraith','Shadow Wraith','Banshee'],
+    dragon:['Ancient Drake','Shadow Dragon','Ember Wyvern'],
+    lich:['Bone Lich','Soul Lich','Void Lich'],
+  };
+  const nlist=names[spriteKey]||['Unknown'];
+  currentEnemy = { name:nlist[Math.floor(Math.random()*nlist.length)], spriteKey };
+  enemyAnim.dead=false; enemyAnim.deathAnim=0;
 }
 
-function doAttack() {
-  if (state.hp <= 0) return;
-  const stats = getStats();
+function doAttack(manual=false){
+  if(!G||G.hp<=0) return;
+  const stats=getStats();
   attackCount++;
+  playerAnim.attackFlash=1;
 
-  // Check berserker
-  let atkMult = 1;
-  if (state.skills['berserker'] && (state.hp / state.maxHp) < 0.3) atkMult = 1.5;
-  // Overpower every 5th hit
-  if (state.skills['overpower'] && attackCount % 5 === 0) atkMult *= 3;
+  // Damage calculation
+  let dmg = stats.atk*(0.85+Math.random()*0.3);
+  const isCrit = Math.random()*100 < stats.crit;
+  if(isCrit) dmg*=2;
+  // Berserker
+  if(G.skills.berserker && G.hp/stats.maxHp<0.3) dmg*=1.6;
+  // Overpower
+  if(G.skills.overpower && attackCount%5===0) dmg*=3;
+  // Spell damage
+  if(stats.spell>0) dmg+=stats.spell*(0.6+Math.random()*0.4);
+  dmg=Math.round(dmg);
 
-  let dmg = Math.max(1, stats.atk * atkMult - (currentEnemy ? 0 : 0));
-  const isCrit = Math.random() * 100 < stats.crit;
-  if (isCrit) dmg *= 2;
-  dmg = Math.round(dmg);
-  if (stats.spell > 0) dmg += Math.round(stats.spell * (0.5 + Math.random() * 0.5));
+  SFX.hit();
+  if(isCrit) SFX.crit();
 
-  // Dodge check
-  if (Math.random() * 100 < stats.dodge) { addLog('Enemy missed! (dodge)', 'log-loot'); return; }
+  spawnParticles(enemyAnim.x+PIXEL*4, enemyAnim.y+PIXEL*5, isCrit?'#f0c030':'#c03020', isCrit?12:6);
 
-  enemyHp = Math.max(0, enemyHp - dmg);
-  addLog(isCrit ? `⚡ CRITICAL STRIKE for ${dmg} damage!` : `You strike for ${dmg} damage.`, isCrit ? 'log-crit' : 'log-hit');
+  enemyHp=Math.max(0,enemyHp-dmg);
+  enemyAnim.hurtFlash=1;
+
+  // Show damage number
+  showDmgNumber(dmg, isCrit, false);
 
   // Lifesteal
-  if (stats.life > 0) {
-    const heal = Math.round(dmg * stats.life / 100);
-    if (heal > 0) { state.hp = Math.min(state.maxHp, state.hp + heal); }
+  if(stats.life>0){
+    const heal=Math.round(dmg*stats.life/100);
+    if(heal>0){ G.hp=Math.min(stats.maxHp,G.hp+heal); showDmgNumber(heal,false,'heal'); }
   }
 
-  if (enemyHp <= 0) { killEnemy(); return; }
+  // Flurry (bonus hits on crit)
+  if(isCrit && G.skills.flurry){
+    setTimeout(()=>doAttack(false), 80);
+    setTimeout(()=>doAttack(false), 160);
+  }
 
-  // Enemy counterattack
-  const enemyAtk = Math.max(1, Math.round((2 + state.zone * 1.5) * Math.pow(1.2, state.zone - 1)) - stats.def);
-  state.hp = Math.max(0, state.hp - enemyAtk);
-  if (enemyAtk > 0) addLog(`Enemy strikes back for ${enemyAtk} damage.`, 'log-dim');
+  if(enemyHp<=0){ killEnemy(); return; }
 
-  if (state.hp <= 0) { die(); return; }
-  updateBars();
+  // Enemy attacks back
+  const enemyDmgBase = Math.max(1, (3+G.zone*2.2)*Math.pow(1.18,G.zone-1));
+  const blocked = stats.block>0 ? enemyDmgBase*stats.block/100 : 0;
+  let enemyDmg = Math.max(1, Math.round(enemyDmgBase - stats.def - blocked));
+  // Dodge
+  if(Math.random()*100 < stats.dodge){ enemyDmg=0; showDmgNumber(0,false,'dodge'); }
+
+  if(enemyDmg>0){
+    G.hp=Math.max(0,G.hp-enemyDmg);
+    playerAnim.hurtFlash=1;
+    enemyAnim.attackFlash=0.5;
+    SFX.hurt();
+    showDmgNumber(enemyDmg,false,'enemy');
+    spawnParticles(playerAnim.x+PIXEL*4, playerAnim.y+PIXEL*5,'#c02020',4);
+  }
+
+  if(G.hp<=0){ die(); return; }
+  updateHUD();
 }
 
-function killEnemy() {
-  state.kills++;
-  state.zoneKills++;
-  const z = currentEnemy;
-  let goldGained = Math.round((z.goldMin + Math.random() * (z.goldMax - z.goldMin)) * Math.pow(1.3, state.zone - 1));
-  if (state.boosts['b2']) goldGained = Math.round(goldGained * 1.15);
-  if (state.boosts['b6']) goldGained = Math.round(goldGained * 1.25);
-  state.gold += goldGained;
-  state.goldTotal += goldGained;
+function killEnemy(){
+  G.kills++;
+  G.zoneKills++;
+  enemyAnim.dead=true;
+  enemyAnim.deathAnim=0;
+  SFX.enemyDie();
+  spawnParticles(enemyAnim.x+PIXEL*4, enemyAnim.y+PIXEL*4,'#d4a017',16);
 
-  let xpGained = Math.round(10 * Math.pow(1.4, state.zone - 1));
-  if (state.boosts['b3']) xpGained = Math.round(xpGained * 1.2);
-  state.xp += xpGained;
+  // Gold
+  let gold=Math.round((2+G.zone*2.5)*Math.pow(1.4,G.zone-1)*(0.8+Math.random()*0.4));
+  if(G.boosts.b2) gold=Math.round(gold*1.15);
+  if(G.boosts.b6) gold=Math.round(gold*1.3);
+  G.gold+=gold; G.goldTotal+=gold;
+  SFX.gold();
 
-  // Regen after kill
-  if (state.skills['endurance']) {
-    const regen = Math.round(state.maxHp * 0.01 * state.skills['endurance']);
-    state.hp = Math.min(state.maxHp, state.hp + regen);
+  // XP
+  let xpGained=Math.round(8*Math.pow(1.45,G.zone-1));
+  if(G.boosts.b3) xpGained=Math.round(xpGained*1.2);
+  G.xp+=xpGained;
+
+  // Regen
+  const stats=getStats();
+  if(G.skills.regen){ G.hp=Math.min(stats.maxHp, G.hp+Math.round(stats.maxHp*G.skills.regen*0.02)); }
+
+  // Level up loop
+  while(G.xp>=G.xpNext){
+    G.xp-=G.xpNext; G.level++;
+    G.xpNext=xpForLevel(G.level);
+    G.sp++;
+    G.hp=getStats().maxHp; // heal on level up
+    SFX.levelup();
+    showLevelUp();
+    toast(`⚡ Level ${G.level}!`);
   }
 
-  addLog(`💰 Killed ${z.name}! +${goldGained}g +${xpGained}xp`, 'log-loot');
-
-  // Level up
-  while (state.xp >= state.xpNext) {
-    state.xp -= state.xpNext;
-    state.level++;
-    state.xpNext = getXpNext(state.level);
-    state.sp += 1;
-    const s = getStats();
-    state.hp = s.maxHp; // Heal on level up
-    addLog(`🌟 LEVEL UP! Now level ${state.level}! +1 Skill Point`, 'log-level');
-  }
-
-  // Zone progress
-  if (state.zoneKills >= state.zoneTarget) {
-    state.zone++;
-    state.zoneKills = 0;
-    state.zoneTarget = Math.round(state.zoneTarget * 1.2);
-    if (state.zone > ZONES.length) state.zone = ZONES.length;
-    addLog(`🗺 Entering Zone ${state.zone}: ${ZONES[Math.min(state.zone - 1, ZONES.length - 1)].name}!`, 'log-level');
+  // Zone advance
+  if(G.zoneKills>=G.zoneTarget){
+    G.zone=Math.min(G.zone+1,8);
+    G.zoneKills=0;
+    G.zoneTarget=Math.round(G.zoneTarget*1.25);
+    toast(`🗺 Zone ${G.zone}: ${ZONE_BG[Math.min(G.zone-1,ZONE_BG.length-1)].name}!`);
   }
 
   checkQuests();
+  setTimeout(spawnEnemy, 400);
+  updateHUD();
+  renderTabContent();
+}
+
+function die(){
+  G.deaths++;
+  SFX.die();
+  const stats=getStats();
+  G.hp=Math.round(stats.maxHp*0.5);
+  spawnParticles(playerAnim.x+PIXEL*4,playerAnim.y+PIXEL*5,'#c02020',20);
   spawnEnemy();
-  renderAll();
+  updateHUD();
 }
 
-function simulateCombatTick(silent = false) {
-  if (state.hp <= 0) { state.hp = Math.round(state.maxHp * 0.3); spawnEnemy(); }
-  doAttack();
+function toggleAuto(){
+  G.idle=!G.idle;
+  const btn=document.getElementById('auto-btn');
+  btn.textContent=G.idle?'AUTO ON':'AUTO OFF';
+  btn.className=G.idle?'on':'';
+  btn.id='auto-btn';
+  if(G.idle) startIdle(); else stopIdle();
+}
+function startIdle(){
+  stopIdle();
+  attackTimer=setInterval(()=>{ doAttack(); },attackInterval());
+}
+function stopIdle(){ if(attackTimer){clearInterval(attackTimer);attackTimer=null;} }
+function advanceZone(){
+  if(G.zone<8){ G.zone++; G.zoneKills=0; spawnEnemy(); toast(`→ Zone ${G.zone}`); updateHUD(); }
 }
 
-function die() {
-  state.deaths++;
-  addLog(`💀 You have fallen... Respawning.`, 'log-level');
-  const stats = getStats();
-  state.hp = Math.round(stats.maxHp * 0.5);
-  spawnEnemy();
-  renderAll();
+function touchAttack(e){
+  e.preventDefault();
+  if(!audioCtx) initAudio();
+  doAttack(true);
 }
 
-function manualAttack() { doAttack(); renderAll(); }
-
-function advanceZone() {
-  if (state.zone < ZONES.length) {
-    state.zone++;
-    state.zoneKills = 0;
-    spawnEnemy();
-    addLog(`🗺 Advancing to Zone ${state.zone}!`, 'log-level');
-    renderAll();
-  }
+// Damage numbers
+let dmgContainer;
+function showDmgNumber(val,isCrit,type){
+  if(!dmgContainer) dmgContainer=document.getElementById('combat-overlay');
+  const el=document.createElement('div');
+  const W=arenaCanvas?arenaCanvas.width:300;
+  const H=arenaCanvas?arenaCanvas.height:200;
+  el.className='damage-number '+(isCrit?'crit':type==='heal'?'heal':type==='enemy'?'enemy':type==='dodge'?'heal':'hit');
+  const isEnemy=type==='enemy';
+  const ex=isEnemy?(playerAnim.x+Math.random()*20):(enemyAnim.x+Math.random()*20);
+  const ey=isEnemy?(playerAnim.y+10):(enemyAnim.y+10);
+  el.style.left=Math.min(W-60,Math.max(0,ex))+'px';
+  el.style.top=Math.min(H-30,ey)+'px';
+  if(type==='dodge') el.textContent='DODGE';
+  else if(type==='heal') el.textContent='+'+val;
+  else el.textContent=(isCrit?'★':'')+val;
+  dmgContainer.appendChild(el);
+  setTimeout(()=>el.remove(),800);
 }
 
-function toggleIdle() {
-  state.idle = !state.idle;
-  if (state.idle) startIdle();
-  else stopIdle();
-  document.getElementById('toggle-btn').textContent = state.idle ? '⏸ Pause Idle' : '▶ Begin Idle';
+// =====================================================
+// HUD UPDATES
+// =====================================================
+function updateHUD(){
+  if(!G) return;
+  const stats=getStats();
+  const hpPct=Math.max(0,Math.min(100,G.hp/stats.maxHp*100));
+  const manaPct=Math.max(0,Math.min(100,G.mana/stats.maxMana*100));
+  const xpPct=Math.max(0,Math.min(100,G.xp/G.xpNext*100));
+  document.getElementById('bar-hp').style.width=hpPct+'%';
+  document.getElementById('bar-mana').style.width=manaPct+'%';
+  document.getElementById('bar-xp').style.width=xpPct+'%';
+  document.getElementById('label-hp').textContent=Math.round(G.hp)+'/'+stats.maxHp;
+  document.getElementById('label-mana').textContent=Math.round(G.mana)+'/'+stats.maxMana;
+  document.getElementById('label-xp').textContent=G.xp+'/'+G.xpNext;
+  document.getElementById('hud-gold').textContent=formatNum(G.gold);
+  document.getElementById('hud-level').textContent=G.level;
+  document.getElementById('hud-zone').textContent=G.zone;
+  document.getElementById('sp-display') && (document.getElementById('sp-display').textContent=G.sp);
 }
 
-function startIdle() {
-  if (attackTimer) clearInterval(attackTimer);
-  const interval = getAttackInterval();
-  attackTimer = setInterval(() => {
-    simulateCombatTick();
-    renderAll();
-  }, interval);
+function formatNum(n){ return n>=1000000?Math.floor(n/100000)/10+'M':n>=1000?Math.floor(n/100)/10+'K':n; }
+
+// =====================================================
+// TABS
+// =====================================================
+let currentTab='combat';
+let skillSubTab='offense';
+
+function switchTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('tab-'+tab)?.classList.add('active');
+  renderTabContent();
 }
 
-function stopIdle() {
-  if (attackTimer) { clearInterval(attackTimer); attackTimer = null; }
+function renderTabContent(){
+  const container=document.getElementById('tab-content');
+  if(currentTab==='combat') renderSkillsTab(container);
+  else if(currentTab==='quests') renderQuestsTab(container);
+  else if(currentTab==='boons') renderBoonsTab(container);
+  else if(currentTab==='stats') renderStatsTab(container);
 }
 
-// ============================================================
-// SKILL TREE
-// ============================================================
-function setSkillTab(tab) {
-  skillTab = tab;
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
-  renderSkillTree();
+// ===== SKILLS TAB =====
+function renderSkillsTab(container){
+  const tabs=['offense','defense','magic','agility'];
+  const tabLabels={offense:'⚔',defense:'🛡',magic:'🔮',agility:'⚡'};
+  let html=`<div class="skill-section">
+    <div class="skill-tree-header">
+      <div class="skill-tree-title">SKILL TREES</div>
+      <div class="sp-badge" id="sp-display">SP: ${G.sp}</div>
+    </div>
+    <div class="skill-tab-bar">
+      ${tabs.map(t=>`<div class="stab${skillSubTab===t?' active':''}" onclick="setSkillSub('${t}')">${tabLabels[t]}</div>`).join('')}
+    </div>
+    <div class="skill-grid">`;
+  const skills=SKILL_TREES[skillSubTab];
+  const allSkills=Object.values(SKILL_TREES).flat();
+  skills.forEach(sk=>{
+    const cur=G.skills[sk.id]||0;
+    const maxed=cur>=sk.max;
+    const locked=sk.req&&!(G.skills[sk.req]>=1);
+    let cls='skill-node';
+    if(maxed) cls+=' maxed';
+    else if(locked) cls+=' locked';
+    else if(cur>0) cls+=' unlocked';
+    const pips=Array.from({length:sk.max},(_,i)=>`<div class="pip ${i<cur?'filled':''}${i<cur&&cur===sk.max?' max':''}"></div>`).join('');
+    html+=`<div class="${cls}" onclick="buySkill('${sk.id}')">
+      ${locked?'<span class="skill-lock-icon">🔒</span>':''}
+      <div class="skill-icon-wrap">${sk.icon}</div>
+      <div class="skill-node-name">${sk.name}</div>
+      <div class="skill-node-desc">${sk.desc}</div>
+      <div class="skill-pips">${pips}</div>
+      <div class="skill-node-level">${cur}/${sk.max}</div>
+    </div>`;
+  });
+  html+=`</div></div>`;
+  container.innerHTML=html;
 }
 
-function buySkill(id) {
-  if (state.sp <= 0) { showToast('No skill points!'); return; }
-  const allSkills = [...SKILLS.combat, ...SKILLS.passive, ...SKILLS.class];
-  const skill = allSkills.find(s => s.id === id);
-  if (!skill) return;
-  const cur = state.skills[id] || 0;
-  if (cur >= skill.max) { showToast('Already maxed!'); return; }
-  if (skill.requires && !(state.skills[skill.requires] >= 1)) { showToast('Requires ' + allSkills.find(s => s.id === skill.requires)?.name); return; }
-  state.sp--;
-  state.skills[id] = (state.skills[id] || 0) + 1;
-  applyStats();
-  renderAll();
-  showToast(`Learned: ${skill.name} (${state.skills[id]}/${skill.max})`);
-  saveState();
+function setSkillSub(tab){
+  skillSubTab=tab;
+  renderTabContent();
 }
 
-function applyStats() {
-  const stats = getStats();
-  state.maxHp = stats.maxHp;
-  state.hp = Math.min(state.hp, state.maxHp);
+function buySkill(id){
+  if(!audioCtx) initAudio();
+  if(G.sp<=0){ toast('No skill points!'); return; }
+  const allSkills=Object.values(SKILL_TREES).flat();
+  const sk=allSkills.find(s=>s.id===id);
+  if(!sk) return;
+  const cur=G.skills[id]||0;
+  if(cur>=sk.max){ toast('Already maxed!'); return; }
+  if(sk.req&&!(G.skills[sk.req]>=1)){ toast(`Requires: ${allSkills.find(s=>s.id===sk.req)?.name}`); return; }
+  G.sp--;
+  G.skills[id]=(G.skills[id]||0)+1;
+  G.totalSkillsUnlocked=(G.totalSkillsUnlocked||0)+1;
+  // Update attack interval if speed changed
+  if(G.idle){ startIdle(); }
+  SFX.skill();
+  checkQuests();
+  renderTabContent();
+  updateHUD();
+  saveGame();
 }
 
-// ============================================================
-// QUESTS
-// ============================================================
-function checkQuests() {
-  state.quests.forEach(q => {
-    if (q.done) return;
-    let progress = 0;
-    if (q.type === 'kills') progress = state.kills;
-    if (q.type === 'level') progress = state.level;
-    if (q.type === 'zone') progress = state.zone;
-    if (q.type === 'goldTotal') progress = state.goldTotal;
-    if (progress >= q.target) {
-      q.done = true;
-      state.gold += q.reward.gold;
-      state.sp += q.reward.sp;
-      addLog(`📜 Quest Complete: ${q.name}! +${q.reward.gold}g +${q.reward.sp}sp`, 'log-level');
-      showToast(`Quest Complete: ${q.name}!`);
+// ===== QUESTS TAB =====
+function renderQuestsTab(container){
+  let html='<div class="quest-section">';
+  G.quests.forEach(q=>{
+    const prog=getQuestProg(q);
+    const pct=Math.min(100,(prog/q.target)*100);
+    const rewardStr=[q.reward.gold>0&&`💰${q.reward.gold}`,q.reward.sp>0&&`⭐${q.reward.sp}SP`].filter(Boolean).join(' ');
+    html+=`<div class="quest-card${q.done?' done':''}">
+      <div class="quest-icon-wrap">${q.done?'✅':q.icon}</div>
+      <div class="quest-body">
+        <div class="quest-name">${q.name}</div>
+        <div class="quest-desc">${q.desc}</div>
+        ${!q.done?`<div class="quest-prog-bar"><div class="quest-prog-fill" style="width:${pct}%"></div></div>
+        <div class="quest-prog-text">${Math.min(prog,q.target).toLocaleString()} / ${q.target.toLocaleString()}</div>`:''}
+        ${q.done?`<div class="quest-complete-badge">✦ COMPLETE</div>`:`<div class="quest-reward">${rewardStr}</div>`}
+      </div>
+    </div>`;
+  });
+  html+='</div>';
+  container.innerHTML=html;
+}
+
+function getQuestProg(q){
+  if(q.type==='kills') return G.kills;
+  if(q.type==='level') return G.level;
+  if(q.type==='zone') return G.zone;
+  if(q.type==='goldTotal') return G.goldTotal;
+  if(q.type==='skills') return G.totalSkillsUnlocked||0;
+  if(q.type==='prestige') return G.prestige;
+  return 0;
+}
+
+function checkQuests(){
+  G.quests.forEach(q=>{
+    if(q.done) return;
+    if(getQuestProg(q)>=q.target){
+      q.done=true;
+      G.gold+=q.reward.gold; G.goldTotal+=q.reward.gold;
+      G.sp+=q.reward.sp;
+      SFX.quest();
+      toast(`📜 ${q.name} complete! +${q.reward.sp}SP`);
     }
   });
 }
 
-function getQuestProgress(q) {
-  if (q.type === 'kills') return state.kills;
-  if (q.type === 'level') return state.level;
-  if (q.type === 'zone') return state.zone;
-  if (q.type === 'goldTotal') return state.goldTotal;
-  return 0;
+// ===== BOONS TAB =====
+function renderBoonsTab(container){
+  let html='<div class="boons-section">';
+  BOONS.forEach(b=>{
+    const owned=!!G.boosts[b.id];
+    const canBuy=!owned&&G.gold>=b.cost;
+    html+=`<div class="boon-card${owned?' owned':!canBuy?' cant-afford':''}" onclick="${owned?'':canBuy?`buyBoon('${b.id}')`:''}" >
+      <div class="boon-icon">${b.icon}</div>
+      <div class="boon-body">
+        <div class="boon-name">${b.name}</div>
+        <div class="boon-desc">${b.desc}</div>
+        ${owned?`<div class="boon-owned">✓ Acquired</div>`:`<div class="boon-cost">💰 ${formatNum(b.cost)}</div>`}
+      </div>
+    </div>`;
+  });
+  html+='</div>';
+  container.innerHTML=html;
 }
 
-// ============================================================
-// BOOSTS
-// ============================================================
-function buyBoost(id) {
-  const b = BOOSTS.find(x => x.id === id);
-  if (!b || state.boosts[id]) return;
-  if (state.gold < b.cost) { showToast('Not enough gold!'); return; }
-  state.gold -= b.cost;
-  state.boosts[id] = true;
-  applyStats();
-  renderAll();
-  showToast(`Boon acquired: ${b.name}!`);
-  saveState();
+function buyBoon(id){
+  const b=BOONS.find(x=>x.id===id);
+  if(!b||G.boosts[id]) return;
+  if(G.gold<b.cost){ toast('Not enough gold!'); return; }
+  G.gold-=b.cost;
+  G.boosts[id]=true;
+  SFX.skill();
+  toast(`⚗ ${b.name} acquired!`);
+  if(G.idle) startIdle();
+  renderTabContent();
+  updateHUD();
+  saveGame();
 }
 
-// ============================================================
+// ===== STATS TAB =====
+function renderStatsTab(container){
+  const stats=getStats();
+  const prestigeGain=Math.max(1,Math.floor(G.level/5));
+  container.innerHTML=`<div class="stats-section">
+    <div class="stat-group">
+      <div class="stat-group-title">⚔ COMBAT</div>
+      <div class="stat-row"><span class="stat-label">⚔ Attack</span><span class="stat-val">${stats.atk}</span></div>
+      <div class="stat-row"><span class="stat-label">🛡 Defense</span><span class="stat-val">${stats.def}</span></div>
+      <div class="stat-row"><span class="stat-label">⚡ Speed</span><span class="stat-val">${stats.spd}x</span></div>
+      <div class="stat-row"><span class="stat-label">💥 Crit %</span><span class="stat-val">${stats.crit}%</span></div>
+      <div class="stat-row"><span class="stat-label">🔮 Spell</span><span class="stat-val">${stats.spell}</span></div>
+      <div class="stat-row"><span class="stat-label">🩸 Lifesteal</span><span class="stat-val">${stats.life}%</span></div>
+      <div class="stat-row"><span class="stat-label">👤 Dodge</span><span class="stat-val">${stats.dodge}%</span></div>
+      <div class="stat-row"><span class="stat-label">🏰 Block</span><span class="stat-val">${stats.block}%</span></div>
+    </div>
+    <div class="stat-group">
+      <div class="stat-group-title">📊 LIFETIME</div>
+      <div class="stat-row"><span class="stat-label">💀 Total Kills</span><span class="stat-val">${G.kills.toLocaleString()}</span></div>
+      <div class="stat-row"><span class="stat-label">💰 Gold Earned</span><span class="stat-val">${G.goldTotal.toLocaleString()}</span></div>
+      <div class="stat-row"><span class="stat-label">💀 Deaths</span><span class="stat-val">${G.deaths}</span></div>
+      <div class="stat-row"><span class="stat-label">✨ Prestige</span><span class="stat-val">${G.prestige}</span></div>
+      <div class="stat-row"><span class="stat-label">📈 Bonus</span><span class="stat-val">+${Math.round((G.prestigeBonus-1)*100)}%</span></div>
+    </div>
+    <div class="prestige-section">
+      <div class="prestige-title">✨ Prestige Ascension</div>
+      <div class="prestige-desc">Reset your journey — keep prestige bonuses. Gain <b style="color:var(--gold2)">${prestigeGain}</b> prestige point${prestigeGain>1?'s':''} (+5% all stats each).</div>
+      <div class="prestige-desc" style="color:var(--ember2);margin-bottom:12px">⚠ Resets: level, gold, skills, zone</div>
+      <button class="btn-prestige" onclick="openPrestige()">✨ ASCEND (${prestigeGain} point${prestigeGain>1?'s':''})</button>
+    </div>
+  </div>`;
+}
+
+function renderAll(){
+  updateHUD();
+  renderTabContent();
+}
+
+// =====================================================
 // PRESTIGE
-// ============================================================
-function openPrestige() {
-  document.getElementById('prestige-gain').textContent = Math.max(1, Math.floor(state.level / 5));
-  document.getElementById('prestige-modal').classList.add('open');
+// =====================================================
+function openPrestige(){
+  const gain=Math.max(1,Math.floor(G.level/5));
+  document.getElementById('modal-title').textContent='✨ Prestige Ascension';
+  document.getElementById('modal-desc').textContent=`Sacrifice your progress and return ${gain} prestige point${gain>1?'s':''} stronger. Your stats will be permanently boosted.`;
+  document.getElementById('modal-warn').textContent='⚠ Level, gold, skills and zone will reset.';
+  document.getElementById('modal-confirm').onclick=doPrestige;
+  document.getElementById('modal').classList.add('open');
 }
-function closePrestige() { document.getElementById('prestige-modal').classList.remove('open'); }
-function doPrestige() {
-  const gain = Math.max(1, Math.floor(state.level / 5));
-  state.prestige += gain;
-  state.prestigeBonus = 1 + state.prestige * 0.05;
-  state.level = 1; state.xp = 0; state.xpNext = 100;
-  state.sp = 0; state.skills = {};
-  state.zone = 1; state.zoneKills = 0; state.zoneTarget = 10;
-  state.gold = 0;
-  const stats = getStats();
-  state.hp = stats.maxHp; state.maxHp = stats.maxHp;
+function closeModal(){ document.getElementById('modal').classList.remove('open'); }
+function doPrestige(){
+  const gain=Math.max(1,Math.floor(G.level/5));
+  G.prestige+=gain;
+  G.prestigeBonus=1+G.prestige*0.05;
+  G.level=1; G.xp=0; G.xpNext=100;
+  G.sp=0; G.skills={};
+  G.zone=1; G.zoneKills=0; G.zoneTarget=10;
+  G.gold=0; G.totalSkillsUnlocked=0;
+  const stats=getStats();
+  G.hp=stats.maxHp; G.maxHp=stats.maxHp;
+  G.mana=CLASSES_DATA[G.class].baseMana; G.maxMana=G.mana;
   spawnEnemy();
-  closePrestige();
+  closeModal();
+  checkQuests();
+  SFX.prestige();
+  toast(`✨ Prestige ${G.prestige}! +${Math.round((G.prestigeBonus-1)*100)}% all stats!`);
   renderAll();
-  showToast(`✨ Prestige! Now ${state.prestige} prestige (+${Math.round((state.prestigeBonus - 1) * 100)}% stats)`);
-  saveState();
+  saveGame();
 }
 
-// ============================================================
-// RENDERING
-// ============================================================
-function renderAll() {
-  renderChar();
-  renderEnemy();
-  renderSkillTree();
-  renderQuests();
-  renderBoosts();
-  updateStatus();
-  updateSpeedDots();
+// =====================================================
+// SCREENS
+// =====================================================
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id)?.classList.add('active');
 }
 
-function renderChar() {
-  const cls = CLASSES[state.class];
-  const stats = getStats();
-  document.getElementById('char-avatar').textContent = cls.avatar;
-  document.getElementById('char-name').textContent = state.name;
-  document.getElementById('char-class').textContent = cls.name;
-  document.getElementById('char-level').textContent = state.level;
-  updateBars();
-  // Stats
-  document.getElementById('s-atk').textContent = stats.atk;
-  document.getElementById('s-def').textContent = stats.def;
-  document.getElementById('s-spd').textContent = stats.spd;
-  document.getElementById('s-crit').textContent = stats.crit + '%';
-  document.getElementById('s-life').textContent = stats.life + '%';
-  document.getElementById('s-spell').textContent = stats.spell;
-}
-
-function updateBars() {
-  const stats = getStats();
-  const hpPct = Math.max(0, Math.min(100, (state.hp / stats.maxHp) * 100));
-  const manaPct = Math.max(0, Math.min(100, (state.mana / state.maxMana) * 100));
-  const xpPct = Math.max(0, Math.min(100, (state.xp / state.xpNext) * 100));
-  document.getElementById('hp-bar').style.width = hpPct + '%';
-  document.getElementById('hp-text').textContent = `${Math.round(state.hp)} / ${stats.maxHp}`;
-  document.getElementById('mana-bar').style.width = manaPct + '%';
-  document.getElementById('mana-text').textContent = `${Math.round(state.mana)} / ${state.maxMana}`;
-  document.getElementById('xp-bar').style.width = xpPct + '%';
-  document.getElementById('xp-text').textContent = `${state.xp} / ${state.xpNext}`;
-}
-
-function renderEnemy() {
-  if (!currentEnemy) return;
-  const hpPct = Math.max(0, Math.min(100, (enemyHp / enemyMaxHp) * 100));
-  document.getElementById('enemy-name').textContent = currentEnemy.name;
-  document.getElementById('enemy-icon').textContent = currentEnemy.icon;
-  document.getElementById('enemy-zone').textContent = currentEnemy.zone;
-  document.getElementById('enemy-zone-name').textContent = currentEnemy.zoneName;
-  document.getElementById('enemy-hp-bar').style.width = hpPct + '%';
-  document.getElementById('enemy-hp-text').textContent = `${Math.round(enemyHp)} / ${enemyMaxHp}`;
-  document.getElementById('zone-progress').textContent = `${state.zoneKills} / ${state.zoneTarget}`;
-}
-
-function renderSkillTree() {
-  const skills = SKILLS[skillTab];
-  const allSkills = [...SKILLS.combat, ...SKILLS.passive, ...SKILLS.class];
-  const container = document.getElementById('skill-tree-content');
-  document.getElementById('sp-display').textContent = state.sp;
-  container.innerHTML = skills.map(skill => {
-    const cur = state.skills[skill.id] || 0;
-    const isMaxed = cur >= skill.max;
-    const req = skill.requires;
-    const isLocked = req && !(state.skills[req] >= 1);
-    let cls = '';
-    if (isMaxed) cls = 'maxed';
-    else if (isLocked) cls = 'locked';
-    else if (cur > 0) cls = 'unlocked';
-    const reqLabel = isLocked ? ` (requires ${allSkills.find(s => s.id === req)?.name})` : '';
-    return `<div class="skill-node ${cls}" onclick="buySkill('${skill.id}')">
-      <div class="skill-icon">${skill.icon}</div>
-      <div class="skill-info">
-        <div class="skill-name">${skill.name}${isLocked ? ' 🔒' : ''}</div>
-        <div class="skill-desc">${skill.desc}${reqLabel}</div>
-      </div>
-      <div class="skill-level">${cur}/${skill.max}</div>
-    </div>`;
-  }).join('');
-}
-
-function renderQuests() {
-  const container = document.getElementById('quest-list');
-  container.innerHTML = state.quests.map(q => {
-    const prog = getQuestProgress(q);
-    const pct = Math.min(100, (prog / q.target) * 100);
-    const rewardStr = [q.reward.gold > 0 && `💰 ${q.reward.gold}g`, q.reward.sp > 0 && `⭐ ${q.reward.sp} SP`].filter(Boolean).join(' ');
-    return `<div class="quest-item ${q.done ? 'complete' : 'available'}">
-      <div class="quest-icon">${q.done ? '✅' : q.icon}</div>
-      <div class="quest-info">
-        <div class="quest-name">${q.name} ${q.done ? '<span style="color:var(--gold);font-size:11px">COMPLETE</span>' : ''}</div>
-        <div class="quest-progress">${q.desc} — ${Math.min(prog, q.target)} / ${q.target}</div>
-        ${!q.done ? `<div class="quest-bar-wrap"><div class="quest-bar-fill" style="width:${pct}%"></div></div>` : ''}
-        <div class="quest-reward">Reward: ${rewardStr}</div>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function renderBoosts() {
-  const container = document.getElementById('boost-grid');
-  container.innerHTML = BOOSTS.map(b => {
-    const owned = !!state.boosts[b.id];
-    const canBuy = !owned && state.gold >= b.cost;
-    return `<div class="boost-card ${owned ? 'owned' : ''}" onclick="${owned ? '' : `buyBoost('${b.id}')`}" style="${!owned && !canBuy ? 'opacity:0.5' : 'cursor:pointer'}">
-      <div class="boost-icon">${b.icon}</div>
-      <div class="boost-info">
-        <div class="boost-name">${b.name}</div>
-        <div class="boost-desc">${b.desc}</div>
-        ${owned ? '<div class="boost-owned-label">✓ Acquired</div>' : `<div class="boost-cost">${b.cost}g</div>`}
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function updateStatus() {
-  document.getElementById('stat-kills').textContent = state.kills.toLocaleString();
-  document.getElementById('stat-gold').textContent = state.gold.toLocaleString();
-  document.getElementById('stat-deaths').textContent = state.deaths;
-  document.getElementById('stat-zone').textContent = state.zone;
-  document.getElementById('stat-prestige').textContent = state.prestige;
-  if (state.idle && attackTimer) {
-    clearInterval(attackTimer);
-    startIdle();
+function startGame(){
+  if(!audioCtx) initAudio();
+  const hasData=loadGame();
+  if(hasData && G.selectedClass){
+    showScreen('screen-game');
+    initArena();
+    spawnEnemy();
+    renderAll();
+    initAudio();
+    startBgMusic();
+    if(G.idle) startIdle();
+    setInterval(saveGame, 30000);
+  } else {
+    G=defaultState();
+    renderClassSelect();
+    showScreen('screen-class');
   }
 }
 
-function updateSpeedDots() {
-  const spd = getStats().spd;
-  document.getElementById('speed-label').textContent = spd.toFixed(1) + 'x';
-  const filled = Math.min(5, Math.ceil(spd));
-  for (let i = 1; i <= 5; i++) {
-    document.getElementById('dot' + i).classList.toggle('active', i <= filled);
+// =====================================================
+// TITLE CANVAS ANIMATION
+// =====================================================
+function animateTitleCanvas(){
+  const cv=document.getElementById('title-canvas');
+  if(!cv) return;
+  const ctx=cv.getContext('2d');
+  cv.width=window.innerWidth; cv.height=window.innerHeight;
+  let t=0;
+  const embers=Array.from({length:60},()=>({
+    x:Math.random()*cv.width, y:cv.height+Math.random()*100,
+    spd:0.5+Math.random()*2, size:1+Math.random()*2,
+    drift:(Math.random()-0.5)*0.5, life:0, maxLife:0.4+Math.random()*0.8,
+  }));
+  function frame(){
+    ctx.clearRect(0,0,cv.width,cv.height);
+    const grad=ctx.createRadialGradient(cv.width/2,cv.height*0.6,0,cv.width/2,cv.height*0.6,cv.width*0.7);
+    grad.addColorStop(0,'rgba(100,30,5,0.4)');
+    grad.addColorStop(0.5,'rgba(50,10,0,0.2)');
+    grad.addColorStop(1,'transparent');
+    ctx.fillStyle=grad; ctx.fillRect(0,0,cv.width,cv.height);
+    embers.forEach(e=>{
+      e.y-=e.spd; e.x+=e.drift; e.life+=0.02;
+      if(e.y<-10||e.life>e.maxLife){ e.y=cv.height+10; e.x=Math.random()*cv.width; e.life=0; }
+      const a=Math.sin(e.life/e.maxLife*Math.PI);
+      ctx.globalAlpha=a*0.7;
+      ctx.fillStyle=e.life<e.maxLife*0.5?'#f08020':'#c03010';
+      ctx.fillRect(e.x,e.y,e.size,e.size);
+    });
+    ctx.globalAlpha=1;
+    t++;
+    requestAnimationFrame(frame);
   }
+  frame();
 }
 
-// ============================================================
-// LOG
-// ============================================================
-function addLog(msg, cls = '') {
-  const log = document.getElementById('combat-log');
-  const div = document.createElement('div');
-  div.className = cls;
-  div.textContent = msg;
-  log.appendChild(div);
-  // Keep last 50 lines
-  while (log.children.length > 50) log.removeChild(log.firstChild);
-  log.scrollTop = log.scrollHeight;
+// =====================================================
+// TOAST & LEVEL UP
+// =====================================================
+let toastTimer;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>el.classList.remove('show'),2800);
 }
 
-// ============================================================
-// TOAST
-// ============================================================
-let toastTimeout;
-function showToast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
+let lvlTimer;
+function showLevelUp(){
+  const el=document.getElementById('levelup-splash');
+  el.querySelector('.levelup-text').textContent=`LEVEL ${G.level}!`;
   el.classList.add('show');
-  clearTimeout(toastTimeout);
-  toastTimeout = setTimeout(() => el.classList.remove('show'), 3000);
+  clearTimeout(lvlTimer);
+  lvlTimer=setTimeout(()=>el.classList.remove('show'),1500);
 }
 
-// ============================================================
-// START
-// ============================================================
-init();
+// =====================================================
+// INIT
+// =====================================================
+window.addEventListener('load',()=>{
+  animateTitleCanvas();
+});
 </script>
 
 </body>
