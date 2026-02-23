@@ -1217,26 +1217,29 @@ const QUESTS=[
   {id:'q_p2',cat:'prestige',ico:'🔄',name:'Eternal Cycle',desc:'Three times reborn. Three times stronger.',type:'prestige',target:3,rew:{g:0,sp:75},done:false},
 ];
 const BOONS=[
-  {id:'b1',ico:'💪',name:'Iron Discipline',desc:'+10% base ATK permanently.',cost:500,rarity:'common',cat:'combat'},
-  {id:'b2',ico:'🌑',name:'Shadow Harvest',desc:'+15% gold from all enemies.',cost:300,rarity:'common',cat:'wealth'},
-  {id:'b3',ico:'📚',name:'Ancient Wisdom',desc:'+25% XP from all sources.',cost:600,rarity:'common',cat:'growth'},
+  {id:'b1',ico:'💪',name:'Iron Discipline',desc:'+10% base ATK per level.',cost:500,rarity:'common',cat:'combat'},
+  {id:'b2',ico:'🌑',name:'Shadow Harvest',desc:'+15% gold per level.',cost:300,rarity:'common',cat:'wealth'},
+  {id:'b3',ico:'📚',name:'Ancient Wisdom',desc:'+25% XP per level.',cost:600,rarity:'common',cat:'growth'},
   {id:'b4',ico:'🩸',name:'Blood Pact',desc:'Restore HP to full on every kill.',cost:800,rarity:'common',cat:'survival'},
-  {id:'b5',ico:'🌬',name:'Ethereal Gale',desc:'+0.3 permanent attack speed.',cost:1200,rarity:'rare',cat:'combat'},
-  {id:'b6',ico:'🔮',name:'Soul Crystal',desc:'+28% spell damage permanently.',cost:1000,rarity:'rare',cat:'combat'},
-  {id:'b7',ico:'🌿',name:'Life Root',desc:'+3% lifesteal on all attacks.',cost:900,rarity:'rare',cat:'survival'},
-  {id:'b8',ico:'⚡',name:'Static Surge',desc:'Critical hits trigger 2 extra attacks.',cost:1800,rarity:'rare',cat:'combat'},
-  {id:'b9',ico:'🐉',name:'Dragonfire Pact',desc:'ATK +35%. Enemies have +40% HP.',cost:1600,rarity:'epic',cat:'combat'},
-  {id:'b10',ico:'👑',name:'Sovereign Mark',desc:'+6 to ALL stats per zone level.',cost:2200,rarity:'epic',cat:'growth'},
-  {id:'b11',ico:'⚗',name:"Alchemist's Greed",desc:'Each prestige grants +12% gold permanently.',cost:2500,rarity:'epic',cat:'wealth'},
+  {id:'b5',ico:'🌬',name:'Ethereal Gale',desc:'+0.3 attack speed per level.',cost:1200,rarity:'rare',cat:'combat'},
+  {id:'b6',ico:'🔮',name:'Soul Crystal',desc:'+28% spell damage per level.',cost:1000,rarity:'rare',cat:'combat'},
+  {id:'b7',ico:'🌿',name:'Life Root',desc:'+3% lifesteal per level.',cost:900,rarity:'rare',cat:'survival'},
+  {id:'b8',ico:'⚡',name:'Static Surge',desc:'Critical hits trigger +2 bonus hits.',cost:1800,rarity:'rare',cat:'combat'},
+  {id:'b9',ico:'🐉',name:'Dragonfire Pact',desc:'ATK +35% per level. Enemies have +40% HP.',cost:1600,rarity:'epic',cat:'combat'},
+  {id:'b10',ico:'👑',name:'Sovereign Mark',desc:'+6 to ALL stats per zone level, per level.',cost:2200,rarity:'epic',cat:'growth'},
+  {id:'b11',ico:'⚗',name:"Alchemist's Greed",desc:'Each prestige grants +12% gold, per level.',cost:2500,rarity:'epic',cat:'wealth'},
   {id:'b12',ico:'🌌',name:'Void Conduit',desc:'20% chance per attack: free spell.',cost:3200,rarity:'epic',cat:'combat'},
   {id:'b13',ico:'💀',name:"Death's Bargain",desc:'Once per minute: revive at 40% HP upon death.',cost:5000,rarity:'legendary',cat:'survival'},
-  {id:'b14',ico:'🌟',name:"Fate's Chosen",desc:'ALL stats permanently increased by 22%.',cost:5500,rarity:'legendary',cat:'growth'},
+  {id:'b14',ico:'🌟',name:"Fate's Chosen",desc:'+22% ALL stats per level.',cost:5500,rarity:'legendary',cat:'growth'},
   {id:'b15',ico:'🔥',name:'Pyre Ascendant',desc:'Every 10th kill: chain explosion 6× ATK.',cost:8000,rarity:'legendary',cat:'combat'},
-  {id:'b16',ico:'🕯',name:'Soul Lantern',desc:'Enemies drop +50% XP in zones 4+.',cost:1400,rarity:'rare',cat:'growth'},
-  {id:'b17',ico:'⚔',name:'War Covenant',desc:'Kill streaks stack +3% ATK (max 30%, resets after 5s).',cost:2000,rarity:'epic',cat:'combat'},
-  {id:'b18',ico:'🧿',name:'Ward of the Ancients',desc:'+20% block. Blocked damage fuels a reflect strike.',cost:2800,rarity:'epic',cat:'survival'},
+  {id:'b16',ico:'🕯',name:'Soul Lantern',desc:'+50% XP in zones 4+ per level.',cost:1400,rarity:'rare',cat:'growth'},
+  {id:'b17',ico:'⚔',name:'War Covenant',desc:'Kill streaks stack +3% ATK per level (max 30%).',cost:2000,rarity:'epic',cat:'combat'},
+  {id:'b18',ico:'🧿',name:'Ward of the Ancients',desc:'+20% block per level. Blocked damage fuels a reflect strike.',cost:2800,rarity:'epic',cat:'survival'},
 ];
 
+function boonLevel(id){ return G.boons[id] || 0; }
+function boonUpgradeCost(b){ const lv = boonLevel(b.id); return Math.round(b.cost * Math.pow(1.8, lv)); }
+ 
 /* ===============================================
    GAME STATE
 =============================================== */
@@ -1274,9 +1277,15 @@ function getStats(){
   if(sk.fortress)block+=18;if(sk.blessed){def+=sk.blessed*4;spd+=sk.blessed*0.05;}
   if(sk.soulburn)spell=Math.round(spell*1.35);
   if(sk.shadowform){atk*=1.18;def*=1.18;maxHp=Math.round(maxHp*1.18);}
-  if(G.boons.b1)atk*=1.1;if(G.boons.b5)spd+=0.3;if(G.boons.b6)spell*=1.28;if(G.boons.b7)life+=3;
-  if(G.boons.b9)atk*=1.35;if(G.boons.b10){const zb=G.zone*6;atk+=zb;def+=zb;maxHp+=zb*3;}
-  if(G.boons.b14){atk*=1.22;def*=1.22;maxHp=Math.round(maxHp*1.22);}if(G.boons.b18)block+=20;
+  const bl=id=>(G.boons[id]||0);
+  if(bl('b1'))atk*=(1+0.10*bl('b1'));
+  if(bl('b5'))spd+=0.3*bl('b5');
+  if(bl('b6'))spell=Math.round(spell*(1+0.28*bl('b6')));
+  if(bl('b7'))life+=3*bl('b7');
+  if(bl('b9'))atk*=(1+0.35*bl('b9'));
+  if(bl('b10')){const zb=G.zone*6*bl('b10');atk+=zb;def+=zb;maxHp+=zb*3;}
+  if(bl('b14')){const m=1+0.22*bl('b14');atk*=m;def*=m;maxHp=Math.round(maxHp*m);}
+  if(bl('b18'))block+=20*bl('b18');
   if(G.boons.b17&&G.chainKills>0)atk*=1+Math.min(G.chainKills,10)*0.03;
   atk*=G.pbonus;def*=G.pbonus;maxHp=Math.round(maxHp*G.pbonus);
   return{atk:Math.round(atk*10)/10,def:Math.round(def*10)/10,spd:Math.round(Math.max(.5,spd)*100)/100,crit:Math.round(crit),life:Math.round(life),spell:Math.round(spell),maxHp:Math.round(maxHp),maxMana:Math.round(maxMana),dodge:Math.round(dodge),block:Math.round(block)};
@@ -1548,7 +1557,7 @@ function spawnParticles(x,y,col,n=10){
    COMBAT
 =============================================== */
 let curEnemy=null,eHP=0,eMaxHP=0,atkTimer=null,atkCount=0;
-function spawnEnemy(){const zi=Math.min(G.zone-1,ZONES.length-1);const pool=ZONES[zi].enemies;const key=pool[Math.floor(Math.random()*pool.length)];const base=Math.round(28*Math.pow(1.6,G.zone-1));eMaxHP=Math.round(base*(G.boons.b9?1.4:1));eHP=eMaxHP;const nl=ENAMES[key];curEnemy={key,name:nl[Math.floor(Math.random()*nl.length)]};EA.dead=false;EA.deathT=0;updateZoneBar();}
+function spawnEnemy(){const zi=Math.min(G.zone-1,ZONES.length-1);const pool=ZONES[zi].enemies;const key=pool[Math.floor(Math.random()*pool.length)];const base=Math.round(28*Math.pow(1.6,G.zone-1));eMaxHP=Math.round(base*(1+(boonLevel('b9')*0.4)));eHP=eMaxHP;const nl=ENAMES[key];curEnemy={key,name:nl[Math.floor(Math.random()*nl.length)]};EA.dead=false;EA.deathT=0;updateZoneBar();}
 function doAttack(){
   if(!G||G.hp<=0)return;initAudio();
   const st=getStats();atkCount++;PA.aflash=1;
@@ -1581,10 +1590,11 @@ function killEnemy(){
   G.kills++;G.zoneKills++;EA.dead=true;EA.deathT=0;SFX.kill();spawnParticles(EA.x,EA.y,'#d4a020',22);
   G.chainKills=(G.chainKills||0)+1;if(G.boons.b17){clearTimeout(G._ct);G._ct=setTimeout(()=>{G.chainKills=0;},5000);}
   let gold=Math.round((3+G.zone*3)*Math.pow(1.4,G.zone-1)*(0.8+Math.random()*.4));
-  if(G.boons.b2)gold=Math.round(gold*1.15);if(G.boons.b9)gold=Math.round(gold*1.25);if(G.boons.b11)gold=Math.round(gold*(1+G.prestige*0.12));
+  if(boonLevel('b2'))gold=Math.round(gold*(1+0.15*boonLevel('b2')));if(boonLevel('b9'))gold=Math.round(gold*(1+0.25*boonLevel('b9')));if(G.boons.b11)gold=Math.round(gold*(1+G.prestige*0.12));
   G.gold+=gold;G.gtotal+=gold;SFX.gold();
   let xpg=Math.round(9*Math.pow(1.45,G.zone-1));
-  if(G.boons.b3)xpg=Math.round(xpg*1.25);if(G.boons.b16&&G.zone>=4)xpg=Math.round(xpg*1.5);
+  if(boonLevel('b3'))xpg=Math.round(xpg*(1+0.25*boonLevel('b3')));
+  if(boonLevel('b16')&&G.zone>=4)xpg=Math.round(xpg*(1+0.5*boonLevel('b16')));
   if(G.sk.radiance){gold=Math.round(gold*1.2);xpg=Math.round(xpg*1.2);}
   G.xp+=xpg;
   const st=getStats();if(G.boons.b4)G.hp=st.maxHp;if(G.sk.regen)G.hp=Math.min(st.maxHp,G.hp+Math.round(st.maxHp*G.sk.regen*.02));
@@ -1767,25 +1777,58 @@ function buildBoons(){
   const filtered=sorted.filter(b=>boonCat==='all'||b.cat===boonCat);
   let h=`<div class="sec"><div class="sec-hdr">PERMANENT BOONS</div>${cats}<div class="boon-list">`;
   filtered.forEach(b=>{
-    const owned=!!G.boons[b.id],cant=!owned&&G.gold<b.cost;
-    const cls='boon-card'+(owned?' owned':cant?' cant':' can')+((b.rarity==='epic'||b.rarity==='legendary')?' elite':'');
-    h+=`<div class="${cls}" onpointerdown="${owned||cant?'':  `buyBoon('${b.id}')`}">
+    const lv = boonLevel(b.id);
+    const maxed = false;
+    const upgCost = maxed ? 0 : boonUpgradeCost(b);
+    const cant = !maxed && G.gold < upgCost;
+    const owned = lv > 0;
+    const cls='boon-card'+(maxed?' owned':cant?' cant':' can')+((b.rarity==='epic'||b.rarity==='legendary')?' elite':'');
+
+    // Level pip display
+    const levelDisplay = lv > 0
+       ? `<div style="margin-top:4px;font-size:var(--fs-xs);color:var(--golddim)">Level ${lv}</div>`
+       : '';
+
+    const levelLabel = maxed
+      ? `<span style="color:var(--gold);font-size:var(--fs-xs)">★ MAX LEVEL</span>`
+      : lv > 0
+        ? `<span style="color:var(--txt3);font-size:var(--fs-xs)">Lv ${lv} → ${lv+1}</span>`
+        : `<span style="color:var(--txt3);font-size:var(--fs-xs)">Not acquired</span>`;
+
+    h+=`<div class="${cls}" onpointerdown="${cant?'':  `buyBoon('${b.id}')`}">
       <div class="boon-rar ${b.rarity}">${b.rarity}</div>
       <div class="boon-ico">${b.ico}</div>
       <div class="boon-body">
-        <div class="boon-name">${b.name}</div><div class="boon-desc">${b.desc}</div>
-        ${owned?'<div class="boon-own-lbl">✓ Acquired</div>':`<div class="boon-cost">💰 ${fmt(b.cost)}</div>`}
+        <div class="boon-name">${b.name}</div>
+        <div class="boon-desc">${b.desc}</div>
+        ${levelDisplay}
+        <div style="margin-top:4px;display:flex;align-items:center;justify-content:space-between">
+          ${lv > 0
+            ? `<span style="color:var(--txt3);font-size:var(--fs-xs)">Lv ${lv} → ${lv+1}</span>`
+            : `<span style="color:var(--txt3);font-size:var(--fs-xs)">Not acquired</span>`}
+          <div class="boon-cost">💰 ${fmt(upgCost)}</div>
+        </div>
       </div>
     </div>`;
   });
   return h+'</div></div>';
 }
+
 function setBoonCat(c){boonCat=c;renderTab();}
 function buyBoon(id){
-  initAudio();const b=BOONS.find(x=>x.id===id);if(!b||G.boons[id])return;
-  if(G.gold<b.cost){toast('Not enough gold!');return;}
-  G.gold-=b.cost;G.boons[id]=true;G.boonCount=(G.boonCount||0)+1;SFX.boon();if(G.idle)startIdle();
-  toast('⚗ '+b.name+' acquired!');renderTab();updateHUD();checkQuests();checkChapters();saveG();
+  initAudio();
+  const b = BOONS.find(x=>x.id===id);
+  if(!b) return;
+  const lv = boonLevel(id);
+  const cost = boonUpgradeCost(b);
+  if(G.gold < cost){ toast('Not enough gold!'); return; }
+  G.gold -= cost;
+  G.boons[id] = lv + 1;
+  if(lv === 0) G.boonCount = (G.boonCount||0) + 1;
+  SFX.boon();
+  if(G.idle) startIdle();
+  toast(`⚗ ${b.name} → Level ${lv+1}!`);
+  renderTab(); updateHUD(); checkQuests(); checkChapters(); saveG();
 }
 
 /* ===============================================
