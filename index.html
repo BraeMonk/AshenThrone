@@ -55,7 +55,7 @@ html,body{width:100%;height:100%;background:#000;overflow:hidden;}
 APP SHELL
 ======================================================== */
 body{font-family:'Cinzel',Georgia,serif;}
-#app{position:fixed;inset:0;width:390px;height:844px;overflow:hidden;transform-origin:top left;}
+#app{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;transform-origin:top left;}
 .scr{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden;}
 .scr.on{display:flex;}
 
@@ -183,7 +183,7 @@ box-shadow:0 4px 0 #5a3a00,0 6px 16px rgba(240,192,48,0.3);transition:all .12s;
 /* ========================================================
 MAIN GAME
 ======================================================== */
-#s2{background:var(--bg);height:844px;overflow:hidden;flex-direction:column;}
+#s2{background:var(--bg);height:100%;overflow:hidden;flex-direction:column;}
 
 /* === HUD === */
 #hud{
@@ -242,7 +242,7 @@ overflow:hidden;display:flex;align-items:center;padding:0 var(--sp-md);gap:8px;
 
 /* === ARENA === */
 #arena-wrap{
-flex-shrink:0;height:190px;position:relative;background:#050408;overflow:hidden;
+flex-shrink:0;height:30vh;min-height:150px;max-height:260px;position:relative;background:#050408;overflow:hidden;
 border-bottom:2px solid var(--border);
 }
 #arena-cv{position:absolute;inset:0;width:100%;height:100%;display:block;}
@@ -1970,10 +1970,11 @@ function showLvlUp(){
 /* ===============================================
    TITLE FX — 32-bit enhanced ember particles
 =============================================== */
-function titleFX(){
-  const cv=document.getElementById('s0-cv');if(!cv)return;
-  cv.width=390;cv.height=844;
-  const ctx=cv.getContext('2d');
+function titleFX() {
+  const cv = document.getElementById('s0-cv');
+  function resize() { cv.width = window.innerWidth; cv.height = window.innerHeight; }
+  resize();
+  window.addEventListener('resize', resize);
 
   // More varied ember system for 32-bit feel
   const embers=Array.from({length:80},()=>({
@@ -2028,25 +2029,9 @@ function titleFX(){
     requestAnimationFrame(fr);
   }
   fr();
-  window.addEventListener('resize',()=>{cv.width=390;cv.height=844;});
 }
-// Viewport scaler: render at 390x844, scale to fit any screen
-function scaleApp(){
-  const W=390,H=844;
-  const sw=window.innerWidth/W;
-  const sh=window.innerHeight/H;
-  const s=Math.min(sw,sh);
-  const app=document.getElementById('app');
-  app.style.transform='scale('+s+')';
-  const ox=(window.innerWidth -W*s)/2;
-  const oy=(window.innerHeight-H*s)/2;
-  app.style.left=ox+'px';
-  app.style.top =oy+'px';
-  app.style.position='fixed';
-}
-scaleApp();
-window.addEventListener('resize',scaleApp);
-window.addEventListener('load',()=>{scaleApp();titleFX();});
+   
+window.addEventListener('load',()=>{titleFX();});
 </script>
 
 </body>
