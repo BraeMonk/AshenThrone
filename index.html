@@ -1716,7 +1716,8 @@ function updateHUD(){
   const xp=Math.max(0,Math.min(100,G.xp/G.xpNext*100));
   document.getElementById('b-hp').style.width=hp+'%';document.getElementById('b-mp').style.width=mp+'%';document.getElementById('b-xp').style.width=xp+'%';
   document.getElementById('v-hp').textContent=Math.round(G.hp)+'/'+st.maxHp;document.getElementById('v-mp').textContent=Math.round(G.mana)+'/'+st.maxMana;document.getElementById('v-xp').textContent=G.xp+'/'+G.xpNext;
-  document.getElementById('hud-gold-val').textContent=fmt(G.gold);document.getElementById('hud-lv-val').textContent=G.lv;document.getElementById('hud-cls-name').textContent=CLASSES[G.cls].name.split(' ')[0];document.getElementById('hud-zone-val').textContent=G.zone;const ageEl=document.getElementById('hud-age-val');if(ageEl)ageEl.textContent=G.age;
+  document.getElementById('hud-gold-val').textContent=fmt(G.gold);const gpsEl=document.getElementById('hud-gps');if(gpsEl){const ageMult=Math.pow(1.15,(G.age||1)-1);let gps=(G.boons.b20||0)*2+(G.boons.b21||0)*8+(G.boons.b22||0)*25+(G.boons.b23||0)*80*ageMult;gps=Math.round(gps*G.pbonus*10)/10;gpsEl.textContent=gps>0?'+'+fmt(Math.round(gps))+'/s':'';}
+  document.getElementById('hud-lv-val').textContent=G.lv;document.getElementById('hud-cls-name').textContent=CLASSES[G.cls].name.split(' ')[0];document.getElementById('hud-zone-val').textContent=G.zone;const ageEl=document.getElementById('hud-age-val');if(ageEl)ageEl.textContent=G.age;
   updateZoneBar();const sp=document.getElementById('sp-badge');if(sp)sp.textContent='SP: '+G.sp;
 }
 function updateZoneBar(){const pct=G?Math.min(100,(G.zoneKills/G.zoneTarget)*100):0;const el=document.getElementById('zone-prog-fill');if(el)el.style.width=pct+'%';}
