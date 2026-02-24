@@ -1590,7 +1590,7 @@ function spawnParticles(x,y,col,n=10){
 /* ===============================================
    COMBAT
 =============================================== */
-let curEnemy=null,eHP=0,eMaxHP=0,atkTimer=null,atkCount=0;
+let curEnemy=null,eHP=0,eMaxHP=0,atkTimer=null,manaTimer=null,atkCount=0;
 function spawnEnemy(){const zi=Math.min(G.zone-1,ZONES.length-1);const pool=ZONES[zi].enemies;const key=pool[Math.floor(Math.random()*pool.length)];const base=Math.round(28*Math.pow(1.6,G.zone-1));eMaxHP=Math.round(base*(1+(boonLevel('b9')*0.4)));eHP=eMaxHP;const nl=ENAMES[key];curEnemy={key,name:nl[Math.floor(Math.random()*nl.length)]};EA.dead=false;EA.deathT=0;updateZoneBar();}
 function doAttack(){
   if(!G||G.hp<=0)return;initAudio();
@@ -1600,7 +1600,7 @@ function doAttack(){
   if(isCrit)dmg*=2;
   if(G.sk.berserk&&G.hp/st.maxHp<.3)dmg*=1.7;
   if(G.sk.overpower&&atkCount%5===0){dmg*=3;showDmg('OVERPOWER!',true,'special');}
-  if(st.spell>0){const sp=Math.round(st.spell*(.5+Math.random()*.5));dmg+=G.boons.b12&&Math.random()<.2?sp*1.5:sp;}
+  if(st.spell>0&&G.mana>0){const sp=Math.round(st.spell*(.5+Math.random()*.5));const manaCost=Math.min(G.mana,Math.round(st.maxMana*0.08));G.mana=Math.max(0,G.mana-manaCost);const spellMult=G.boons.b12&&Math.random()<.2?1.5:1;dmg+=Math.round(sp*spellMult*(0.5+0.5*(G.mana/Math.max(1,st.maxMana))));}
   if(G.boons.b15){G._cc=(G._cc||0)+1;if(G._cc%10===0&&eHP-Math.round(dmg)<=0){dmg*=6;showDmg('PYRE!',true,'special');}}
   dmg=Math.round(dmg);
   SFX.hit();if(isCrit)SFX.crit();
@@ -1650,8 +1650,17 @@ function die(){
   const st=getStats();G.hp=Math.round(st.maxHp*.5);spawnEnemy();updateHUD();
 }
 function toggleAuto(){initAudio();G.idle=!G.idle;const b=document.getElementById('btn-auto');b.textContent=G.idle?'AUTO ON':'AUTO OFF';b.className=G.idle?'on':'';b.id='btn-auto';if(G.idle)startIdle();else stopIdle();}
-function startIdle(){stopIdle();atkTimer=setInterval(doAttack,atkInterval());}
+function startIdle(){stopIdle();atkTimer=setInterval(doAttack,atkInterval());if(!manaTimer)manaTimer=setInterval(tickMana,1000);}
 function stopIdle(){if(atkTimer){clearInterval(atkTimer);atkTimer=null;}}
+function tickMana(){
+  if(!G)return;
+  const st=getStats();
+  if(G.mana>=st.maxMana)return;
+  // Regen ~5% of maxMana per second, minimum 1
+  const regen=Math.max(1,Math.round(st.maxMana*0.05));
+  G.mana=Math.min(st.maxMana,G.mana+regen);
+  updateHUD();
+}
 function doAttackTouch(e){e.preventDefault();doAttack();}
 
 /* ===============================================
@@ -1980,7 +1989,7 @@ function confirmClass(){
   if(!G.selCls)return;
   document.getElementById('hud-av').textContent=CLASSES[G.cls].icon;
   showScr('s2');initCanvas();spawnEnemy();updateHUD();openTab('story');renderTab();
-  setStoryTicker('Your legend begins in the Ashen Fields.',true);startBGM();if(G.idle)startIdle();setInterval(saveG,30000);
+  setStoryTicker('Your legend begins in the Ashen Fields.',true);startBGM();if(G.idle)startIdle();setInterval(saveG,30000);if(!manaTimer)manaTimer=setInterval(tickMana,1000);
 }
 
 /* ===============================================
@@ -2003,7 +2012,7 @@ function gotoClassSelect(){
   if(had&&G.selCls){
     document.getElementById('hud-av').textContent=CLASSES[G.cls].icon;
     showScr('s2');initCanvas();spawnEnemy();updateHUD();openTab('story');renderTab();
-    setStoryTicker(ZONES[Math.min(G.zone-1,ZONES.length-1)].story);startBGM();if(G.idle)startIdle();setInterval(saveG,30000);
+    setStoryTicker(ZONES[Math.min(G.zone-1,ZONES.length-1)].story);startBGM();if(G.idle)startIdle();setInterval(saveG,30000);if(!manaTimer)manaTimer=setInterval(tickMana,1000);
       if(G._offlineRecap){
         const r=G._offlineRecap;delete G._offlineRecap;
         const hrs=Math.floor(r.seconds/3600),mins=Math.floor((r.seconds%3600)/60);
