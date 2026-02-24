@@ -129,7 +129,7 @@ box-shadow:0 2px 8px rgba(0,0,0,0.5),inset 0 1px 0 rgba(255,255,255,0.04);
 /* ========================================================
 CLASS SELECT
 ======================================================== */
-#s1{background:var(--bg);}
+#s1{background:var(--bg);overflow-y:auto;-webkit-overflow-scrolling:touch;}
 .page-hdr{
 flex-shrink:0;
 padding:max(12px,env(safe-area-inset-top,12px)) var(--sp-md) var(--sp-sm);
@@ -139,7 +139,6 @@ box-shadow:0 2px 16px rgba(0,0,0,0.6);
 .page-hdr-title{font-size:var(--fs-sm);color:var(--gold);letter-spacing:5px;text-align:center;text-shadow:0 0 12px var(--goldglow);}
 .page-hdr-sub{font-family:'Crimson Text',serif;font-style:italic;font-size:var(--fs-xs);color:#7a6540;text-align:center;margin-top:4px;}
 .cls-list{
-flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;
 padding:var(--sp-md);display:grid;
 grid-template-columns:repeat(auto-fill,minmax(min(100%,360px),1fr));
 gap:var(--sp-md);align-content:start;
@@ -179,7 +178,7 @@ font-size:var(--fs-xs);color:#b8a060;background:rgba(0,0,0,0.4);
 border:1px solid var(--border2);border-radius:3px;padding:2px 6px;
 box-shadow:inset 0 1px 3px rgba(0,0,0,0.4);
 }
-.cls-foot{flex-shrink:0;padding:var(--sp-sm) var(--sp-md);background:var(--panel);border-top:2px solid var(--border2);}
+.cls-foot{padding:var(--sp-sm) var(--sp-md) max(var(--sp-md),env(safe-area-inset-bottom,12px));background:var(--panel);border-top:2px solid var(--border2);position:sticky;bottom:0;z-index:10;}
 .cls-go{
 width:100%;padding:13px;font-family:'Cinzel',serif;font-size:var(--fs-md);font-weight:700;
 letter-spacing:3px;color:#1a0e00;background:linear-gradient(180deg,#ffe080,#d4a020,#8a6010);
@@ -1264,6 +1263,32 @@ function loadG(){
       ['cls','selCls','lv','xp','xpNext','hp','maxHp','mana','maxMana','gold','gtotal','kills','deaths','zone','zoneKills','zoneTarget','sp','prestige','pbonus','sk','boons','boonCount','sktotal'].forEach(k=>{if(s[k]!==undefined)G[k]=s[k];});
       G.quests=QUESTS.map(q=>{const sq=(s.quests||[]).find(x=>x.id===q.id);return sq?{...q,...sq}:{...q};});
       G.chapters=STORY_CHAPTERS.map(c=>{const sc=(s.chapters||[]).find(x=>x.id===c.id);if(!sc)return{...c,objs:c.objs.map(o=>({...o}))};return{...c,...sc,objs:c.objs.map((o,i)=>sc.objs&&sc.objs[i]?{...o,...sc.objs[i]}:{...o})};});
+            // Offline progress
+      const now = Date.now();
+      const elapsed = Math.min((now - (s.lastSave || now)) / 1000, 8 * 3600); // cap at 8 hours
+      if(elapsed > 10){
+        const st_spd = Math.max(0.5, (s.sk&&s.sk.swift ? 1.0 + s.sk.swift*0.12 : 1.0));
+        const attacks = Math.floor(elapsed * st_spd);
+        const zi = Math.min((s.zone||1)-1, ZONES.length-1);
+        const killChance = 0.35; // not every attack is a kill
+        const offlineKills = Math.floor(attacks * killChance);
+        let offlineGold = 0, offlineXP = 0;
+        for(let i=0;i<offlineKills;i++){
+          let g = Math.round((6+(s.zone||1)*5)*Math.pow(1.45,(s.zone||1)-1)*0.9);
+          if(s.boons&&s.boons.b2) g = Math.round(g*(1+0.15*(s.boons.b2||0)));
+          offlineGold += g;
+          offlineXP += Math.round(9*Math.pow(1.45,(s.zone||1)-1));
+        }
+        // Apply XP and level ups
+        G.kills += offlineKills;
+        G.gold += offlineGold;
+        G.gtotal += offlineGold;
+        G.xp += offlineXP;
+        while(G.xp >= G.xpNext){
+          G.xp -= G.xpNext; G.lv++; G.xpNext = xpFor(G.lv); G.sp++;
+        }
+        G._offlineRecap = {kills: offlineKills, gold: offlineGold, seconds: Math.round(elapsed)};
+      }
       return true;
     }
   }catch(e){}G=mkState();return false;
@@ -1922,7 +1947,21 @@ function buildClassCards(){
       cx.fillRect(3+rx*PX*S,3+ry*PX*S,PX*S,PX*S);
     }));
     wrap.appendChild(cv);card.appendChild(wrap);
-    card.insertAdjacentHTML('beforeend',`<div class="cls-text"><div class="cls-name">${c.icon} ${c.name}</div><div class="cls-flavor">${c.flavor}</div><div class="cls-lore">${c.lore}</div><div class="cls-stats">${c.hints.map(h=>`<span class="cls-stat">${h}</span>`).join('')}</div></div>`);
+    card.insertAdjacentHTML('beforeend',`<div class="cls-text">
+      <div class="cls-name">${c.icon} ${c.name}</div>
+      <div class="cls-flavor">${c.flavor}</div>
+      <div class="cls-lore">${c.lore}</div>
+      <div class="cls-stats">${c.hints.map(h=>`<span class="cls-stat">${h}</span>`).join('')}</div>
+      <div style="margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:4px;">
+        <span class="cls-stat">⚔ ATK ${c.baseAtk}</span>
+        <span class="cls-stat">🛡 DEF ${c.baseDef}</span>
+        <span class="cls-stat">❤ HP ${c.baseHp}</span>
+        <span class="cls-stat">✦ MP ${c.baseMana}</span>
+        <span class="cls-stat">⚡ SPD ${c.baseSpd}×</span>
+        <span class="cls-stat">💥 CRIT ${c.baseCrit}%</span>
+        ${c.baseSpell>0?`<span class="cls-stat" style="grid-column:1/-1">🔮 SPELL ${c.baseSpell}</span>`:''}
+      </div>
+    </div>`);
     list.appendChild(card);
   });
 }
@@ -1961,6 +2000,12 @@ function gotoClassSelect(){
     document.getElementById('hud-av').textContent=CLASSES[G.cls].icon;
     showScr('s2');initCanvas();spawnEnemy();updateHUD();openTab('story');renderTab();
     setStoryTicker(ZONES[Math.min(G.zone-1,ZONES.length-1)].story);startBGM();if(G.idle)startIdle();setInterval(saveG,30000);
+      if(G._offlineRecap){
+        const r=G._offlineRecap;delete G._offlineRecap;
+        const hrs=Math.floor(r.seconds/3600),mins=Math.floor((r.seconds%3600)/60);
+        const timeStr=hrs>0?`${hrs}h ${mins}m`:`${mins}m`;
+        setTimeout(()=>toast(`⏳ Away ${timeStr}: +${fmt(r.gold)}💰 +${r.kills} kills`),800);
+      }
   }else{G=mkState();buildClassCards();showScr('s1');}
 }
 
