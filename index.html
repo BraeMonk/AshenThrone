@@ -1929,7 +1929,7 @@ function buildStats(){
     <div class="prestige-box">
       <div class="pres-title">✨ Prestige Ascension</div>
       <div class="pres-desc">Sacrifice your progress to be reborn with greater power. Earn <strong style="color:var(--gold)">${gain}</strong> prestige point${gain>1?'s':''}, increasing ALL stats by <strong style="color:var(--gold)">${gain*5}%</strong> permanently. Boons are kept.</div>
-      <div class="pres-warn">⚠ Resets: level, gold, skill points, skills, zone.</div>
+      <div class="pres-warn">⚠ Resets: level, gold, skills, zone. 50% of unspent SP carries over</div>
       <button class="btn-prestige" onclick="openPrestige()">✨ ASCEND — GAIN ${gain} POINT${gain>1?'S':''}</button>
     </div>
   </div>`;
@@ -1938,7 +1938,7 @@ function buildStats(){
 /* ===============================================
    PRESTIGE
 =============================================== */
-function openPrestige(){const gain=Math.max(1,Math.floor(G.lv/5));openModal('✨ Prestige Ascension',`Gain ${gain} prestige point${gain>1?'s':''}, permanently increasing all stats by ${gain*5}%.`,'⚠ Your level, gold, skill points, skills, and zone will reset. Boons persist.',doPrestige,true);}
+function openPrestige(){const gain=Math.max(1,Math.floor(G.lv/5));openModal('✨ Prestige Ascension',`Gain ${gain} prestige point${gain>1?'s':''}, permanently increasing all stats by ${gain*5}%.`,'⚠ Your level, gold, skills, and zone will reset. Boons and 50% of current SP persist.',doPrestige,true);}
 function doPrestige(){
   const gain=Math.max(1,Math.floor(G.lv/5));G.prestige+=gain;G.pbonus=1+G.prestige*.05;
   const carryoverSP=Math.floor(G.sp*0.5);
