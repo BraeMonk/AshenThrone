@@ -777,7 +777,7 @@ SHORT SCREENS
         <div class="br"><span class="br-ico" style="color:#50d050">★</span><div class="br-track"><div class="br-fill xp" id="b-xp" style="width:0%"></div></div><span class="br-val" id="v-xp">0/100</span></div>
       </div>
       <div id="hud-right">
-        <div id="hud-gold">💰 <span id="hud-gold-val">0</span></div>
+        <div id="hud-gold">💰 <span id="hud-gold-val">0</span><span id="hud-gps" style="font-size:0.55rem;color:var(--golddim);margin-left:3px;"></span></div>
         <div id="hud-lv">Lv.<span id="hud-lv-val">1</span> · <span id="hud-cls-name">?</span></div>
         <div id="hud-zb">Zone <span id="hud-zone-val">1</span> · Age <span id="hud-age-val">1</span></div>
       </div>
@@ -1244,6 +1244,10 @@ const BOONS=[
   {id:'b17',ico:'⚔',name:'War Covenant',desc:'Kill streaks stack +3% ATK per level (max 30%).',cost:2000,rarity:'epic',cat:'combat'},
   {id:'b18',ico:'🧿',name:'Ward of the Ancients',desc:'+20% block per level. Blocked damage fuels a reflect strike.',cost:2800,rarity:'epic',cat:'survival'},
   {id:'b19',ico:'💧',name:'Arcane Flow',desc:'+25% mana regen speed per level.',cost:800,rarity:'common',cat:'combat'},
+  {id:'b20',ico:'🏦',name:'Ashen Vault',desc:'Generates 2 gold/sec per level.',cost:400,rarity:'common',cat:'wealth'},
+  {id:'b21',ico:'💀',name:'Bone Market',desc:'Generates 8 gold/sec per level.',cost:1500,rarity:'rare',cat:'wealth'},
+  {id:'b22',ico:'🌑',name:'Shadow Exchange',desc:'Generates 25 gold/sec per level.',cost:5000,rarity:'epic',cat:'wealth'},
+  {id:'b23',ico:'👑',name:'Infernal Mint',desc:'Generates 80 gold/sec per level. Scales with Age.',cost:18000,rarity:'legendary',cat:'wealth'},
 ];
 
 function boonLevel(id){ return G.boons[id] || 0; }
@@ -1591,7 +1595,7 @@ function spawnParticles(x,y,col,n=10){
 /* ===============================================
    COMBAT
 =============================================== */
-let curEnemy=null,eHP=0,eMaxHP=0,atkTimer=null,manaTimer=null,atkCount=0;
+let curEnemy=null,eHP=0,eMaxHP=0,atkTimer=null,manaTimer=null,vaultTimer=null,atkCount=0;
 function spawnEnemy(){const zi=Math.min(G.zone-1,ZONES.length-1);const pool=ZONES[zi].enemies;const key=pool[Math.floor(Math.random()*pool.length)];const base=Math.round(28*Math.pow(1.6,G.zone-1));const ageMult=Math.pow(1.35,G.age-1);eMaxHP=Math.round(base*ageMult*(1+(boonLevel('b9')*0.4)));eHP=eMaxHP;const nl=ENAMES[key];curEnemy={key,name:nl[Math.floor(Math.random()*nl.length)]};EA.dead=false;EA.deathT=0;updateZoneBar();}
 function doAttack(){
   if(!G||G.hp<=0)return;initAudio();
@@ -1674,7 +1678,7 @@ function die(){
   const st=getStats();G.hp=Math.round(st.maxHp*.5);spawnEnemy();updateHUD();
 }
 function toggleAuto(){initAudio();G.idle=!G.idle;const b=document.getElementById('btn-auto');b.textContent=G.idle?'AUTO ON':'AUTO OFF';b.className=G.idle?'on':'';b.id='btn-auto';if(G.idle)startIdle();else stopIdle();}
-function startIdle(){stopIdle();atkTimer=setInterval(doAttack,atkInterval());if(!manaTimer)manaTimer=setInterval(tickMana,1000);}
+function startIdle(){stopIdle();atkTimer=setInterval(doAttack,atkInterval());if(!manaTimer)manaTimer=setInterval(tickMana,1000);if(!vaultTimer)vaultTimer=setInterval(tickVault,1000);}
 function stopIdle(){if(atkTimer){clearInterval(atkTimer);atkTimer=null;}}
 function tickMana(){
   if(!G)return;
@@ -1684,6 +1688,19 @@ function tickMana(){
   const regenMult=1+0.25*(G.boons.b19||0);
   const regen=Math.max(1,Math.round(st.maxMana*0.05*regenMult));
   G.mana=Math.min(st.maxMana,G.mana+regen);
+  updateHUD();
+}
+function tickVault(){
+  if(!G)return;
+  const ageMult=Math.pow(1.15,(G.age||1)-1);
+  let gps=0;
+  gps+=(G.boons.b20||0)*2;
+  gps+=(G.boons.b21||0)*8;
+  gps+=(G.boons.b22||0)*25;
+  gps+=(G.boons.b23||0)*80*ageMult;
+  gps=Math.round(gps*G.pbonus*10)/10;
+  if(gps<=0)return;
+  G.gold+=gps;G.gtotal+=gps;
   updateHUD();
 }
 function doAttackTouch(e){e.preventDefault();doAttack();}
