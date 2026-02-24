@@ -1626,7 +1626,7 @@ function killEnemy(){
   let gold=Math.round((6+G.zone*5)*Math.pow(1.45,G.zone-1)*(0.8+Math.random()*.4));
   if(boonLevel('b2'))gold=Math.round(gold*(1+0.15*boonLevel('b2')));if(boonLevel('b9'))gold=Math.round(gold*(1+0.25*boonLevel('b9')));if(G.boons.b11)gold=Math.round(gold*(1+G.prestige*0.12));
   G.gold+=gold;G.gtotal+=gold;SFX.gold();
-  let xpg=Math.round(9*Math.pow(1.45,G.zone-1));
+  let xpg=Math.round(13*Math.pow(1.45,G.zone-1));
   if(boonLevel('b3'))xpg=Math.round(xpg*(1+0.25*boonLevel('b3')));
   if(boonLevel('b16')&&G.zone>=4)xpg=Math.round(xpg*(1+0.5*boonLevel('b16')));
   if(G.sk.radiance){gold=Math.round(gold*1.2);xpg=Math.round(xpg*1.2);}
@@ -1858,7 +1858,11 @@ function buyBoon(id){
   if(G.gold < cost){ toast('Not enough gold!'); return; }
   G.gold -= cost;
   G.boons[id] = lv + 1;
-  if(lv === 0) G.boonCount = (G.boonCount||0) + 1;
+    if(lv === 0) G.boonCount = (G.boonCount||0) + 1;
+    // Grant XP for boon purchase — scales with boon cost
+    const boonXP = Math.round(cost * 0.4);
+    G.xp += boonXP;
+    while(G.xp >= G.xpNext){ G.xp -= G.xpNext; G.lv++; G.xpNext = xpFor(G.lv); G.sp++; showLvlUp(); }
   SFX.boon();
   if(G.idle) startIdle();
   toast(`⚗ ${b.name} → Level ${lv+1}!`);
