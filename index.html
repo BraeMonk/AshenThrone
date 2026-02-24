@@ -1941,10 +1941,11 @@ function buildStats(){
 function openPrestige(){const gain=Math.max(1,Math.floor(G.lv/5));openModal('✨ Prestige Ascension',`Gain ${gain} prestige point${gain>1?'s':''}, permanently increasing all stats by ${gain*5}%.`,'⚠ Your level, gold, skill points, skills, and zone will reset. Boons persist.',doPrestige,true);}
 function doPrestige(){
   const gain=Math.max(1,Math.floor(G.lv/5));G.prestige+=gain;G.pbonus=1+G.prestige*.05;
-  G.lv=1;G.xp=0;G.xpNext=100;G.sp=0;G.sk={};G.zone=1;G.zoneKills=0;G.zoneTarget=10;G.gold=0;G.sktotal=0;G.chainKills=0;G.divineReady=true;G._swr=true;
+  const carryoverSP=Math.floor(G.sp*0.5);
+  G.lv=1;G.xp=0;G.xpNext=100;G.sp=carryoverSP;G.sk={};G.zone=1;G.zoneKills=0;G.zoneTarget=10;G.gold=0;G.sktotal=0;G.chainKills=0;G.divineReady=true;G._swr=true;
   const st=getStats();G.hp=st.maxHp;G.mana=CLASSES[G.cls].baseMana;
   spawnEnemy();closeModal();checkQuests();checkChapters();SFX.prestige();
-  toast('✨ Prestige '+G.prestige+'! +'+Math.round((G.pbonus-1)*100)+'% stats!');updateHUD();renderTab();saveG();
+  toast('✨ Prestige '+G.prestige+'! +'+Math.round((G.pbonus-1)*100)+'% stats! '+carryoverSP+' SP carried over.');
 }
 
 /* ===============================================
