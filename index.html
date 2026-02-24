@@ -1268,31 +1268,122 @@ function loadG(){
       ['cls','selCls','lv','xp','xpNext','hp','maxHp','mana','maxMana','gold','gtotal','kills','deaths','zone','age','zoneKills','zoneTarget','sp','prestige','pbonus','sk','boons','boonCount','sktotal'].forEach(k=>{if(s[k]!==undefined)G[k]=s[k];});
       G.quests=QUESTS.map(q=>{const sq=(s.quests||[]).find(x=>x.id===q.id);return sq?{...q,...sq}:{...q};});
       G.chapters=STORY_CHAPTERS.map(c=>{const sc=(s.chapters||[]).find(x=>x.id===c.id);if(!sc)return{...c,objs:c.objs.map(o=>({...o}))};return{...c,...sc,objs:c.objs.map((o,i)=>sc.objs&&sc.objs[i]?{...o,...sc.objs[i]}:{...o})};});
-            // Offline progress
+      // Offline progress — full simulation
       const now = Date.now();
-      const elapsed = Math.min((now - (s.lastSave || now)) / 1000, 8 * 3600); // cap at 8 hours
+      const elapsed = Math.min((now - (s.lastSave || now)) / 1000, 8 * 3600);
       if(elapsed > 10){
-        const st_spd = Math.max(0.5, (s.sk&&s.sk.swift ? 1.0 + s.sk.swift*0.12 : 1.0));
-        const attacks = Math.floor(elapsed * st_spd);
-        const zi = Math.min((s.zone||1)-1, ZONES.length-1);
-        const killChance = 0.35; // not every attack is a kill
-        const offlineKills = Math.floor(attacks * killChance);
-        let offlineGold = 0, offlineXP = 0;
-        for(let i=0;i<offlineKills;i++){
-          let g = Math.round((6+(s.zone||1)*5)*Math.pow(1.45,(s.zone||1)-1)*0.9);
-          if(s.boons&&s.boons.b2) g = Math.round(g*(1+0.15*(s.boons.b2||0)));
-          offlineGold += g;
-          offlineXP += Math.round(9*Math.pow(1.45,(s.zone||1)-1));
+        // Helpers that work off saved state (s) not live G
+        const bl = id => (s.boons&&s.boons[id])||0;
+        const sk = id => (s.sk&&s.sk[id])||0;
+
+        // Attack speed
+        let offSpd = (s.cls ? CLASSES[s.cls].baseSpd : 1.0);
+        offSpd += sk('swift')*0.12 + bl('b5')*0.3;
+        offSpd = Math.max(0.5, offSpd);
+        const attacksPerSec = offSpd;
+        const killChance = 0.35;
+
+        // Simulate second by second
+        let simZone = s.zone||1;
+        let simAge  = s.age||1;
+        let simZoneKills = s.zoneKills||0;
+        let simZoneTarget = s.zoneTarget||10;
+        let offKills=0, offGold=0, offXP=0, offLevels=0, offSP=0;
+        let simLv = s.lv||1;
+        let simXp = s.xp||0;
+        let simXpNext = s.xpNext||100;
+        let offZoneAdv=0, offAgeAdv=0;
+
+        // Vault g/s from saved boons
+        const vaultAgeMult = Math.pow(1.15, simAge-1);
+        const vaultGps = Math.round((bl('b20')*250 + bl('b21')*800 + bl('b22')*2500 + bl('b23')*15000*vaultAgeMult) * (s.pbonus||1) * 10)/10;
+
+        // Gold from vault over full offline period
+        offGold += Math.floor(vaultGps * elapsed);
+
+        // Simulate kills second by second (chunked for performance)
+        const CHUNK = 10; // simulate in 10s chunks
+        const chunks = Math.floor(elapsed / CHUNK);
+        const remainder = elapsed % CHUNK;
+
+        const simulateChunk = (secs) => {
+          const kills = Math.floor(attacksPerSec * secs * killChance);
+          for(let i=0;i<kills;i++){
+            // Gold per kill
+            let g = Math.round((6+simZone*5)*Math.pow(1.45,simZone-1)*0.9*Math.pow(1.2,simAge-1));
+            if(bl('b2')) g = Math.round(g*(1+0.15*bl('b2')));
+            if(bl('b9')) g = Math.round(g*(1+0.25*bl('b9')));
+            if(bl('b11')&& s.prestige) g = Math.round(g*(1+s.prestige*0.12));
+            offGold += g;
+
+            // XP per kill
+            let xpg = Math.round(13*Math.pow(1.45,simZone-1)*Math.pow(1.2,simAge-1));
+            if(bl('b3')) xpg = Math.round(xpg*(1+0.25*bl('b3')));
+            if(bl('b16')&&simZone>=4) xpg = Math.round(xpg*(1+0.5*bl('b16')));
+            offXP += xpg;
+            offKills++;
+
+            // Zone progression
+            simZoneKills++;
+            if(simZoneKills >= simZoneTarget){
+              simZoneKills = 0;
+              simZoneTarget = Math.round(simZoneTarget*1.22);
+              if(simZone >= 8){ simZone=1; simAge++; offAgeAdv++; }
+              else { simZone++; offZoneAdv++; }
+            }
+          }
+          // Level ups from XP
+          simXp += offXP;
+          offXP = 0;
+          while(simXp >= simXpNext){
+            simXp -= simXpNext; simLv++; simXpNext = xpFor(simLv); offSP++; offLevels++;
+          }
+        };
+
+        for(let c=0;c<chunks;c++) simulateChunk(CHUNK);
+        if(remainder>0) simulateChunk(remainder);
+
+        // Flush remaining XP
+        simXp += offXP;
+        offXP = 0;
+        while(simXp >= simXpNext){
+          simXp -= simXpNext; simLv++; simXpNext = xpFor(simLv); offSP++; offLevels++;
         }
-        // Apply XP and level ups
-        G.kills += offlineKills;
-        G.gold += offlineGold;
-        G.gtotal += offlineGold;
-        G.xp += offlineXP;
-        while(G.xp >= G.xpNext){
-          G.xp -= G.xpNext; G.lv++; G.xpNext = xpFor(G.lv); G.sp++;
-        }
-        G._offlineRecap = {kills: offlineKills, gold: offlineGold, seconds: Math.round(elapsed)};
+
+        // Apply everything to live state
+        G.kills += offKills;
+        G.gold += offGold;
+        G.gtotal += offGold;
+        G.xp = simXp;
+        G.lv = simLv;
+        G.xpNext = simXpNext;
+        G.sp += offSP;
+        G.zone = simZone;
+        G.age = simAge;
+        G.zoneKills = simZoneKills;
+        G.zoneTarget = simZoneTarget;
+
+        // HP/mana scale to new level
+        const offSt = (() => {
+          const c = CLASSES[G.cls];
+          let mHp = c.baseHp + (G.lv-1)*13;
+          if(sk('vigor')) mHp += sk('vigor')*22;
+          if(bl('b14')) mHp = Math.round(mHp*(1+0.22*bl('b14')));
+          mHp = Math.round(mHp*(s.pbonus||1));
+          return { maxHp: mHp, maxMana: c.baseMana + sk('manawell')*22 };
+        })();
+        G.hp = offSt.maxHp;
+        G.mana = offSt.maxMana;
+
+        G._offlineRecap = {
+          kills: offKills,
+          gold: offGold,
+          levels: offLevels,
+          sp: offSP,
+          zoneAdv: offZoneAdv,
+          ageAdv: offAgeAdv,
+          seconds: Math.round(elapsed)
+        };
       }
       return true;
     }
@@ -1937,7 +2028,7 @@ function buildStats(){
       </div>
       <div class="stat-grp">
         <div class="stat-grp-title">📊 LIFETIME</div>
-        ${sr('💀 Kills',G.kills.toLocaleString())}${sr('💰 Gold Earned',G.gtotal.toLocaleString())}
+        ${sr('💀 Kills',G.kills.toLocaleString())}${sr('💰 Gold Earned',G.gtotal.toLocaleString())}${(()=>{const ageMult=Math.pow(1.15,(G.age||1)-1);let gps=(G.boons.b20||0)*250+(G.boons.b21||0)*800+(G.boons.b22||0)*2500+(G.boons.b23||0)*15000*ageMult;gps=Math.round(gps*G.pbonus*10)/10;return gps>0?sr('💰 Gold / Sec','+'+fmt(Math.round(gps))+'/s'):'';})()}
         ${sr('💀 Deaths',G.deaths)}${sr('✨ Prestige',G.prestige)}
         ${sr('⚗ Boons',G.boonCount||0)}${sr('📈 Stat Bonus','+'+Math.round((G.pbonus-1)*100)+'%')}
         ${sr('📜 Quests',G.quests.filter(q=>q.done).length+'/'+G.quests.length)}
@@ -2033,7 +2124,7 @@ function confirmClass(){
   if(!G.selCls)return;
   document.getElementById('hud-av').textContent=CLASSES[G.cls].icon;
   showScr('s2');initCanvas();spawnEnemy();updateHUD();openTab('story');renderTab();
-  setStoryTicker('Your legend begins in the Ashen Fields.',true);startBGM();if(G.idle)startIdle();setInterval(saveG,30000);if(!manaTimer)manaTimer=setInterval(tickMana,1000);
+  setStoryTicker('Your legend begins in the Ashen Fields.',true);startBGM();if(G.idle)startIdle();setInterval(saveG,30000);if(!manaTimer)manaTimer=setInterval(tickMana,1000);if(!vaultTimer)vaultTimer=setInterval(tickVault,1000);
 }
 
 /* ===============================================
@@ -2056,12 +2147,17 @@ function gotoClassSelect(){
   if(had&&G.selCls){
     document.getElementById('hud-av').textContent=CLASSES[G.cls].icon;
     showScr('s2');initCanvas();spawnEnemy();updateHUD();openTab('story');renderTab();
-    setStoryTicker(ZONES[Math.min(G.zone-1,ZONES.length-1)].story);startBGM();if(G.idle)startIdle();setInterval(saveG,30000);if(!manaTimer)manaTimer=setInterval(tickMana,1000);
+    setStoryTicker(ZONES[Math.min(G.zone-1,ZONES.length-1)].story);startBGM();if(G.idle)startIdle();setInterval(saveG,30000);if(!manaTimer)manaTimer=setInterval(tickMana,1000);if(!vaultTimer)vaultTimer=setInterval(tickVault,1000);
       if(G._offlineRecap){
         const r=G._offlineRecap;delete G._offlineRecap;
         const hrs=Math.floor(r.seconds/3600),mins=Math.floor((r.seconds%3600)/60);
         const timeStr=hrs>0?`${hrs}h ${mins}m`:`${mins}m`;
-        setTimeout(()=>toast(`⏳ Away ${timeStr}: +${fmt(r.gold)}💰 +${r.kills} kills`),800);
+        const parts=[`+${fmt(r.gold)}💰`,`+${r.kills} kills`];
+        if(r.levels>0)parts.push(`+${r.levels} levels`);
+        if(r.sp>0)parts.push(`+${r.sp} SP`);
+        if(r.ageAdv>0)parts.push(`+${r.ageAdv} ages`);
+        else if(r.zoneAdv>0)parts.push(`+${r.zoneAdv} zones`);
+        setTimeout(()=>toast(`⏳ Away ${timeStr}: ${parts.join(' · ')}`),800);
       }
   }else{G=mkState();buildClassCards();showScr('s1');}
 }
