@@ -1247,7 +1247,7 @@ const BOONS=[
 ];
 
 function boonLevel(id){ return G.boons[id] || 0; }
-function boonUpgradeCost(b){ const lv = boonLevel(b.id); return Math.round(b.cost * Math.pow(1.8, lv)); }
+function boonUpgradeCost(b){ const lv = boonLevel(b.id); return Math.round(b.cost * Math.pow(1.5, lv)); }
  
 /* ===============================================
    GAME STATE
@@ -1598,7 +1598,7 @@ function quickHit(){if(!G||!curEnemy)return;const st=getStats();let dmg=Math.rou
 function killEnemy(){
   G.kills++;G.zoneKills++;EA.dead=true;EA.deathT=0;SFX.kill();spawnParticles(EA.x,EA.y,'#d4a020',22);
   G.chainKills=(G.chainKills||0)+1;if(G.boons.b17){clearTimeout(G._ct);G._ct=setTimeout(()=>{G.chainKills=0;},5000);}
-  let gold=Math.round((3+G.zone*3)*Math.pow(1.4,G.zone-1)*(0.8+Math.random()*.4));
+  let gold=Math.round((6+G.zone*5)*Math.pow(1.45,G.zone-1)*(0.8+Math.random()*.4));
   if(boonLevel('b2'))gold=Math.round(gold*(1+0.15*boonLevel('b2')));if(boonLevel('b9'))gold=Math.round(gold*(1+0.25*boonLevel('b9')));if(G.boons.b11)gold=Math.round(gold*(1+G.prestige*0.12));
   G.gold+=gold;G.gtotal+=gold;SFX.gold();
   let xpg=Math.round(9*Math.pow(1.45,G.zone-1));
