@@ -1243,6 +1243,7 @@ const BOONS=[
   {id:'b16',ico:'🕯',name:'Soul Lantern',desc:'+50% XP in zones 4+ per level.',cost:1400,rarity:'rare',cat:'growth'},
   {id:'b17',ico:'⚔',name:'War Covenant',desc:'Kill streaks stack +3% ATK per level (max 30%).',cost:2000,rarity:'epic',cat:'combat'},
   {id:'b18',ico:'🧿',name:'Ward of the Ancients',desc:'+20% block per level. Blocked damage fuels a reflect strike.',cost:2800,rarity:'epic',cat:'survival'},
+  {id:'b19',ico:'💧',name:'Arcane Flow',desc:'+25% mana regen speed per level.',cost:800,rarity:'common',cat:'combat'},
 ];
 
 function boonLevel(id){ return G.boons[id] || 0; }
@@ -1657,7 +1658,8 @@ function tickMana(){
   const st=getStats();
   if(G.mana>=st.maxMana)return;
   // Regen ~5% of maxMana per second, minimum 1
-  const regen=Math.max(1,Math.round(st.maxMana*0.05));
+  const regenMult=1+0.25*(G.boons.b19||0);
+  const regen=Math.max(1,Math.round(st.maxMana*0.05*regenMult));
   G.mana=Math.min(st.maxMana,G.mana+regen);
   updateHUD();
 }
