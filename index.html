@@ -1601,7 +1601,20 @@ function doAttack(){
   if(isCrit)dmg*=2;
   if(G.sk.berserk&&G.hp/st.maxHp<.3)dmg*=1.7;
   if(G.sk.overpower&&atkCount%5===0){dmg*=3;showDmg('OVERPOWER!',true,'special');}
-  if(st.spell>0&&G.mana>0){const sp=Math.round(st.spell*(.5+Math.random()*.5));const manaCost=Math.min(G.mana,Math.round(st.maxMana*0.08));G.mana=Math.max(0,G.mana-manaCost);const spellMult=G.boons.b12&&Math.random()<.2?1.5:1;dmg+=Math.round(sp*spellMult*(0.5+0.5*(G.mana/Math.max(1,st.maxMana))));}
+  if(st.spell>0){
+    if(G.mana>0){
+      const sp=Math.round(st.spell*(.5+Math.random()*.5));
+      const manaCost=Math.min(G.mana,Math.round(st.maxMana*0.08));
+      G.mana=Math.max(0,G.mana-manaCost);
+      const spellMult=G.boons.b12&&Math.random()<.2?1.5:1;
+      dmg+=Math.round(sp*spellMult*(0.5+0.5*(G.mana/Math.max(1,st.maxMana))));
+    } else {
+      // Convert spell to weak physical — 40% of normal spell value
+      const sp=Math.round(st.spell*(.5+Math.random()*.5));
+      dmg+=Math.round(sp*0.4);
+      showDmg('NO MANA',false,'dodge');
+    }
+  }
   if(G.boons.b15){G._cc=(G._cc||0)+1;if(G._cc%10===0&&eHP-Math.round(dmg)<=0){dmg*=6;showDmg('PYRE!',true,'special');}}
   dmg=Math.round(dmg);
   SFX.hit();if(isCrit)SFX.crit();
