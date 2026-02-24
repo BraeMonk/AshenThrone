@@ -779,7 +779,7 @@ SHORT SCREENS
       <div id="hud-right">
         <div id="hud-gold">💰 <span id="hud-gold-val">0</span></div>
         <div id="hud-lv">Lv.<span id="hud-lv-val">1</span> · <span id="hud-cls-name">?</span></div>
-        <div id="hud-zb">Zone <span id="hud-zone-val">1</span></div>
+        <div id="hud-zb">Zone <span id="hud-zone-val">1</span> · Age <span id="hud-age-val">1</span></div>
       </div>
     </div>
     <div id="story-ticker">
@@ -1254,14 +1254,14 @@ function boonUpgradeCost(b){ const lv = boonLevel(b.id); return Math.round(b.cos
 =============================================== */
 const SAVE='ashen_v7';
 let G=null;
-function mkState(){return{cls:'warrior',selCls:null,lv:1,xp:0,xpNext:100,hp:160,maxHp:160,mana:30,maxMana:30,gold:0,gtotal:0,kills:0,deaths:0,zone:1,zoneKills:0,zoneTarget:10,sp:0,prestige:0,pbonus:1.0,sk:{},quests:QUESTS.map(q=>({...q})),boons:{},boonCount:0,idle:false,lastSave:Date.now(),sktotal:0,chapters:STORY_CHAPTERS.map(c=>({...c,objs:c.objs.map(o=>({...o}))})),chainKills:0,divineReady:true,deathBargain:true};}
+function mkState(){return{cls:'warrior',selCls:null,lv:1,xp:0,xpNext:100,hp:160,maxHp:160,mana:30,maxMana:30,gold:0,gtotal:0,kills:0,deaths:0,zone:1,age:1,zoneKills:0,zoneTarget:10,sp:0,prestige:0,pbonus:1.0,sk:{},quests:QUESTS.map(q=>({...q})),boons:{},boonCount:0,idle:false,lastSave:Date.now(),sktotal:0,chapters:STORY_CHAPTERS.map(c=>({...c,objs:c.objs.map(o=>({...o}))})),chainKills:0,divineReady:true,deathBargain:true};}
 function saveG(){try{localStorage.setItem(SAVE,JSON.stringify({...G,idle:false,lastSave:Date.now()}));}catch(e){}}
 function loadG(){
   try{
     const d=localStorage.getItem(SAVE);
     if(d){
       const s=JSON.parse(d);G=mkState();
-      ['cls','selCls','lv','xp','xpNext','hp','maxHp','mana','maxMana','gold','gtotal','kills','deaths','zone','zoneKills','zoneTarget','sp','prestige','pbonus','sk','boons','boonCount','sktotal'].forEach(k=>{if(s[k]!==undefined)G[k]=s[k];});
+      ['cls','selCls','lv','xp','xpNext','hp','maxHp','mana','maxMana','gold','gtotal','kills','deaths','zone','age','zoneKills','zoneTarget','sp','prestige','pbonus','sk','boons','boonCount','sktotal'].forEach(k=>{if(s[k]!==undefined)G[k]=s[k];});
       G.quests=QUESTS.map(q=>{const sq=(s.quests||[]).find(x=>x.id===q.id);return sq?{...q,...sq}:{...q};});
       G.chapters=STORY_CHAPTERS.map(c=>{const sc=(s.chapters||[]).find(x=>x.id===c.id);if(!sc)return{...c,objs:c.objs.map(o=>({...o}))};return{...c,...sc,objs:c.objs.map((o,i)=>sc.objs&&sc.objs[i]?{...o,...sc.objs[i]}:{...o})};});
             // Offline progress
@@ -1592,7 +1592,7 @@ function spawnParticles(x,y,col,n=10){
    COMBAT
 =============================================== */
 let curEnemy=null,eHP=0,eMaxHP=0,atkTimer=null,manaTimer=null,atkCount=0;
-function spawnEnemy(){const zi=Math.min(G.zone-1,ZONES.length-1);const pool=ZONES[zi].enemies;const key=pool[Math.floor(Math.random()*pool.length)];const base=Math.round(28*Math.pow(1.6,G.zone-1));eMaxHP=Math.round(base*(1+(boonLevel('b9')*0.4)));eHP=eMaxHP;const nl=ENAMES[key];curEnemy={key,name:nl[Math.floor(Math.random()*nl.length)]};EA.dead=false;EA.deathT=0;updateZoneBar();}
+function spawnEnemy(){const zi=Math.min(G.zone-1,ZONES.length-1);const pool=ZONES[zi].enemies;const key=pool[Math.floor(Math.random()*pool.length)];const base=Math.round(28*Math.pow(1.6,G.zone-1));const ageMult=Math.pow(1.35,G.age-1);eMaxHP=Math.round(base*ageMult*(1+(boonLevel('b9')*0.4)));eHP=eMaxHP;const nl=ENAMES[key];curEnemy={key,name:nl[Math.floor(Math.random()*nl.length)]};EA.dead=false;EA.deathT=0;updateZoneBar();}
 function doAttack(){
   if(!G||G.hp<=0)return;initAudio();
   const st=getStats();atkCount++;PA.aflash=1;
@@ -1625,7 +1625,7 @@ function doAttack(){
   if(isCrit&&G.boons.b8){setTimeout(()=>quickHit(),80);setTimeout(()=>quickHit(),160);}
   if(G.sk.voidbolt&&Math.random()<.05&&eHP/eMaxHP<.2)eHP=0;
   if(eHP<=0){killEnemy();return;}
-  const eDmgRaw=Math.max(1,(4+G.zone*2.5)*Math.pow(1.18,G.zone-1));
+  const eDmgRaw=Math.max(1,(4+G.zone*2.5)*Math.pow(1.18,G.zone-1)*Math.pow(1.25,G.age-1));
   const blocked=st.block>0?eDmgRaw*st.block/100:0;
   let eDmg=Math.max(0,Math.round(eDmgRaw-st.def-blocked));
   if(Math.random()*100<st.dodge){eDmg=0;showDmg(0,false,'dodge');}
@@ -1637,10 +1637,10 @@ function quickHit(){if(!G||!curEnemy)return;const st=getStats();let dmg=Math.rou
 function killEnemy(){
   G.kills++;G.zoneKills++;EA.dead=true;EA.deathT=0;SFX.kill();spawnParticles(EA.x,EA.y,'#d4a020',22);
   G.chainKills=(G.chainKills||0)+1;if(G.boons.b17){clearTimeout(G._ct);G._ct=setTimeout(()=>{G.chainKills=0;},5000);}
-  let gold=Math.round((6+G.zone*5)*Math.pow(1.45,G.zone-1)*(0.8+Math.random()*.4));
+  let gold=Math.round((6+G.zone*5)*Math.pow(1.45,G.zone-1)*(0.8+Math.random()*.4)*Math.pow(1.2,G.age-1));
   if(boonLevel('b2'))gold=Math.round(gold*(1+0.15*boonLevel('b2')));if(boonLevel('b9'))gold=Math.round(gold*(1+0.25*boonLevel('b9')));if(G.boons.b11)gold=Math.round(gold*(1+G.prestige*0.12));
   G.gold+=gold;G.gtotal+=gold;SFX.gold();
-  let xpg=Math.round(13*Math.pow(1.45,G.zone-1));
+  let xpg=Math.round(13*Math.pow(1.45,G.zone-1)*Math.pow(1.2,G.age-1));
   if(boonLevel('b3'))xpg=Math.round(xpg*(1+0.25*boonLevel('b3')));
   if(boonLevel('b16')&&G.zone>=4)xpg=Math.round(xpg*(1+0.5*boonLevel('b16')));
   if(G.sk.radiance){gold=Math.round(gold*1.2);xpg=Math.round(xpg*1.2);}
@@ -1648,11 +1648,21 @@ function killEnemy(){
   const st=getStats();if(G.boons.b4)G.hp=st.maxHp;if(G.sk.regen)G.hp=Math.min(st.maxHp,G.hp+Math.round(st.maxHp*G.sk.regen*.02));
   while(G.xp>=G.xpNext){G.xp-=G.xpNext;G.lv++;G.xpNext=xpFor(G.lv);G.sp++;const nst=getStats();G.hp=nst.maxHp;G.divineReady=true;SFX.lvlup();showLvlUp();}
   if(G.zoneKills>=G.zoneTarget){
-    G.zone=Math.min(G.zone+1,8);G.zoneKills=0;G.zoneTarget=Math.round(G.zoneTarget*1.22);
-    const zn=ZONES[Math.min(G.zone-1,ZONES.length-1)].name;
-    toast('🗺 Entered '+zn+'!');
-    document.getElementById('zone-name-lbl').textContent=zn;document.getElementById('hud-zone-val').textContent=G.zone;
-    setStoryTicker(ZONES[Math.min(G.zone-1,ZONES.length-1)].story,true);checkChapters();
+    G.zoneKills=0;G.zoneTarget=Math.round(G.zoneTarget*1.22);
+    if(G.zone>=8){
+      G.zone=1;G.age++;
+      const agePct=Math.round((Math.pow(1.35,G.age-1)-1)*100);
+      toast(`🔄 Age ${G.age} begins — enemies are ${agePct}% stronger!`);
+      setStoryTicker(`⚠ The realm grows darker. Age ${G.age} has begun.`,true);
+    } else {
+      G.zone++;
+      const zn=ZONES[G.zone-1].name;
+      toast('🗺 Entered '+zn+'!');
+      setStoryTicker(ZONES[G.zone-1].story,true);
+    }
+    document.getElementById('zone-name-lbl').textContent=ZONES[G.zone-1].name;
+    document.getElementById('hud-zone-val').textContent=G.zone;
+    checkChapters();
   }
   checkQuests();checkChapters();setTimeout(spawnEnemy,500);updateHUD();
   if(curTab==='quests'||curTab==='story')renderTab();
@@ -1689,7 +1699,7 @@ function updateHUD(){
   const xp=Math.max(0,Math.min(100,G.xp/G.xpNext*100));
   document.getElementById('b-hp').style.width=hp+'%';document.getElementById('b-mp').style.width=mp+'%';document.getElementById('b-xp').style.width=xp+'%';
   document.getElementById('v-hp').textContent=Math.round(G.hp)+'/'+st.maxHp;document.getElementById('v-mp').textContent=Math.round(G.mana)+'/'+st.maxMana;document.getElementById('v-xp').textContent=G.xp+'/'+G.xpNext;
-  document.getElementById('hud-gold-val').textContent=fmt(G.gold);document.getElementById('hud-lv-val').textContent=G.lv;document.getElementById('hud-cls-name').textContent=CLASSES[G.cls].name.split(' ')[0];document.getElementById('hud-zone-val').textContent=G.zone;
+  document.getElementById('hud-gold-val').textContent=fmt(G.gold);document.getElementById('hud-lv-val').textContent=G.lv;document.getElementById('hud-cls-name').textContent=CLASSES[G.cls].name.split(' ')[0];document.getElementById('hud-zone-val').textContent=G.zone;const ageEl=document.getElementById('hud-age-val');if(ageEl)ageEl.textContent=G.age;
   updateZoneBar();const sp=document.getElementById('sp-badge');if(sp)sp.textContent='SP: '+G.sp;
 }
 function updateZoneBar(){const pct=G?Math.min(100,(G.zoneKills/G.zoneTarget)*100):0;const el=document.getElementById('zone-prog-fill');if(el)el.style.width=pct+'%';}
