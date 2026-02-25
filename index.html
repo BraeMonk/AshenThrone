@@ -293,7 +293,7 @@ background:radial-gradient(ellipse,rgba(255,255,255,0.18),transparent);
 
 /* === TABS === */
 #tabs{
-flex-shrink:0;display:grid;grid-template-columns:repeat(5,1fr);
+flex-shrink:0;display:grid;grid-template-columns:repeat(6,1fr);
 background:var(--panel);border-top:2px solid var(--border2);
 border-bottom:2px solid var(--border);box-shadow:0 -2px 12px rgba(0,0,0,0.5);
 }
@@ -728,6 +728,93 @@ SHORT SCREENS
 #hud{padding-top:4px;padding-bottom:4px;}
 #btn-attack{width:48px;height:48px;font-size:1.15rem;}
 }
+/* ========================================================
+CURSES TAB
+======================================================== */
+:root{
+  --curse:#8b0000;
+  --curse2:#c0392b;
+  --cursebright:#e74c3c;
+  --curseglow:rgba(180,30,30,0.5);
+  --curseborder:#6b1a1a;
+}
+.curse-section-hdr{
+  font-size:var(--fs-xs);color:#e74c3c;letter-spacing:4px;text-transform:uppercase;
+  padding-bottom:8px;margin-bottom:var(--sp-md);margin-top:var(--sp-lg);
+  border-bottom:1px solid #4a1a1a;
+  display:flex;align-items:center;justify-content:space-between;
+  text-shadow:0 0 10px rgba(231,76,60,0.5);
+}
+.curse-section-hdr:first-child{margin-top:0;}
+.curse-intro{
+  font-family:'Crimson Text',serif;font-style:italic;
+  font-size:var(--fs-sm);color:#a05050;line-height:1.7;
+  margin-bottom:var(--sp-lg);padding:var(--sp-md);
+  background:rgba(100,10,10,0.15);border:1px solid #3a1010;border-radius:8px;
+}
+.curse-list{display:flex;flex-direction:column;gap:var(--sp-md);}
+.curse-card{
+  background:linear-gradient(135deg,#130a0a,#1a0e0e);
+  border:2px solid #3a1818;border-radius:10px;
+  padding:var(--sp-md);display:flex;gap:var(--sp-md);
+  align-items:flex-start;position:relative;overflow:hidden;
+  transition:border-color .18s,box-shadow .18s;
+  box-shadow:0 2px 12px rgba(0,0,0,0.6);
+}
+.curse-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,rgba(180,30,30,0.3),transparent);}
+.curse-card.can{cursor:pointer;}
+.curse-card.can:hover{border-color:#7a2020;box-shadow:0 4px 20px rgba(150,20,20,0.4);}
+.curse-card.active{border-color:#c0392b;background:linear-gradient(135deg,#1a0808,#220a0a);box-shadow:0 0 18px rgba(180,30,30,0.4);}
+.curse-card.active::before{background:linear-gradient(90deg,transparent,#c0392b,transparent);}
+.curse-card.locked{opacity:.3;pointer-events:none;}
+.curse-card.sacrifice-done{border-color:#4a1010;opacity:.5;pointer-events:none;}
+.curse-ico{
+  width:48px;height:48px;border-radius:9px;flex-shrink:0;
+  background:radial-gradient(circle at 40% 35%,#2a0808,#100404);
+  border:2px solid #4a1818;display:flex;align-items:center;justify-content:center;
+  font-size:1.4rem;box-shadow:inset 0 2px 8px rgba(0,0,0,0.8),0 0 12px rgba(150,20,20,0.2);
+}
+.curse-card.active .curse-ico{border-color:#c0392b;box-shadow:0 0 14px rgba(180,30,30,0.5),inset 0 2px 8px rgba(0,0,0,0.6);}
+.curse-body{flex:1;min-width:0;}
+.curse-name{font-size:var(--fs-sm);color:#e05050;font-weight:700;margin-bottom:3px;text-shadow:0 0 8px rgba(200,60,60,0.4);}
+.curse-type-tag{
+  font-size:.48rem;letter-spacing:1.5px;text-transform:uppercase;
+  padding:2px 7px;border-radius:3px;margin-bottom:5px;display:inline-block;
+}
+.curse-type-tag.affliction{background:rgba(100,20,20,.4);color:#e07070;}
+.curse-type-tag.sacrifice{background:rgba(80,20,80,.4);color:#c070e0;}
+.curse-type-tag.age{background:rgba(20,20,100,.4);color:#7090e0;}
+.curse-penalty{font-family:'Crimson Text',serif;font-style:italic;font-size:var(--fs-xs);color:#c04040;line-height:1.4;margin-bottom:4px;}
+.curse-reward{font-family:'Crimson Text',serif;font-size:var(--fs-xs);color:#80d080;line-height:1.4;margin-bottom:5px;}
+.curse-status{font-size:var(--fs-xs);margin-top:4px;}
+.curse-status.on{color:#e05050;}
+.curse-status.off{color:#604040;}
+.curse-status.done{color:#8060a0;}
+.curse-active-hud{
+  display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;
+}
+.curse-pip{
+  font-size:0.6rem;padding:2px 6px;border-radius:3px;
+  background:rgba(150,20,20,0.25);border:1px solid #6b1a1a;color:#e05050;
+}
+.btn-curse{
+  width:100%;padding:10px;font-family:'Cinzel',serif;font-size:var(--fs-xs);font-weight:700;
+  letter-spacing:2px;border:none;border-radius:5px;cursor:pointer;min-height:40px;
+  transition:all .12s;margin-top:6px;
+}
+.btn-curse.toggle-on{background:linear-gradient(180deg,#8b0000,#5a0000);color:#ffaaaa;box-shadow:0 3px 0 #2a0000,0 0 14px rgba(150,20,20,0.4);}
+.btn-curse.toggle-on:active{transform:translateY(1px);}
+.btn-curse.toggle-off{background:linear-gradient(180deg,#2a0a0a,#1a0606);color:#804040;border:1px solid #4a1818;}
+.btn-curse.sacrifice-btn{background:linear-gradient(180deg,#4a0880,#2a0450);color:#d0a0f0;box-shadow:0 3px 0 #1a0230,0 0 14px rgba(100,20,160,0.4);}
+.btn-curse.sacrifice-btn:active{transform:translateY(1px);}
+.curses-summary{
+  background:linear-gradient(135deg,#100808,#180a0a);
+  border:1px solid #3a1010;border-radius:8px;
+  padding:var(--sp-sm) var(--sp-md);margin-bottom:var(--sp-md);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;
+}
+.curses-summary-lbl{font-size:var(--fs-xs);color:#804040;letter-spacing:2px;}
+.curses-summary-val{font-size:var(--fs-sm);color:#e05050;font-weight:700;}
 </style>
 
 </head>
@@ -799,6 +886,7 @@ SHORT SCREENS
       <div class="tab-btn on" id="tb-skills" onclick="openTab('skills')"><span class="tab-ico">⚔</span><span class="tab-lbl">Skills</span></div>
       <div class="tab-btn" id="tb-quests" onclick="openTab('quests')"><span class="tab-ico">📜</span><span class="tab-lbl">Quests</span></div>
       <div class="tab-btn" id="tb-boons" onclick="openTab('boons')"><span class="tab-ico">⚗</span><span class="tab-lbl">Boons</span></div>
+      <div class="tab-btn" id="tb-curses" onclick="openTab('curses')"><span class="tab-ico">🩸</span><span class="tab-lbl">Curses</span></div>
       <div class="tab-btn" id="tb-stats" onclick="openTab('stats')"><span class="tab-ico">📊</span><span class="tab-lbl">Stats</span></div>
     </div>
   </div>
@@ -1250,6 +1338,76 @@ const BOONS=[
   {id:'b23',ico:'👑',name:'Infernal Mint',desc:'Generates 15,000 gold/sec per level. Scales with Age.',cost:18000,rarity:'legendary',cat:'wealth'},
 ];
 
+/* ===============================================
+   CURSES DATA
+=============================================== */
+const AFFLICTIONS=[
+  {id:'af1',ico:'💀',name:'Brittle Bones',
+   penalty:'You take 25% more damage from all sources.',
+   reward:'+20% gold and XP from all kills. Permanently.',
+   penaltyKey:'moreDmgTaken',penaltyVal:0.25,
+   rewardKey:'goldXpBonus',rewardVal:0.20},
+  {id:'af2',ico:'🩸',name:'Cursed Blood',
+   penalty:'Lose 1% of max HP every 4 seconds passively.',
+   reward:'+35% ATK permanently.',
+   penaltyKey:'hpDrain',penaltyVal:0.01,
+   rewardKey:'atkBonus',rewardVal:0.35},
+  {id:'af3',ico:'📖',name:'Soul Debt',
+   penalty:'XP gain is halved.',
+   reward:'+60% gold from all sources permanently.',
+   penaltyKey:'xpHalved',penaltyVal:0.5,
+   rewardKey:'goldBonus',rewardVal:0.60},
+  {id:'af4',ico:'🌑',name:'Blind Fury',
+   penalty:'All dodge chance and block are reduced to zero.',
+   reward:'+40% ATK and +20% attack speed permanently.',
+   penaltyKey:'noDefense',penaltyVal:1,
+   rewardKey:'furyBonus',rewardVal:1},
+];
+
+const SACRIFICES=[
+  {id:'sa1',ico:'❤',name:'Blood Tithe',
+   penalty:'Sacrifice 20% of your maximum HP. Permanent.',
+   reward:'+40% to all passive gold/sec (vault) permanently.',
+   penaltyKey:'hpSacrifice',penaltyVal:0.20,
+   rewardKey:'vaultBonus',rewardVal:0.40},
+  {id:'sa2',ico:'💰',name:'The Pact',
+   penalty:'Lose ALL current gold immediately.',
+   reward:'Double your prestige stat bonus permanently.',
+   penaltyKey:'loseGold',penaltyVal:1,
+   rewardKey:'doublePrestige',rewardVal:1},
+  {id:'sa3',ico:'⭐',name:'Mark of Ruin',
+   penalty:'Lose all unspent Skill Points immediately.',
+   reward:'+3 SP every time you advance a zone. Permanently.',
+   penaltyKey:'loseSP',penaltyVal:1,
+   rewardKey:'spPerZone',rewardVal:3},
+  {id:'sa4',ico:'🔮',name:'Shattered Will',
+   penalty:'All skills are reset to zero ranks permanently.',
+   reward:'+25% to spell damage and +15% to all stats. Permanently.',
+   penaltyKey:'resetSkills',penaltyVal:1,
+   rewardKey:'shatterBonus',rewardVal:1},
+];
+
+const CURSES_OF_AGES=[
+  {id:'ca1',ico:'🧟',name:'The Withering',
+   penalty:'Enemies regenerate 2% of their max HP every second.',
+   reward:'+15% to ALL stats per active Curse of Ages.',
+   penaltyKey:'enemyRegen',penaltyVal:0.02,
+   rewardKey:'perCurseBonus',rewardVal:0.15,
+   ageReq:2},
+  {id:'ca2',ico:'✦',name:'Void Hunger',
+   penalty:'Mana never regenerates naturally.',
+   reward:'All spells deal 3× damage.',
+   penaltyKey:'noManaRegen',penaltyVal:1,
+   rewardKey:'spellTriple',rewardVal:3,
+   ageReq:2},
+  {id:'ca3',ico:'☠',name:"Death's Toll",
+   penalty:'Every death permanently costs 5% max HP (min 50 HP). Recoverable by slaying 50 enemies.',
+   reward:'+100% XP from all sources.',
+   penaltyKey:'deathToll',penaltyVal:0.05,
+   rewardKey:'doubleXP',rewardVal:1,
+   ageReq:3},
+];
+
 function boonLevel(id){ return G.boons[id] || 0; }
 function boonUpgradeCost(b){ const lv = boonLevel(b.id); return Math.round(b.cost * Math.pow(1.5, lv)); }
  
@@ -1258,14 +1416,15 @@ function boonUpgradeCost(b){ const lv = boonLevel(b.id); return Math.round(b.cos
 =============================================== */
 const SAVE='ashen_v7';
 let G=null;
-function mkState(){return{cls:'warrior',selCls:null,lv:1,xp:0,xpNext:100,hp:160,maxHp:160,mana:30,maxMana:30,gold:0,gtotal:0,kills:0,deaths:0,zone:1,age:1,zoneKills:0,zoneTarget:10,sp:0,prestige:0,pbonus:1.0,sk:{},quests:QUESTS.map(q=>({...q})),boons:{},boonCount:0,idle:false,lastSave:Date.now(),sktotal:0,chapters:STORY_CHAPTERS.map(c=>({...c,objs:c.objs.map(o=>({...o}))})),chainKills:0,divineReady:true,deathBargain:true};}
+function mkState(){return{cls:'warrior',selCls:null,lv:1,xp:0,xpNext:100,hp:160,maxHp:160,mana:30,maxMana:30,gold:0,gtotal:0,kills:0,deaths:0,zone:1,age:1,zoneKills:0,zoneTarget:10,sp:0,prestige:0,pbonus:1.0,sk:{},quests:QUESTS.map(q=>({...q})),boons:{},boonCount:0,idle:false,lastSave:Date.now(),sktotal:0,chapters:STORY_CHAPTERS.map(c=>({...c,objs:c.objs.map(o=>({...o}))})),chainKills:0,divineReady:true,deathBargain:true,
+curses:{},sacrifices:{},deathTollDebt:0,deathTollKills:0};}
 function saveG(){try{localStorage.setItem(SAVE,JSON.stringify({...G,idle:false,lastSave:Date.now()}));}catch(e){}}
 function loadG(){
   try{
     const d=localStorage.getItem(SAVE);
     if(d){
       const s=JSON.parse(d);G=mkState();
-      ['cls','selCls','lv','xp','xpNext','hp','maxHp','mana','maxMana','gold','gtotal','kills','deaths','zone','age','zoneKills','zoneTarget','sp','prestige','pbonus','sk','boons','boonCount','sktotal'].forEach(k=>{if(s[k]!==undefined)G[k]=s[k];});
+      ['cls','selCls','lv','xp','xpNext','hp','maxHp','mana','maxMana','gold','gtotal','kills','deaths','zone','age','zoneKills','zoneTarget','sp','prestige','pbonus','sk','boons','boonCount','sktotal','curses','sacrifices','deathTollDebt','deathTollKills'].forEach(k=>{if(s[k]!==undefined)G[k]=s[k];});
       G.quests=QUESTS.map(q=>{const sq=(s.quests||[]).find(x=>x.id===q.id);return sq?{...q,...sq}:{...q};});
       G.chapters=STORY_CHAPTERS.map(c=>{const sc=(s.chapters||[]).find(x=>x.id===c.id);if(!sc)return{...c,objs:c.objs.map(o=>({...o}))};return{...c,...sc,objs:c.objs.map((o,i)=>sc.objs&&sc.objs[i]?{...o,...sc.objs[i]}:{...o})};});
       // Offline progress — full simulation
@@ -1417,6 +1576,22 @@ function getStats(){
   if(bl('b14')){const m=1+0.22*bl('b14');atk*=m;def*=m;maxHp=Math.round(maxHp*m);}
   if(bl('b18'))block+=20*bl('b18');
   if(G.boons.b17&&G.chainKills>0)atk*=1+Math.min(G.chainKills,10)*0.03;
+    // === CURSE EFFECTS ON STATS ===
+  const ac=id=>(G.curses&&G.curses[id]);
+  const sc=id=>(G.sacrifices&&G.sacrifices[id]);
+  if(ac('af1')){/* damage taken handled in doAttack */}
+  if(ac('af2'))atk*=1.35;
+  if(ac('af3')){/* gold handled in killEnemy */}
+  if(ac('af4')){spd*=1.20;atk*=1.40;dodge=0;block=0;}
+  if(sc('sa1'))maxHp=Math.round(maxHp*0.80);
+  if(sc('sa4')){spell=Math.round(spell*1.25);atk*=1.15;def*=1.15;maxHp=Math.round(maxHp*1.15);}
+  // Curse of Ages: Withering — +15% all stats per active CoA
+  const activeCoA=[...CURSES_OF_AGES].filter(c=>G.curses&&G.curses[c.id]).length;
+  if(activeCoA>0){const m=1+activeCoA*0.15;atk*=m;def*=m;maxHp=Math.round(maxHp*m);}
+  // Void Hunger — spells ×3
+  if(ac('ca2'))spell=Math.round(spell*3);
+  // Death's Toll — +100% XP handled in killEnemy; deathTollDebt reduces maxHp
+  if(ac('ca3')&&G.deathTollDebt>0)maxHp=Math.max(50,maxHp-Math.round(G.deathTollDebt));
   atk*=G.pbonus;def*=G.pbonus;maxHp=Math.round(maxHp*G.pbonus);
   return{atk:Math.round(atk*10)/10,def:Math.round(def*10)/10,spd:Math.round(Math.max(.5,spd)*100)/100,crit:Math.round(crit),life:Math.round(life),spell:Math.round(spell),maxHp:Math.round(maxHp),maxMana:Math.round(maxMana),dodge:Math.round(dodge),block:Math.round(block)};
 }
@@ -1686,7 +1861,7 @@ function spawnParticles(x,y,col,n=10){
 /* ===============================================
    COMBAT
 =============================================== */
-let curEnemy=null,eHP=0,eMaxHP=0,atkTimer=null,manaTimer=null,vaultTimer=null,atkCount=0;
+let curEnemy=null,eHP=0,eMaxHP=0,atkTimer=null,curseTimer=null,manaTimer=null,vaultTimer=null,atkCount=0;
 function spawnEnemy(){const zi=Math.min(G.zone-1,ZONES.length-1);const pool=ZONES[zi].enemies;const key=pool[Math.floor(Math.random()*pool.length)];const base=Math.round(28*Math.pow(1.6,G.zone-1));const ageMult=Math.pow(1.35,G.age-1);eMaxHP=Math.round(base*ageMult*(1+(boonLevel('b9')*0.4)));eHP=eMaxHP;const nl=ENAMES[key];curEnemy={key,name:nl[Math.floor(Math.random()*nl.length)]};EA.dead=false;EA.deathT=0;updateZoneBar();}
 function doAttack(){
   if(!G||G.hp<=0)return;initAudio();
@@ -1720,11 +1895,19 @@ function doAttack(){
   if(isCrit&&G.boons.b8){setTimeout(()=>quickHit(),80);setTimeout(()=>quickHit(),160);}
   if(G.sk.voidbolt&&Math.random()<.05&&eHP/eMaxHP<.2)eHP=0;
   if(eHP<=0){killEnemy();return;}
-  const eDmgRaw=Math.max(1,(4+G.zone*2.5)*Math.pow(1.18,G.zone-1)*Math.pow(1.25,G.age-1));
-  const blocked=st.block>0?eDmgRaw*st.block/100:0;
-  let eDmg=Math.max(0,Math.round(eDmgRaw-st.def-blocked));
-  if(Math.random()*100<st.dodge){eDmg=0;showDmg(0,false,'dodge');}
-  if(G.sk.divine&&G.divineReady&&G.hp-eDmg<=0){eDmg=0;G.divineReady=false;showDmg('DIVINE!',false,'dodge');}
+    const eDmgRaw=Math.max(1,(4+G.zone*2.5)*Math.pow(1.18,G.zone-1)*Math.pow(1.25,G.age-1));
+  // Curse of Ages: Withering — enemy regens
+  if(G.curses&&G.curses.ca1)eHP=Math.min(eMaxHP,eHP+Math.round(eMaxHP*0.02));
+  const st2=getStats();
+  const blocked=st2.block>0?eDmgRaw*st2.block/100:0;
+  let eDmg=Math.max(0,Math.round(eDmgRaw-st2.def-blocked));
+  // Affliction: Blind Fury — no dodge/block
+  if(!G.curses||!G.curses.af4){
+    if(Math.random()*100<st2.dodge){eDmg=0;showDmg(0,false,'dodge');}
+  }
+  // Affliction: Brittle Bones — take 25% more damage
+  if(G.curses&&G.curses.af1)eDmg=Math.round(eDmg*1.25);
+  if(G.sk&&G.sk.divine&&G.divineReady&&G.hp-eDmg<=0){eDmg=0;G.divineReady=false;showDmg('DIVINE!',false,'dodge');}
   if(eDmg>0){G.hp=Math.max(0,G.hp-eDmg);PA.hflash=1;SFX.hurt();showDmg(eDmg,false,'enemy');spawnParticles(PA.x+PX*4,PA.y+PX*5,'#d02020',5);}
   if(G.hp<=0)die();else updateHUD();
 }
@@ -1733,12 +1916,31 @@ function killEnemy(){
   G.kills++;G.zoneKills++;EA.dead=true;EA.deathT=0;SFX.kill();spawnParticles(EA.x,EA.y,'#d4a020',22);
   G.chainKills=(G.chainKills||0)+1;if(G.boons.b17){clearTimeout(G._ct);G._ct=setTimeout(()=>{G.chainKills=0;},5000);}
   let gold=Math.round((6+G.zone*5)*Math.pow(1.45,G.zone-1)*(0.8+Math.random()*.4)*Math.pow(1.2,G.age-1));
-  if(boonLevel('b2'))gold=Math.round(gold*(1+0.15*boonLevel('b2')));if(boonLevel('b9'))gold=Math.round(gold*(1+0.25*boonLevel('b9')));if(G.boons.b11)gold=Math.round(gold*(1+G.prestige*0.12));
+  if(boonLevel('b2'))gold=Math.round(gold*(1+0.15*boonLevel('b2')));
+  if(boonLevel('b9'))gold=Math.round(gold*(1+0.25*boonLevel('b9')));
+  if(G.boons&&G.boons.b11)gold=Math.round(gold*(1+G.prestige*0.12));
+  // Affliction: Soul Debt +60% gold
+  if(G.curses&&G.curses.af3)gold=Math.round(gold*1.60);
+  // Affliction: Brittle Bones +20% gold
+  if(G.curses&&G.curses.af1)gold=Math.round(gold*1.20);
   G.gold+=gold;G.gtotal+=gold;SFX.gold();
   let xpg=Math.round(13*Math.pow(1.45,G.zone-1)*Math.pow(1.2,G.age-1));
   if(boonLevel('b3'))xpg=Math.round(xpg*(1+0.25*boonLevel('b3')));
   if(boonLevel('b16')&&G.zone>=4)xpg=Math.round(xpg*(1+0.5*boonLevel('b16')));
-  if(G.sk.radiance){gold=Math.round(gold*1.2);xpg=Math.round(xpg*1.2);}
+  if(G.sk&&G.sk.radiance){gold=Math.round(gold*1.2);xpg=Math.round(xpg*1.2);}
+  // Affliction: Soul Debt — XP halved
+  if(G.curses&&G.curses.af3)xpg=Math.round(xpg*0.5);
+  // Affliction: Brittle Bones +20% XP
+  if(G.curses&&G.curses.af1)xpg=Math.round(xpg*1.20);
+  // Curse of Ages: Death's Toll — +100% XP, recover deathToll debt
+  if(G.curses&&G.curses.ca3){
+    xpg=Math.round(xpg*2);
+    if(G.deathTollDebt>0){
+      G.deathTollKills=(G.deathTollKills||0)+1;
+      if(G.deathTollKills>=50){G.deathTollDebt=Math.max(0,G.deathTollDebt-1);G.deathTollKills=0;}
+    }
+  }
+  // Mark of Ruin — +SP per zone advance (tracked in zone advance block)
   G.xp+=xpg;
   const st=getStats();if(G.boons.b4)G.hp=st.maxHp;if(G.sk.regen)G.hp=Math.min(st.maxHp,G.hp+Math.round(st.maxHp*G.sk.regen*.02));
   while(G.xp>=G.xpNext){G.xp-=G.xpNext;G.lv++;G.xpNext=xpFor(G.lv);G.sp++;const nst=getStats();G.hp=nst.maxHp;G.divineReady=true;SFX.lvlup();showLvlUp();}
@@ -1751,8 +1953,9 @@ function killEnemy(){
       setStoryTicker(`⚠ The realm grows darker. Age ${G.age} has begun.`,true);
     } else {
       G.zone++;
-      const zn=ZONES[G.zone-1].name;
-      toast('🗺 Entered '+zn+'!');
+      // Sacrifice: Mark of Ruin — +3 SP per zone
+      if(G.sacrifices&&G.sacrifices.sa3){G.sp+=3;toast('🗺 Zone advanced! +3 SP (Mark of Ruin)');}
+      else toast('🗺 Entered '+ZONES[G.zone-1].name+'!');
       setStoryTicker(ZONES[G.zone-1].story,true);
     }
     document.getElementById('zone-name-lbl').textContent=ZONES[G.zone-1].name;
@@ -1766,11 +1969,34 @@ function die(){
   G.deaths++;SFX.die();spawnParticles(PA.x+PX*4,PA.y+PX*5,'#d02020',24);
   if(G.boons.b13&&G.deathBargain){const st=getStats();G.hp=Math.round(st.maxHp*.4);G.deathBargain=false;showDmg('REBORN!',true,'special');setTimeout(()=>{G.deathBargain=true;},60000);spawnEnemy();updateHUD();return;}
   if(G.sk.secondwind&&G._swr!==false){const st=getStats();G.hp=Math.round(st.maxHp*.4);G._swr=false;showDmg('2ND WIND!',true,'dodge');spawnEnemy();updateHUD();return;}
-  const st=getStats();G.hp=Math.round(st.maxHp*.5);spawnEnemy();updateHUD();
+  const st=getStats();G.hp=Math.round(st.maxHp*.5);
+  // Curse of Ages: Death's Toll — each death permanently reduces max HP
+  if(G.curses&&G.curses.ca3){
+    const toll=Math.round((CLASSES[G.cls].baseHp+(G.lv-1)*13)*0.05);
+    G.deathTollDebt=(G.deathTollDebt||0)+toll;
+    G.deathTollKills=0;
+    toast(`☠ Death's Toll: -${toll} max HP until 50 kills`);
+  }
+  spawnEnemy();updateHUD();
 }
 function toggleAuto(){initAudio();G.idle=!G.idle;const b=document.getElementById('btn-auto');b.textContent=G.idle?'AUTO ON':'AUTO OFF';b.className=G.idle?'on':'';b.id='btn-auto';if(G.idle)startIdle();else stopIdle();}
-function startIdle(){stopIdle();atkTimer=setInterval(doAttack,atkInterval());if(!manaTimer)manaTimer=setInterval(tickMana,1000);if(!vaultTimer)vaultTimer=setInterval(tickVault,1000);}
+function startIdle(){stopIdle();atkTimer=setInterval(doAttack,atkInterval());if(!manaTimer)manaTimer=setInterval(tickMana,1000);if(!vaultTimer)vaultTimer=setInterval(tickVault,1000);if(!curseTimer)curseTimer=setInterval(tickCurses,1000);}
 function stopIdle(){if(atkTimer){clearInterval(atkTimer);atkTimer=null;}}
+function tickCurses(){
+  if(!G)return;
+  // Affliction: Cursed Blood — drain 1% HP every 4 seconds
+  if(G.curses&&G.curses.af2){
+    G._cbTick=(G._cbTick||0)+1;
+    if(G._cbTick>=4){
+      G._cbTick=0;
+      const st=getStats();
+      const drain=Math.max(1,Math.round(st.maxHp*0.01));
+      G.hp=Math.max(1,G.hp-drain);
+      showDmg(drain,false,'enemy');
+      updateHUD();
+    }
+  }
+}
 function tickMana(){
   if(!G)return;
   const st=getStats();
@@ -1789,7 +2015,9 @@ function tickVault(){
   gps+=(G.boons.b21||0)*800;
   gps+=(G.boons.b22||0)*2500;
   gps+=(G.boons.b23||0)*15000*ageMult;
-  gps=Math.round(gps*G.pbonus*10)/10;
+  gps*=G.pbonus;
+  if(G.sacrifices&&G.sacrifices.sa1)gps*=1.40;
+  gps=Math.round(gps*10)/10;
   if(gps<=0)return;
   G.gold+=gps;G.gtotal+=gps;
   updateHUD();
@@ -1838,6 +2066,7 @@ function renderTab(){
   else if(curTab==='skills')el.innerHTML=buildSkills();
   else if(curTab==='quests')el.innerHTML=buildQuests();
   else if(curTab==='boons')el.innerHTML=buildBoons();
+  else if(curTab==='curses')el.innerHTML=buildCurses();
   else if(curTab==='stats')el.innerHTML=buildStats();
 }
 function notifyTab(t){if(curTab===t)return;const tb=document.getElementById('tb-'+t);if(!tb||tb.querySelector('.tab-dot'))return;const dot=document.createElement('div');dot.className='tab-dot';tb.appendChild(dot);}
@@ -2013,6 +2242,170 @@ function buyBoon(id){
 }
 
 /* ===============================================
+   CURSES TAB
+=============================================== */
+function buildCurses(){
+  const activeCount=[...AFFLICTIONS,...CURSES_OF_AGES].filter(c=>G.curses&&G.curses[c.id]).length;
+  const sacCount=SACRIFICES.filter(s=>G.sacrifices&&G.sacrifices[s.id]).length;
+
+  let h=`<div class="sec">
+    <div class="sec-hdr" style="color:#e74c3c;border-bottom-color:#4a1a1a;text-shadow:0 0 10px rgba(231,76,60,0.5)">
+      🩸 CURSES &amp; DARK PACTS
+      <span style="font-size:var(--fs-xs);color:#804040;font-weight:400">${activeCount} active</span>
+    </div>
+    <div class="curse-intro">
+      "Power has its price. The realm does not give without taking. These are not choices — they are bargains struck in blood, witnessed by things older than gods."
+    </div>`;
+
+  // Active curse indicators
+  if(activeCount>0||sacCount>0){
+    h+=`<div class="curses-summary">
+      <span class="curses-summary-lbl">🩸 ACTIVE AFFLICTIONS</span>
+      <div class="curse-active-hud">`;
+    [...AFFLICTIONS,...CURSES_OF_AGES].forEach(c=>{
+      if(G.curses&&G.curses[c.id])h+=`<span class="curse-pip">${c.ico} ${c.name}</span>`;
+    });
+    SACRIFICES.forEach(s=>{
+      if(G.sacrifices&&G.sacrifices[s.id])h+=`<span class="curse-pip" style="background:rgba(80,20,80,0.3);border-color:#6b1a6b;color:#c070e0">${s.ico} ${s.name}</span>`;
+    });
+    h+=`</div></div>`;
+  }
+
+  // AFFLICTIONS
+  h+=`<div class="curse-section-hdr">⚠ AFFLICTIONS — Toggle On/Off</div>
+    <div style="font-family:'Crimson Text',serif;font-style:italic;font-size:var(--fs-xs);color:#704040;margin-bottom:var(--sp-md)">Passive difficulty increases. Toggle freely — bonuses only apply while active.</div>
+    <div class="curse-list">`;
+
+  AFFLICTIONS.forEach(c=>{
+    const on=G.curses&&G.curses[c.id];
+    h+=`<div class="curse-card ${on?'active':'can'}">
+      <div class="curse-ico">${c.ico}</div>
+      <div class="curse-body">
+        <div class="curse-name">${c.name}</div>
+        <span class="curse-type-tag affliction">Affliction</span>
+        <div class="curse-penalty">⚠ ${c.penalty}</div>
+        <div class="curse-reward">✦ ${c.reward}</div>
+        <button class="btn-curse ${on?'toggle-on':'toggle-off'}" onclick="toggleAffliction('${c.id}')">
+          ${on?'🩸 ACTIVE — Click to Disable':'☐ Inactive — Click to Afflict'}
+        </button>
+      </div>
+    </div>`;
+  });
+  h+=`</div>`;
+
+  // SACRIFICES
+  h+=`<div class="curse-section-hdr" style="margin-top:var(--sp-lg)">💀 SACRIFICES — Permanent &amp; Irreversible</div>
+    <div style="font-family:'Crimson Text',serif;font-style:italic;font-size:var(--fs-xs);color:#704040;margin-bottom:var(--sp-md)">One-time permanent trades. Cannot be undone. Ever.</div>
+    <div class="curse-list">`;
+
+  SACRIFICES.forEach(s=>{
+    const done=G.sacrifices&&G.sacrifices[s.id];
+    h+=`<div class="curse-card ${done?'sacrifice-done':'can'}">
+      <div class="curse-ico">${s.ico}</div>
+      <div class="curse-body">
+        <div class="curse-name">${s.name}</div>
+        <span class="curse-type-tag sacrifice">Sacrifice</span>
+        <div class="curse-penalty">⚠ ${s.penalty}</div>
+        <div class="curse-reward">✦ ${s.reward}</div>
+        ${done
+          ? `<div class="curse-status done">✦ SACRIFICE MADE — Bonus active forever</div>`
+          : `<button class="btn-curse sacrifice-btn" onclick="doSacrifice('${s.id}')">💜 MAKE THE SACRIFICE</button>`
+        }
+      </div>
+    </div>`;
+  });
+  h+=`</div>`;
+
+  // CURSES OF AGES
+  h+=`<div class="curse-section-hdr" style="margin-top:var(--sp-lg)">🌀 CURSES OF AGES — Unlocked at Age 2+</div>
+    <div style="font-family:'Crimson Text',serif;font-style:italic;font-size:var(--fs-xs);color:#704040;margin-bottom:var(--sp-md)">Scaling curses that grow stronger the more you embrace. Each active Curse of Ages boosts the Withering bonus.</div>
+    <div class="curse-list">`;
+
+  CURSES_OF_AGES.forEach(c=>{
+    const on=G.curses&&G.curses[c.id];
+    const locked=(G.age||1)<c.ageReq;
+    h+=`<div class="curse-card ${locked?'locked':on?'active':'can'}">
+      <div class="curse-ico">${c.ico}</div>
+      <div class="curse-body">
+        <div class="curse-name">${c.name}</div>
+        <span class="curse-type-tag age">Curse of Ages</span>
+        ${locked?`<div style="font-size:var(--fs-xs);color:#604040;margin-bottom:4px">🔒 Requires Age ${c.ageReq}</div>`:''}
+        <div class="curse-penalty">⚠ ${c.penalty}</div>
+        <div class="curse-reward">✦ ${c.reward}</div>
+        ${!locked?`<button class="btn-curse ${on?'toggle-on':'toggle-off'}" onclick="toggleAffliction('${c.id}')">
+          ${on?'🌀 ACTIVE — Click to Disable':'☐ Inactive — Click to Curse'}
+        </button>`:''}
+      </div>
+    </div>`;
+  });
+  h+=`</div></div>`;
+  return h;
+}
+
+function toggleAffliction(id){
+  initAudio();
+  if(!G.curses)G.curses={};
+  const isOn=G.curses[id];
+  if(isOn){
+    G.curses[id]=false;
+    const c=[...AFFLICTIONS,...CURSES_OF_AGES].find(x=>x.id===id);
+    toast(`${c?c.ico:'🩸'} Curse lifted: ${c?c.name:id}`);
+  } else {
+    G.curses[id]=true;
+    const c=[...AFFLICTIONS,...CURSES_OF_AGES].find(x=>x.id===id);
+    toast(`🩸 Cursed: ${c?c.name:id}!`);
+    // Immediately apply Void Hunger — stop mana regen
+    if(id==='ca2'&&manaTimer){clearInterval(manaTimer);manaTimer=null;}
+    if(id!=='ca2'&&!manaTimer&&!(G.curses&&G.curses.ca2))manaTimer=setInterval(tickMana,1000);
+  }
+  // Re-evaluate mana timer based on Void Hunger state
+  if(G.curses&&G.curses.ca2){if(manaTimer){clearInterval(manaTimer);manaTimer=null;}}
+  else{if(!manaTimer)manaTimer=setInterval(tickMana,1000);}
+  tone(160,'sawtooth',.08,.12);tone(120,'sawtooth',.14,.09,.06);
+  renderTab();updateHUD();saveG();
+}
+
+function doSacrifice(id){
+  initAudio();
+  if(!G.sacrifices)G.sacrifices={};
+  if(G.sacrifices[id]){toast('Already sacrificed.');return;}
+  const s=SACRIFICES.find(x=>x.id===id);
+  if(!s)return;
+
+  // Build warning text
+  let warn='⚠ THIS CANNOT BE UNDONE. EVER.';
+  if(id==='sa2')warn+=` You will lose ${fmt(G.gold)} gold.`;
+  if(id==='sa3')warn+=` You will lose ${G.sp} skill points.`;
+  if(id==='sa4')warn+=` All skill ranks will be wiped.`;
+  if(id==='sa1'){const st=getStats();warn+=` Your max HP will drop by ${Math.round(st.maxHp*0.20)}.`;}
+
+  openModal(
+    `💜 ${s.name}`,
+    s.penalty+' In return: '+s.reward,
+    warn,
+    ()=>applySacrifice(id),
+    true
+  );
+}
+
+function applySacrifice(id){
+  if(!G.sacrifices)G.sacrifices={};
+  G.sacrifices[id]=true;
+  const s=SACRIFICES.find(x=>x.id===id);
+  // Apply immediate penalties
+  if(id==='sa1'){const st=getStats();G.hp=Math.min(G.hp,st.maxHp);}
+  if(id==='sa2'){toast(`💀 ${fmt(G.gold)} gold consumed by the Pact.`);G.gold=0;}
+  if(id==='sa3'){toast(`💀 ${G.sp} skill points consumed.`);G.sp=0;}
+  if(id==='sa4'){
+    toast('💀 Your skills shatter. Power floods in.');
+    G.sk={};G.sktotal=0;
+  }
+  if(id==='sa2'){G.pbonus=1+(G.prestige*0.05*2);} // double prestige bonus
+  tone(80,'sawtooth',.2,.18);tone(60,'sawtooth',.3,.14,.1);tone(40,'sawtooth',.4,.1,.2);
+  renderTab();updateHUD();saveG();
+}
+
+/* ===============================================
    STATS
 =============================================== */
 function buildStats(){
@@ -2033,6 +2426,11 @@ function buildStats(){
         ${sr('⚗ Boons',G.boonCount||0)}${sr('📈 Stat Bonus','+'+Math.round((G.pbonus-1)*100)+'%')}
         ${sr('📜 Quests',G.quests.filter(q=>q.done).length+'/'+G.quests.length)}
         ${sr('📖 Chapters',G.chapters.filter(c=>c.done).length+'/'+G.chapters.length)}
+        ${(()=>{
+          const ac=[...AFFLICTIONS,...CURSES_OF_AGES].filter(c=>G.curses&&G.curses[c.id]).length;
+          const sc=SACRIFICES.filter(s=>G.sacrifices&&G.sacrifices[s.id]).length;
+          return (ac||sc)?sr('🩸 Active Curses',ac+' / Sacrifices: '+sc):'';
+        })()}
       </div>
     </div>
     <div class="prestige-box">
