@@ -1710,14 +1710,14 @@ const SAVE='ashen_v7';
 let G=null;
 function mkState(){return{cls:'warrior',selCls:null,lv:1,xp:0,xpNext:100,hp:160,maxHp:160,mana:30,maxMana:30,gold:0,gtotal:0,kills:0,deaths:0,zone:1,age:1,zoneKills:0,zoneTarget:10,sp:0,prestige:0,pbonus:1.0,sk:{},quests:QUESTS.map(q=>({...q})),boons:{},boonCount:0,idle:false,lastSave:Date.now(),sktotal:0,chapters:STORY_CHAPTERS.map(c=>({...c,objs:c.objs.map(o=>({...o}))})),chainKills:0,divineReady:true,deathBargain:true,
 curses:{},sacrifices:{},deathTollDebt:0,deathTollKills:0,
-skInvest:{},skInvestWasted:0,skInvestWastedAtLastMemory:0,ashenMemoryLevel:0,spSpentTotal:0};}
+skInvest:{},skInvestWasted:0,skInvestWastedAtLastMemory:0,ashenMemoryLevel:0,spSpentTotal:0,everReachedLv100:false};}
 function saveG(){try{localStorage.setItem(SAVE,JSON.stringify({...G,idle:false,lastSave:Date.now()}));}catch(e){}}
 function loadG(){
   try{
     const d=localStorage.getItem(SAVE);
     if(d){
       const s=JSON.parse(d);G=mkState();
-      ['cls','selCls','lv','xp','xpNext','hp','maxHp','mana','maxMana','gold','gtotal','kills','deaths','zone','age','zoneKills','zoneTarget','sp','prestige','pbonus','sk','boons','boonCount','sktotal','curses','sacrifices','deathTollDebt','deathTollKills','skInvest','skInvestWasted','skInvestWastedAtLastMemory','ashenMemoryLevel','spSpentTotal'].forEach(k=>{if(s[k]!==undefined)G[k]=s[k];});
+      ['cls','selCls','lv','xp','xpNext','hp','maxHp','mana','maxMana','gold','gtotal','kills','deaths','zone','age','zoneKills','zoneTarget','sp','prestige','pbonus','sk','boons','boonCount','sktotal','curses','sacrifices','deathTollDebt','deathTollKills','skInvest','skInvestWasted','skInvestWastedAtLastMemory','ashenMemoryLevel','spSpentTotal','everReachedLv100'].forEach(k=>{if(s[k]!==undefined)G[k]=s[k];});
       G.quests=QUESTS.map(q=>{const sq=(s.quests||[]).find(x=>x.id===q.id);return sq?{...q,...sq}:{...q};});
       G.chapters=STORY_CHAPTERS.map(c=>{const sc=(s.chapters||[]).find(x=>x.id===c.id);if(!sc)return{...c,objs:c.objs.map(o=>({...o}))};return{...c,...sc,objs:c.objs.map((o,i)=>sc.objs&&sc.objs[i]?{...o,...sc.objs[i]}:{...o})};});
       // Offline progress — full simulation
@@ -2273,7 +2273,7 @@ function killEnemy(){
   // Mark of Ruin — +SP per zone advance (tracked in zone advance block)
   G.xp+=xpg;
   const st=getStats();if(G.boons.b4)G.hp=st.maxHp;if(G.sk.regen)G.hp=Math.min(st.maxHp,G.hp+Math.round(st.maxHp*G.sk.regen*.02));
-  while(G.xp>=G.xpNext){G.xp-=G.xpNext;G.lv++;G.xpNext=xpFor(G.lv);G.sp++;const nst=getStats();G.hp=nst.maxHp;G.divineReady=true;SFX.lvlup();showLvlUp();}
+  while(G.xp>=G.xpNext){G.xp-=G.xpNext;G.lv++;G.xpNext=xpFor(G.lv);G.sp++;const nst=getStats();G.hp=nst.maxHp;G.divineReady=true;SFX.lvlup();showLvlUp();if(G.lv>=100)G.everReachedLv100=true;}
   if(G.zoneKills>=G.zoneTarget){
     G.zoneKills=0;G.zoneTarget=Math.round(G.zoneTarget*1.22);
     if(G.zone>=8){
@@ -2580,7 +2580,7 @@ function buildBoons(){
   // Ashen Memory — always shown at top if lv >= 100 or already owns it
   const memBoon=BOONS.find(b=>b.memoryBoon);
   const memLv=G.ashenMemoryLevel||0;
-  const memUnlocked=G.lv>=100||memLv>0;
+  const memUnlocked=G.everReachedLv100||memLv>0;
   let memSection='';
   if(memUnlocked&&memBoon){
     // Wasted SP since last memory upgrade
