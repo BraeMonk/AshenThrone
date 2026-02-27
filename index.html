@@ -504,6 +504,83 @@ font-size:1.25rem;transition:all .18s;box-shadow:inset 0 2px 6px rgba(0,0,0,0.6)
 .sk-req-warn{font-size:0.54rem;color:var(--red);margin-top:1px;}
 
 /* ========================================================
+   SKILL INVESTMENT (Level 90+)
+======================================================== */
+.sk-invest-intro{
+  font-family:'Crimson Text',serif;font-style:italic;
+  font-size:var(--fs-sm);color:#a08848;line-height:1.7;
+  margin-bottom:var(--sp-lg);padding:var(--sp-md);
+  background:rgba(240,192,48,0.04);border:1px solid var(--border2);border-radius:8px;
+}
+.sk-invest-list{display:flex;flex-direction:column;gap:var(--sp-md);}
+.sk-invest-card{
+  background:linear-gradient(135deg,var(--panel2),var(--panel3));
+  border:2px solid var(--border);border-radius:10px;
+  padding:var(--sp-md);display:flex;gap:var(--sp-md);align-items:center;
+  box-shadow:0 2px 12px rgba(0,0,0,0.45);
+}
+.sk-invest-card.maxed{border-color:var(--golddim);}
+.sk-invest-ico{
+  width:48px;height:48px;border-radius:9px;flex-shrink:0;
+  background:radial-gradient(circle at 40% 35%,var(--panel3),var(--panel));
+  border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;
+  font-size:1.3rem;box-shadow:inset 0 2px 8px rgba(0,0,0,0.7);
+}
+.sk-invest-body{flex:1;min-width:0;}
+.sk-invest-name{font-size:var(--fs-sm);color:#e8d870;font-weight:700;margin-bottom:2px;}
+.sk-invest-desc{font-family:'Crimson Text',serif;font-style:italic;font-size:var(--fs-xs);color:#a07c48;line-height:1.4;margin-bottom:5px;}
+.sk-invest-bar-wrap{height:5px;background:rgba(0,0,0,0.5);border-radius:3px;overflow:hidden;margin-bottom:4px;}
+.sk-invest-bar{height:100%;background:linear-gradient(90deg,var(--golddim),var(--gold));border-radius:3px;transition:width .4s;box-shadow:0 0 4px var(--goldglow);}
+.sk-invest-prog{font-size:var(--fs-xs);color:var(--txtdim);margin-bottom:4px;}
+.sk-invest-rew{font-size:var(--fs-xs);color:var(--green2);}
+.sk-invest-diminish{font-size:var(--fs-xs);color:var(--golddim);margin-top:2px;font-style:italic;}
+.btn-invest{
+  flex-shrink:0;padding:9px 14px;font-family:'Cinzel',serif;font-size:var(--fs-xs);
+  font-weight:700;letter-spacing:1px;border:none;border-radius:5px;cursor:pointer;
+  min-height:40px;min-width:60px;transition:all .12s;
+  background:linear-gradient(180deg,#ffe080,#d4a020,#8a6010);
+  color:#1a0e00;box-shadow:0 3px 0 #5a3a00,0 0 10px rgba(240,192,48,0.2);
+}
+.btn-invest:active{transform:translateY(1px);box-shadow:0 1px 0 #5a3a00;}
+.btn-invest:disabled{opacity:.25;pointer-events:none;}
+.sk-invest-locked{
+  text-align:center;padding:var(--sp-lg);
+  font-family:'Crimson Text',serif;font-style:italic;
+  font-size:var(--fs-sm);color:#7a6040;
+}
+
+/* ========================================================
+   ASHEN MEMORY BOON (special unlock at Lv 100)
+======================================================== */
+.ashen-memory-card{
+  background:linear-gradient(135deg,#100c18,#1a1428);
+  border:2px solid #5a3a90;border-radius:12px;
+  padding:var(--sp-lg);margin-bottom:var(--sp-lg);
+  box-shadow:0 0 28px rgba(120,60,200,0.25),0 4px 16px rgba(0,0,0,0.6);
+  position:relative;overflow:hidden;
+}
+.ashen-memory-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,transparent,#9060d0,transparent);
+}
+.ashen-memory-header{display:flex;align-items:center;gap:12px;margin-bottom:10px;}
+.ashen-memory-ico{font-size:2rem;filter:drop-shadow(0 0 12px rgba(180,100,255,0.7));}
+.ashen-memory-title{font-size:var(--fs-lg);color:#c090f0;font-weight:700;text-shadow:0 0 12px rgba(160,80,240,0.5);}
+.ashen-memory-lv{font-size:var(--fs-xs);color:#8060b0;letter-spacing:2px;margin-top:2px;}
+.ashen-memory-desc{font-family:'Crimson Text',serif;font-style:italic;font-size:var(--fs-sm);color:#9070c0;line-height:1.7;margin-bottom:10px;}
+.ashen-memory-effect{font-size:var(--fs-sm);color:#c090f0;margin-bottom:10px;padding:8px 12px;background:rgba(120,60,200,0.1);border:1px solid rgba(120,60,200,0.25);border-radius:6px;}
+.ashen-memory-cost{font-size:var(--fs-xs);color:var(--golddim);margin-bottom:10px;}
+.ashen-memory-locked{font-size:var(--fs-xs);color:#60406080;letter-spacing:2px;}
+.btn-ashen-memory{
+  width:100%;padding:12px;font-family:'Cinzel',serif;font-size:var(--fs-sm);font-weight:700;
+  letter-spacing:2px;border:none;border-radius:6px;cursor:pointer;min-height:46px;
+  background:linear-gradient(180deg,#c090f0,#8040c0,#50208080);
+  color:#f0e8ff;box-shadow:0 4px 0 #2a0860,0 0 20px rgba(140,60,220,0.4);transition:all .12s;
+}
+.btn-ashen-memory:active{transform:translateY(2px);box-shadow:0 2px 0 #2a0860;}
+.btn-ashen-memory:disabled{opacity:.25;pointer-events:none;}
+
+/* ========================================================
 QUESTS
 ======================================================== */
 .q-list{display:flex;flex-direction:column;gap:var(--sp-md);}
@@ -1286,6 +1363,60 @@ const SKTREES={
 };
 
 /* ===============================================
+   SKILL INVESTMENT TABLE (Level 90+)
+   Fair but not game-breaking — diminishing linear scale
+=============================================== */
+const SK_INVEST=[
+  {id:'si_atk',ico:'⚔',name:'Iron Mastery',
+   desc:'Each point grants +1% base ATK. Diminishes: every 10 points the bonus halves.',
+   maxPts:100,
+   reward(pts){
+     // +1% per pt up to 10, +0.5% per pt 11-30, +0.25% per pt 31-100
+     let bonus=0;
+     const t1=Math.min(pts,10),t2=Math.max(0,Math.min(pts-10,20)),t3=Math.max(0,pts-30);
+     bonus+=t1*1+t2*0.5+t3*0.25;
+     return{label:`+${bonus.toFixed(1)}% ATK`,atkPct:bonus};
+   }
+  },
+  {id:'si_def',ico:'🛡',name:'Fortress Mind',
+   desc:'Each point grants +1% base DEF. Diminishes every 10 points.',
+   maxPts:100,
+   reward(pts){
+     const t1=Math.min(pts,10),t2=Math.max(0,Math.min(pts-10,20)),t3=Math.max(0,pts-30);
+     const bonus=t1*1+t2*0.5+t3*0.25;
+     return{label:`+${bonus.toFixed(1)}% DEF`,defPct:bonus};
+   }
+  },
+  {id:'si_hp',ico:'❤',name:'Vital Endurance',
+   desc:'Each point grants +0.5% Max HP. Diminishes every 20 points.',
+   maxPts:100,
+   reward(pts){
+     const t1=Math.min(pts,20),t2=Math.max(0,Math.min(pts-20,30)),t3=Math.max(0,pts-50);
+     const bonus=t1*0.5+t2*0.25+t3*0.1;
+     return{label:`+${bonus.toFixed(1)}% Max HP`,hpPct:bonus};
+   }
+  },
+  {id:'si_gold',ico:'💰',name:'Hoarder\'s Instinct',
+   desc:'Each point grants +0.5% gold from kills. Diminishes every 20 points.',
+   maxPts:100,
+   reward(pts){
+     const t1=Math.min(pts,20),t2=Math.max(0,Math.min(pts-20,30)),t3=Math.max(0,pts-50);
+     const bonus=t1*0.5+t2*0.25+t3*0.1;
+     return{label:`+${bonus.toFixed(1)}% gold`,goldPct:bonus};
+   }
+  },
+  {id:'si_xp',ico:'⭐',name:'Soulward Study',
+   desc:'Each point grants +0.5% XP from kills. Diminishes every 20 points.',
+   maxPts:100,
+   reward(pts){
+     const t1=Math.min(pts,20),t2=Math.max(0,Math.min(pts-20,30)),t3=Math.max(0,pts-50);
+     const bonus=t1*0.5+t2*0.25+t3*0.1;
+     return{label:`+${bonus.toFixed(1)}% XP`,xpPct:bonus};
+   }
+  },
+];
+
+/* ===============================================
    QUESTS & BOONS
 =============================================== */
 const QUESTS=[
@@ -1336,6 +1467,7 @@ const BOONS=[
   {id:'b21',ico:'💀',name:'Bone Market',desc:'Generates 800 gold/sec per level.',cost:1500,rarity:'rare',cat:'wealth'},
   {id:'b22',ico:'🌑',name:'Shadow Exchange',desc:'Generates 2,500 gold/sec per level.',cost:5000,rarity:'epic',cat:'wealth'},
   {id:'b23',ico:'👑',name:'Infernal Mint',desc:'Generates 15,000 gold/sec per level. Scales with Age.',cost:18000,rarity:'legendary',cat:'wealth'},
+  {id:'b_memory',ico:'🌒',name:'Ashen Memory',desc:'Reclaims 50% of all skill points lost to the void between upgrades. Unlocked at level 100.',cost:0,rarity:'legendary',cat:'growth',memoryBoon:true},
 ];
 
 /* ===============================================
@@ -1417,14 +1549,15 @@ function boonUpgradeCost(b){ const lv = boonLevel(b.id); return Math.round(b.cos
 const SAVE='ashen_v7';
 let G=null;
 function mkState(){return{cls:'warrior',selCls:null,lv:1,xp:0,xpNext:100,hp:160,maxHp:160,mana:30,maxMana:30,gold:0,gtotal:0,kills:0,deaths:0,zone:1,age:1,zoneKills:0,zoneTarget:10,sp:0,prestige:0,pbonus:1.0,sk:{},quests:QUESTS.map(q=>({...q})),boons:{},boonCount:0,idle:false,lastSave:Date.now(),sktotal:0,chapters:STORY_CHAPTERS.map(c=>({...c,objs:c.objs.map(o=>({...o}))})),chainKills:0,divineReady:true,deathBargain:true,
-curses:{},sacrifices:{},deathTollDebt:0,deathTollKills:0};}
+curses:{},sacrifices:{},deathTollDebt:0,deathTollKills:0,
+skInvest:{},skInvestWasted:0,skInvestWastedAtLastMemory:0,ashenMemoryLevel:0,spSpentTotal:0};}
 function saveG(){try{localStorage.setItem(SAVE,JSON.stringify({...G,idle:false,lastSave:Date.now()}));}catch(e){}}
 function loadG(){
   try{
     const d=localStorage.getItem(SAVE);
     if(d){
       const s=JSON.parse(d);G=mkState();
-      ['cls','selCls','lv','xp','xpNext','hp','maxHp','mana','maxMana','gold','gtotal','kills','deaths','zone','age','zoneKills','zoneTarget','sp','prestige','pbonus','sk','boons','boonCount','sktotal','curses','sacrifices','deathTollDebt','deathTollKills'].forEach(k=>{if(s[k]!==undefined)G[k]=s[k];});
+      ['cls','selCls','lv','xp','xpNext','hp','maxHp','mana','maxMana','gold','gtotal','kills','deaths','zone','age','zoneKills','zoneTarget','sp','prestige','pbonus','sk','boons','boonCount','sktotal','curses','sacrifices','deathTollDebt','deathTollKills','skInvest','skInvestWasted','skInvestWastedAtLastMemory','ashenMemoryLevel','spSpentTotal'].forEach(k=>{if(s[k]!==undefined)G[k]=s[k];});
       G.quests=QUESTS.map(q=>{const sq=(s.quests||[]).find(x=>x.id===q.id);return sq?{...q,...sq}:{...q};});
       G.chapters=STORY_CHAPTERS.map(c=>{const sc=(s.chapters||[]).find(x=>x.id===c.id);if(!sc)return{...c,objs:c.objs.map(o=>({...o}))};return{...c,...sc,objs:c.objs.map((o,i)=>sc.objs&&sc.objs[i]?{...o,...sc.objs[i]}:{...o})};});
       // Offline progress — full simulation
@@ -1592,6 +1725,17 @@ function getStats(){
   if(ac('ca2'))spell=Math.round(spell*3);
   // Death's Toll — +100% XP handled in killEnemy; deathTollDebt reduces maxHp
   if(ac('ca3')&&G.deathTollDebt>0)maxHp=Math.max(50,maxHp-Math.round(G.deathTollDebt));
+  // === SKILL INVESTMENT BONUSES (Level 90+) ===
+  if(G.skInvest){
+    SK_INVEST.forEach(si=>{
+      const pts=G.skInvest[si.id]||0;
+      if(pts<=0)return;
+      const rew=si.reward(pts);
+      if(rew.atkPct)atk*=(1+rew.atkPct/100);
+      if(rew.defPct)def*=(1+rew.defPct/100);
+      if(rew.hpPct)maxHp=Math.round(maxHp*(1+rew.hpPct/100));
+    });
+  }
   atk*=G.pbonus;def*=G.pbonus;maxHp=Math.round(maxHp*G.pbonus);
   return{atk:Math.round(atk*10)/10,def:Math.round(def*10)/10,spd:Math.round(Math.max(.5,spd)*100)/100,crit:Math.round(crit),life:Math.round(life),spell:Math.round(spell),maxHp:Math.round(maxHp),maxMana:Math.round(maxMana),dodge:Math.round(dodge),block:Math.round(block)};
 }
@@ -1923,6 +2067,8 @@ function killEnemy(){
   if(G.curses&&G.curses.af3)gold=Math.round(gold*1.60);
   // Affliction: Brittle Bones +20% gold
   if(G.curses&&G.curses.af1)gold=Math.round(gold*1.20);
+  // Skill investment: gold bonus
+  if(G.skInvest){const si=SK_INVEST.find(x=>x.id==='si_gold');if(si){const pts=G.skInvest.si_gold||0;if(pts>0)gold=Math.round(gold*(1+si.reward(pts).goldPct/100));}}
   G.gold+=gold;G.gtotal+=gold;SFX.gold();
   let xpg=Math.round(13*Math.pow(1.45,G.zone-1)*Math.pow(1.2,G.age-1));
   if(boonLevel('b3'))xpg=Math.round(xpg*(1+0.25*boonLevel('b3')));
@@ -1940,6 +2086,8 @@ function killEnemy(){
       if(G.deathTollKills>=50){G.deathTollDebt=Math.max(0,G.deathTollDebt-1);G.deathTollKills=0;}
     }
   }
+  // Skill investment: xp bonus
+  if(G.skInvest){const si=SK_INVEST.find(x=>x.id==='si_xp');if(si){const pts=G.skInvest.si_xp||0;if(pts>0)xpg=Math.round(xpg*(1+si.reward(pts).xpPct/100));}}
   // Mark of Ruin — +SP per zone advance (tracked in zone advance block)
   G.xp+=xpg;
   const st=getStats();if(G.boons.b4)G.hp=st.maxHp;if(G.sk.regen)G.hp=Math.min(st.maxHp,G.hp+Math.round(st.maxHp*G.sk.regen*.02));
@@ -2113,29 +2261,80 @@ function checkChapters(){
    SKILLS
 =============================================== */
 function buildSkills(){
-  const tree=SKTREES[skSub];
-  const tabs=Object.entries(SKTREES).map(([k,t])=>`<div class="sk-tree-tab${skSub===k?' on':''}" onclick="setSkSub('${k}')"><span>${t.ico}</span>${t.label}</div>`).join('');
-  let h=`<div class="sec"><div class="sec-hdr">SKILL TREES <span class="sp-badge" id="sp-badge">SP: ${G.sp}</span></div><div class="sk-tree-tabs">${tabs}</div><div class="sk-tier-wrap">`;
-  tree.tiers.forEach((tier,ti)=>{
-    if(ti>0){h+=tier.length===1?'<div class="sk-connector"></div>':'<div class="sk-connector fork"></div>';}
-    h+=`<div class="sk-row sk-row-${Math.min(tier.length,3)}">`;
-    tier.forEach(sk=>{
-      const cur=G.sk[sk.id]||0,maxed=cur>=sk.max,locked=sk.req&&!(G.sk[sk.req]>=1);
-      const cc='sk-card'+(sk.cap?' capstone':'')+(maxed?' maxed':locked?' locked':cur>0?' unlocked':'');
-      const pips=Array.from({length:sk.max},(_,i)=>`<div class="pip${i<cur?' '+(cur===sk.max?'onmax':'on'):''}"></div>`).join('');
-      const rn=sk.req?allSkList().find(s=>s.id===sk.req)?.name:'';
-      h+=`<div class="${cc}" onclick="buySkill('${sk.id}')">
-        ${sk.cap?'<div class="sk-cap-tag">CAPSTONE</div>':''}
-        <div class="sk-ico">${sk.ico}</div><div class="sk-name">${sk.name}</div>
-        <div class="sk-desc">${sk.desc}</div>
-        ${locked&&rn?`<div class="sk-req-warn">Req: ${rn}</div>`:''}
-        <div class="sk-pips">${pips}</div><div class="sk-rank">${cur}/${sk.max}</div>
-      </div>`;
+  // Show invest tab only at Lv 90+
+  const showInvest=G.lv>=90;
+  const treeKeys=Object.keys(SKTREES);
+  const allTabs=[...treeKeys,...(showInvest?['invest']:[])];
+  // Guard: if skSub is 'invest' but not unlocked, reset
+  if(skSub==='invest'&&!showInvest)skSub='offense';
+
+  const tabs=allTabs.map(k=>{
+    if(k==='invest')return`<div class="sk-tree-tab${skSub==='invest'?' on':''}" onclick="setSkSub('invest')"><span>📈</span>Invest</div>`;
+    const t=SKTREES[k];return`<div class="sk-tree-tab${skSub===k?' on':''}" onclick="setSkSub('${k}')"><span>${t.ico}</span>${t.label}</div>`;
+  }).join('');
+
+  let h=`<div class="sec"><div class="sec-hdr">SKILL TREES <span class="sp-badge" id="sp-badge">SP: ${G.sp}</span></div>
+    <div class="sk-tree-tabs" style="grid-template-columns:repeat(${allTabs.length},1fr)">${tabs}</div>`;
+
+  if(skSub==='invest'){
+    h+=buildInvest();
+  } else {
+    const tree=SKTREES[skSub];
+    h+=`<div class="sk-tier-wrap">`;
+    tree.tiers.forEach((tier,ti)=>{
+      if(ti>0){h+=tier.length===1?'<div class="sk-connector"></div>':'<div class="sk-connector fork"></div>';}
+      h+=`<div class="sk-row sk-row-${Math.min(tier.length,3)}">`;
+      tier.forEach(sk=>{
+        const cur=G.sk[sk.id]||0,maxed=cur>=sk.max,locked=sk.req&&!(G.sk[sk.req]>=1);
+        const cc='sk-card'+(sk.cap?' capstone':'')+(maxed?' maxed':locked?' locked':cur>0?' unlocked':'');
+        const pips=Array.from({length:sk.max},(_,i)=>`<div class="pip${i<cur?' '+(cur===sk.max?'onmax':'on'):''}"></div>`).join('');
+        const rn=sk.req?allSkList().find(s=>s.id===sk.req)?.name:'';
+        h+=`<div class="${cc}" onclick="buySkill('${sk.id}')">
+          ${sk.cap?'<div class="sk-cap-tag">CAPSTONE</div>':''}
+          <div class="sk-ico">${sk.ico}</div><div class="sk-name">${sk.name}</div>
+          <div class="sk-desc">${sk.desc}</div>
+          ${locked&&rn?`<div class="sk-req-warn">Req: ${rn}</div>`:''}
+          <div class="sk-pips">${pips}</div><div class="sk-rank">${cur}/${sk.max}</div>
+        </div>`;
+      });
+      h+='</div>';
     });
-    h+='</div>';
-  });
-  return h+'</div></div>';
+    h+=`</div>`;
+  }
+  return h+'</div>';
 }
+
+function buildInvest(){
+  const totalPts=Object.values(G.skInvest||{}).reduce((a,b)=>a+b,0);
+  let h=`<div class="sk-invest-intro">
+    "Some who have mastered combat choose not to spend their points on new techniques, but to drill endlessly — perfecting what they already know. The returns diminish, but they never stop."<br><br>
+    <strong style="color:var(--gold)">SP available: ${G.sp}</strong> &nbsp;·&nbsp; Points invested: ${totalPts}
+  </div><div class="sk-invest-list">`;
+
+  SK_INVEST.forEach(si=>{
+    const pts=G.skInvest[si.id]||0;
+    const rew=si.reward(pts);
+    const nextRew=pts<si.maxPts?si.reward(pts+1):null;
+    const pct=Math.min(100,(pts/si.maxPts)*100);
+    const maxed=pts>=si.maxPts;
+    const canBuy=G.sp>0&&!maxed;
+    h+=`<div class="sk-invest-card${maxed?' maxed':''}">
+      <div class="sk-invest-ico">${si.ico}</div>
+      <div class="sk-invest-body">
+        <div class="sk-invest-name">${si.name}</div>
+        <div class="sk-invest-desc">${si.desc}</div>
+        <div class="sk-invest-bar-wrap"><div class="sk-invest-bar" style="width:${pct}%"></div></div>
+        <div class="sk-invest-prog">${pts} / ${si.maxPts} points</div>
+        <div class="sk-invest-rew">Current: ${rew.label}</div>
+        ${nextRew&&!maxed?`<div class="sk-invest-diminish">Next point → ${nextRew.label}</div>`:''}
+        ${maxed?`<div class="sk-invest-rew" style="color:var(--gold)">★ MAXED</div>`:''}
+      </div>
+      <button class="btn-invest" onclick="buyInvest('${si.id}')" ${canBuy?'':'disabled'}>+1</button>
+    </div>`;
+  });
+  return h+'</div>';
+}
+
 function setSkSub(s){skSub=s;renderTab();}
 function buySkill(id){
   initAudio();if(G.sp<=0){toast('No skill points — level up!');return;}
@@ -2143,8 +2342,24 @@ function buySkill(id){
   const cur=G.sk[id]||0;if(cur>=sk.max){toast('Already maxed!');return;}
   if(sk.req&&!(G.sk[sk.req]>=1)){toast('Unlock prerequisite first!');return;}
   G.sp--;G.sk[id]=(G.sk[id]||0)+1;G.sktotal=(G.sktotal||0)+1;
+  G.spSpentTotal=(G.spSpentTotal||0)+1;
+  G.skInvestWasted=(G.skInvestWasted||0)+1; // every SP spent in skills counts as "invested/wasted"
   if(G.sk.secondwind)G._swr=true;if(G.idle)startIdle();SFX.skill();
   checkQuests();checkChapters();renderTab();updateHUD();saveG();
+}
+
+function buyInvest(id){
+  initAudio();
+  if(G.lv<90){toast('Reach level 90 to invest skill points!');return;}
+  if(G.sp<=0){toast('No skill points available!');return;}
+  const si=SK_INVEST.find(x=>x.id===id);if(!si)return;
+  if(!G.skInvest)G.skInvest={};
+  const cur=G.skInvest[id]||0;
+  if(cur>=si.maxPts){toast('Already maxed!');return;}
+  G.sp--;
+  G.skInvest[id]=(G.skInvest[id]||0)+1;
+  SFX.skill();
+  renderTab();updateHUD();saveG();
 }
 
 /* ===============================================
@@ -2179,39 +2394,56 @@ function checkQuests(){G.quests.forEach(q=>{if(q.done)return;if(qVal(q)>=q.targe
 const BCATS=['all','combat','survival','wealth','growth'];
 function buildBoons(){
   const cats=`<div class="filter-row">${BCATS.map(c=>`<div class="f-btn${boonCat===c?' on':''}" onclick="setBoonCat('${c}')">${c[0].toUpperCase()+c.slice(1)}</div>`).join('')}</div>`;
-  const sorted=[...BOONS].sort((a,b)=>({common:0,rare:1,epic:2,legendary:3}[a.rarity])-({common:0,rare:1,epic:2,legendary:3}[b.rarity]));
+
+  // Ashen Memory — always shown at top if lv >= 100 or already owns it
+  const memBoon=BOONS.find(b=>b.memoryBoon);
+  const memLv=G.ashenMemoryLevel||0;
+  const memUnlocked=G.lv>=100||memLv>0;
+  let memSection='';
+  if(memUnlocked&&memBoon){
+    // Wasted SP since last memory upgrade
+    const wastedSince=(G.skInvestWasted||0)-(G.skInvestWastedAtLastMemory||0);
+    const wouldReturn=Math.floor(wastedSince*0.5);
+    const upgCost=memLv===0?0:Math.round(8000*Math.pow(2,memLv-1));
+    const canAfford=memLv===0||G.gold>=upgCost;
+    memSection=`<div class="ashen-memory-card">
+      <div class="ashen-memory-header">
+        <span class="ashen-memory-ico">${memBoon.ico}</span>
+        <div>
+          <div class="ashen-memory-title">${memBoon.name}</div>
+          <div class="ashen-memory-lv">${memLv===0?'NOT YET ACQUIRED':`LEVEL ${memLv}`}</div>
+        </div>
+      </div>
+      <div class="ashen-memory-desc">"The ashes remember every point you poured into the earth and lost. Once in a while, some of it finds its way back."</div>
+      <div class="ashen-memory-effect">
+        ${memLv===0
+          ? `First unlock returns <strong style="color:#c090f0">50%</strong> of all SP ever wasted since the game began.<br>That's <strong style="color:#c090f0">${Math.floor((G.skInvestWasted||0)*0.5)}</strong> SP right now.`
+          : `Upgrade returns <strong style="color:#c090f0">50%</strong> of SP wasted since last upgrade.<br>That's <strong style="color:#c090f0">${wouldReturn}</strong> SP right now.`
+        }
+      </div>
+      ${upgCost>0?`<div class="ashen-memory-cost">Cost: 💰${fmt(upgCost)}</div>`:'<div class="ashen-memory-cost">Cost: Free (first unlock)</div>'}
+      <button class="btn-ashen-memory" onclick="buyAshenMemory()" ${canAfford?'':'disabled'}>
+        ${memLv===0?'🌒 UNLOCK ASHEN MEMORY':`🌒 UPGRADE MEMORY — Reclaim ${wouldReturn} SP`}
+      </button>
+    </div>`;
+  }
+
+  const sorted=[...BOONS].filter(b=>!b.memoryBoon).sort((a,b)=>({common:0,rare:1,epic:2,legendary:3}[a.rarity])-({common:0,rare:1,epic:2,legendary:3}[b.rarity]));
   const filtered=sorted.filter(b=>boonCat==='all'||b.cat===boonCat);
-  let h=`<div class="sec"><div class="sec-hdr">PERMANENT BOONS</div>${cats}<div class="boon-list">`;
+  let h=`<div class="sec"><div class="sec-hdr">PERMANENT BOONS</div>${memSection}${cats}<div class="boon-list">`;
   filtered.forEach(b=>{
-    const lv = boonLevel(b.id);
-    const maxed = false;
-    const upgCost = maxed ? 0 : boonUpgradeCost(b);
-    const cant = !maxed && G.gold < upgCost;
-    const owned = lv > 0;
-    const cls='boon-card'+(maxed?' owned':cant?' cant':' can')+((b.rarity==='epic'||b.rarity==='legendary')?' elite':'');
-
-    // Level pip display
-    const levelDisplay = lv > 0
-       ? `<div style="margin-top:4px;font-size:var(--fs-xs);color:var(--golddim)">Level ${lv}</div>`
-       : '';
-
-    const levelLabel = maxed
-      ? `<span style="color:var(--gold);font-size:var(--fs-xs)">★ MAX LEVEL</span>`
-      : lv > 0
-        ? `<span style="color:var(--txt3);font-size:var(--fs-xs)">Lv ${lv} → ${lv+1}</span>`
-        : `<span style="color:var(--txt3);font-size:var(--fs-xs)">Not acquired</span>`;
-
+    const lv=boonLevel(b.id);
+    const upgCost=boonUpgradeCost(b);
+    const cant=G.gold<upgCost;
+    const cls='boon-card'+(cant?' cant':' can')+((b.rarity==='epic'||b.rarity==='legendary')?' elite':'');
     h+=`<div class="${cls}" onpointerdown="${cant?'':  `buyBoon('${b.id}')`}">
       <div class="boon-rar ${b.rarity}">${b.rarity}</div>
       <div class="boon-ico">${b.ico}</div>
       <div class="boon-body">
         <div class="boon-name">${b.name}</div>
         <div class="boon-desc">${b.desc}</div>
-        ${levelDisplay}
         <div style="margin-top:4px;display:flex;align-items:center;justify-content:space-between">
-          ${lv > 0
-            ? `<span style="color:var(--txt3);font-size:var(--fs-xs)">Lv ${lv} → ${lv+1}</span>`
-            : `<span style="color:var(--txt3);font-size:var(--fs-xs)">Not acquired</span>`}
+          ${lv>0?`<span style="color:var(--txt3);font-size:var(--fs-xs)">Lv ${lv} → ${lv+1}</span>`:`<span style="color:var(--txt3);font-size:var(--fs-xs)">Not acquired</span>`}
           <div class="boon-cost">💰 ${fmt(upgCost)}</div>
         </div>
       </div>
@@ -2239,6 +2471,35 @@ function buyBoon(id){
   if(G.idle) startIdle();
   toast(`⚗ ${b.name} → Level ${lv+1}!`);
   renderTab(); updateHUD(); checkQuests(); checkChapters(); saveG();
+}
+
+function buyAshenMemory(){
+  initAudio();
+  if(G.lv<100&&(G.ashenMemoryLevel||0)===0){toast('Reach level 100 to unlock Ashen Memory!');return;}
+  const memLv=G.ashenMemoryLevel||0;
+  const upgCost=memLv===0?0:Math.round(8000*Math.pow(2,memLv-1));
+  if(upgCost>0&&G.gold<upgCost){toast('Not enough gold!');return;}
+
+  // Calculate SP to return
+  let returned=0;
+  if(memLv===0){
+    // First unlock: 50% of all wasted SP since game start
+    returned=Math.floor((G.skInvestWasted||0)*0.5);
+  } else {
+    // Upgrade: 50% of wasted SP since last upgrade
+    const wastedSince=(G.skInvestWasted||0)-(G.skInvestWastedAtLastMemory||0);
+    returned=Math.floor(wastedSince*0.5);
+  }
+
+  if(upgCost>0)G.gold-=upgCost;
+  G.ashenMemoryLevel=(G.ashenMemoryLevel||0)+1;
+  G.skInvestWastedAtLastMemory=G.skInvestWasted||0;
+  G.sp+=returned;
+
+  tone(520,'triangle',.08,.14);tone(780,'triangle',.1,.12,.07);tone(1040,'triangle',.12,.1,.14);
+  toast(`🌒 Ashen Memory Lv${G.ashenMemoryLevel}! +${returned} SP reclaimed from the void.`);
+  if(returned===0)toast('🌒 Memory upgraded — reclaim SP as you lose more in future prestiges.');
+  renderTab();updateHUD();saveG();
 }
 
 /* ===============================================
@@ -2448,8 +2709,11 @@ function buildStats(){
 function openPrestige(){const gain=Math.max(1,Math.floor(G.lv/5));openModal('✨ Prestige Ascension',`Gain ${gain} prestige point${gain>1?'s':''}, permanently increasing all stats by ${gain*5}%.`,'⚠ Your level, gold, skills, and zone will reset. Boons and 50% of current SP persist.',doPrestige,true);}
 function doPrestige(){
   const gain=Math.max(1,Math.floor(G.lv/5));G.prestige+=gain;G.pbonus=1+G.prestige*.05;
-  const carryoverSP=Math.floor(G.sp*0.5);
-  G.lv=1;G.xp=0;G.xpNext=100;G.sp=carryoverSP;G.sk={};G.zone=1;G.zoneKills=0;G.zoneTarget=10;G.gold=0;G.sktotal=0;G.chainKills=0;G.divineReady=true;G._swr=true;
+    const carryoverSP=Math.floor(G.sp*0.5);
+  // SP that didn't carry over counts as wasted
+  G.skInvestWasted=(G.skInvestWasted||0)+Math.ceil(G.sp*0.5);
+  G.lv=1;G.xp=0;G.xpNext=100;G.sp=carryoverSP;G.sk={};
+  G.zone=1;G.zoneKills=0;G.zoneTarget=10;G.gold=0;G.sktotal=0;G.chainKills=0;G.divineReady=true;G._swr=true;
   const st=getStats();G.hp=st.maxHp;G.mana=CLASSES[G.cls].baseMana;
   spawnEnemy();closeModal();checkQuests();checkChapters();SFX.prestige();
   toast('✨ Prestige '+G.prestige+'! +'+Math.round((G.pbonus-1)*100)+'% stats! '+carryoverSP+' SP carried over.');
