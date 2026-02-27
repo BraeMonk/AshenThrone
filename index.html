@@ -2273,7 +2273,7 @@ function killEnemy(){
   // Mark of Ruin — +SP per zone advance (tracked in zone advance block)
   G.xp+=xpg;
   const st=getStats();if(G.boons.b4)G.hp=st.maxHp;if(G.sk.regen)G.hp=Math.min(st.maxHp,G.hp+Math.round(st.maxHp*G.sk.regen*.02));
-  while(G.xp>=G.xpNext){G.xp-=G.xpNext;G.lv++;G.xpNext=xpFor(G.lv);G.sp++;const nst=getStats();G.hp=nst.maxHp;G.divineReady=true;SFX.lvlup();showLvlUp();if(G.lv>=100)G.everReachedLv100=true;}
+  while(G.xp>=G.xpNext){G.xp-=G.xpNext;G.lv++;G.xpNext=xpFor(G.lv);G.sp++;const nst=getStats();G.hp=nst.maxHp;G.divineReady=true;SFX.lvlup();showLvlUp();if(G.lv>=100){G.everReachedLv100=true;saveG();}}
   if(G.zoneKills>=G.zoneTarget){
     G.zoneKills=0;G.zoneTarget=Math.round(G.zoneTarget*1.22);
     if(G.zone>=8){
@@ -3025,6 +3025,7 @@ function titleFX() {
   const cv = document.getElementById('s0-cv');
   function resize() { cv.width = window.innerWidth; cv.height = window.innerHeight; }
   resize();
+  const ctx = cv.getContext('2d');
   window.addEventListener('resize', resize);
 
   // More varied ember system for 32-bit feel
