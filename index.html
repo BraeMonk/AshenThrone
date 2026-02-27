@@ -1032,168 +1032,185 @@ function drawSprite32(ctx,sprite,ox,oy,scale=1){
 
 // 32-bit warrior: multi-tone armor with specular highlight
 const SPR32={
-  warrior(p){
+  warrior(p,attacking){
     const _=null;
-    return[
-      // Row 0 — helm top with rivets
+    if(attacking) return [
+      // Attack frame — sword arm raised, weight forward
       [_,    _,    p.helmShad,p.helm,   p.helmRim,p.helmRim,p.helm,   p.helmShad,_,    _    ],
-      // Row 1 — helm brow
       [_,    p.helmShad,p.helm,p.helmHl,p.helmHl, p.helmHl, p.helmHl,p.helm,   p.helmShad,_],
-      // Row 2 — face
       [_,    p.helmShad,p.skin,p.skinHl,p.skin,   p.skin,   p.skinHl,p.skin,   p.helmShad,_],
-      // Row 3 — eyes + nose
       [_,    p.helmShad,p.skin,p.e,     p.skinHl, p.skinHl, p.e,     p.skin,   p.helmShad,_],
-      // Row 4 — jaw + chin guard
       [_,    p.helmShad,p.helm,p.skin,  p.skinShad,p.skinShad,p.skin,p.helm,   p.helmShad,_],
-      // Row 5 — pauldrons + gorget
-      [p.armorShad,p.armor,p.armorHl,p.armorRim,p.belt,p.belt,p.armorRim,p.armorHl,p.armor,p.armorShad],
-      // Row 6 — chest plate highlight
-      [p.armorShad,p.armorHl,p.armorRim,p.armor,p.armorHl,p.armorHl,p.armor,p.armorRim,p.armorHl,p.armorShad],
-      // Row 7 — chest center
-      [p.cape,p.armor,p.armorHl,p.belt,p.armorShad,p.armorShad,p.belt,p.armorHl,p.armor,p.cape],
-      // Row 8 — belt
-      [p.cape,p.armorShad,p.belt,p.belt,p.beltShad,p.beltShad,p.belt,p.belt,p.armorShad,p.cape],
-      // Row 9 — tassets
+      // Arm swung forward — right pauldron shifted
+      [p.armorShad,p.armorHl,p.armorRim,p.belt,p.belt,p.armorRim,p.armorHl,p.armorShad,p.armorHl,p.armorRim],
+      [p.cape,p.armorHl,p.armorRim,p.armor,p.armorHl,p.armorHl,p.armor,p.armorRim,p.armorRim,p.armorShad],
+      [p.cape,p.armor,p.armorHl,p.belt,p.armorShad,p.armorShad,p.belt,p.armorHl,p.armorShad,_],
+      [p.cape,p.armorShad,p.belt,p.belt,p.beltShad,p.beltShad,p.belt,p.belt,p.armorShad,_],
+      // Legs planted wide
       [p.capeShad,p.armor,p.armorShad,p.armorHl,p.armor,p.armor,p.armorHl,p.armorShad,p.armor,p.capeShad],
-      // Row 10 — upper legs
       [_,    p.armorShad,p.armorDark,p.armor,_,    _,    p.armor,p.armorDark,p.armorShad,_],
-      // Row 11 — knees
       [_,    p.armor,p.armorHl,p.armorShad,_,    _,    p.armorShad,p.armorHl,p.armor,_],
-      // Row 12 — lower legs
       [_,    p.armorShad,p.armor,p.armorDark,_,    _,    p.armorDark,p.armor,p.armorShad,_],
-      // Row 13 — boots
+      [_,    p.boot,p.bootHl,p.boot,_,    _,    p.boot,p.bootHl,p.boot,_],
+    ];
+    return[
+      [_,    _,    p.helmShad,p.helm,   p.helmRim,p.helmRim,p.helm,   p.helmShad,_,    _    ],
+      [_,    p.helmShad,p.helm,p.helmHl,p.helmHl, p.helmHl, p.helmHl,p.helm,   p.helmShad,_],
+      [_,    p.helmShad,p.skin,p.skinHl,p.skin,   p.skin,   p.skinHl,p.skin,   p.helmShad,_],
+      [_,    p.helmShad,p.skin,p.e,     p.skinHl, p.skinHl, p.e,     p.skin,   p.helmShad,_],
+      [_,    p.helmShad,p.helm,p.skin,  p.skinShad,p.skinShad,p.skin,p.helm,   p.helmShad,_],
+      [p.armorShad,p.armor,p.armorHl,p.armorRim,p.belt,p.belt,p.armorRim,p.armorHl,p.armor,p.armorShad],
+      [p.armorShad,p.armorHl,p.armorRim,p.armor,p.armorHl,p.armorHl,p.armor,p.armorRim,p.armorHl,p.armorShad],
+      [p.cape,p.armor,p.armorHl,p.belt,p.armorShad,p.armorShad,p.belt,p.armorHl,p.armor,p.cape],
+      [p.cape,p.armorShad,p.belt,p.belt,p.beltShad,p.beltShad,p.belt,p.belt,p.armorShad,p.cape],
+      [p.capeShad,p.armor,p.armorShad,p.armorHl,p.armor,p.armor,p.armorHl,p.armorShad,p.armor,p.capeShad],
+      [_,    p.armorShad,p.armorDark,p.armor,_,    _,    p.armor,p.armorDark,p.armorShad,_],
+      [_,    p.armor,p.armorHl,p.armorShad,_,    _,    p.armorShad,p.armorHl,p.armor,_],
+      [_,    p.armorShad,p.armor,p.armorDark,_,    _,    p.armorDark,p.armor,p.armorShad,_],
       [_,    p.boot,p.bootHl,p.boot,_,    _,    p.boot,p.bootHl,p.boot,_],
     ];
   },
-  mage(p){
+  mage(p,attacking){
     const _=null;
-    return[
-      // Row 0 — hat tip
+    if(attacking) return [
       [_,    _,    _,    p.hatShad,p.hat,   p.hatShad,_,    _,    _,    _    ],
-      // Row 1 — hat body upper
       [_,    _,    p.hatShad,p.hat,   p.hatHl,  p.hat,   p.hatShad,_,    _,    _    ],
-      // Row 2 — hat wide
       [_,    p.hatShad,p.hat,   p.hatHl,  p.hat,   p.hat,   p.hatHl,  p.hat,   p.hatShad,_],
-      // Row 3 — hat brim
       [p.hatShad,p.hatBrim,p.hatBrim,p.hatBrim,p.hatBrim,p.hatBrim,p.hatBrim,p.hatBrim,p.hatBrim,p.hatShad],
-      // Row 4 — face
       [_,    p.robeShad,p.skin,   p.skinHl, p.skin,   p.skin,   p.skinHl, p.skin,   p.robeShad,_],
-      // Row 5 — eyes + gem mark
       [_,    p.robeShad,p.skin,   p.e,      p.skinHl, p.skinHl, p.e,      p.skin,   p.robeShad,_],
-      // Row 6 — staff arm + robe shoulder
-      [p.staff,p.robeShad,p.robe,  p.robeHl, p.robeTrim,p.robeTrim,p.robeHl,p.robe,  p.robeShad,_],
-      // Row 7 — robe chest with gem
-      [p.staffHl,p.robe,  p.robeHl, p.gem,    p.gemGlow,p.gemGlow,p.gem,    p.robeHl, p.robe,   _],
-      // Row 8 — mid robe
-      [p.staff,p.robeShad,p.robeTrim,p.robe, p.robeHl, p.robeHl, p.robe,  p.robeTrim,p.robeShad,_],
-      // Row 9 — waist
-      [p.staffHl,p.robe,  p.robeShad,p.robeTrim,p.robe,p.robe,p.robeTrim,p.robeShad,p.robe,_],
-      // Row 10 — robe lower
-      [p.staff,p.robeDark,p.robe,  p.robeHl, p.robeDark,p.robeDark,p.robeHl,p.robe,p.robeDark,_],
-      // Row 11 — robe sweep
-      [_,    p.robeDark,p.robeShad,p.robe, p.robeHl,p.robeHl,p.robe, p.robeShad,p.robeDark,_],
-      // Row 12 — hem + staffOrb
+      // Casting — both arms raised, orb forward
+      [p.staffOrb,p.staffHl,p.robe,p.robeHl,p.robeTrim,p.robeTrim,p.robeHl,p.robe,p.staffHl,p.staffOrb],
+      [p.gemGlow,p.robeHl,p.gem,p.gemGlow,p.gemGlow,p.gemGlow,p.gem,p.robeHl,p.gemGlow,p.staffOrb],
+      [p.staff,p.robeShad,p.robeTrim,p.robe,p.robeHl,p.robeHl,p.robe,p.robeTrim,p.robeShad,_],
+      [p.staffHl,p.robe,p.robeShad,p.robeTrim,p.robe,p.robe,p.robeTrim,p.robeShad,p.robe,_],
+      [p.staff,p.robeDark,p.robe,p.robeHl,p.robeDark,p.robeDark,p.robeHl,p.robe,p.robeDark,_],
+      [_,    p.robeDark,p.robeShad,p.robe,p.robeHl,p.robeHl,p.robe,p.robeShad,p.robeDark,_],
       [p.staffOrb,p.robeDark,p.robe,p.robeTrim,p.robeDark,p.robeDark,p.robeTrim,p.robe,p.robeDark,_],
-      // Row 13 — boots peek + staff base
+      [p.staffHl,p.boot,p.bootHl,p.boot,_,    _,    p.boot,p.bootHl,p.boot,_],
+    ];
+    return[
+      [_,    _,    _,    p.hatShad,p.hat,   p.hatShad,_,    _,    _,    _    ],
+      [_,    _,    p.hatShad,p.hat,   p.hatHl,  p.hat,   p.hatShad,_,    _,    _    ],
+      [_,    p.hatShad,p.hat,   p.hatHl,  p.hat,   p.hat,   p.hatHl,  p.hat,   p.hatShad,_],
+      [p.hatShad,p.hatBrim,p.hatBrim,p.hatBrim,p.hatBrim,p.hatBrim,p.hatBrim,p.hatBrim,p.hatBrim,p.hatShad],
+      [_,    p.robeShad,p.skin,   p.skinHl, p.skin,   p.skin,   p.skinHl, p.skin,   p.robeShad,_],
+      [_,    p.robeShad,p.skin,   p.e,      p.skinHl, p.skinHl, p.e,      p.skin,   p.robeShad,_],
+      [p.staff,p.robeShad,p.robe,  p.robeHl, p.robeTrim,p.robeTrim,p.robeHl,p.robe,  p.robeShad,_],
+      [p.staffHl,p.robe,  p.robeHl, p.gem,    p.gemGlow,p.gemGlow,p.gem,    p.robeHl, p.robe,   _],
+      [p.staff,p.robeShad,p.robeTrim,p.robe, p.robeHl, p.robeHl, p.robe,  p.robeTrim,p.robeShad,_],
+      [p.staffHl,p.robe,  p.robeShad,p.robeTrim,p.robe,p.robe,p.robeTrim,p.robeShad,p.robe,_],
+      [p.staff,p.robeDark,p.robe,  p.robeHl, p.robeDark,p.robeDark,p.robeHl,p.robe,p.robeDark,_],
+      [_,    p.robeDark,p.robeShad,p.robe, p.robeHl,p.robeHl,p.robe, p.robeShad,p.robeDark,_],
+      [p.staffOrb,p.robeDark,p.robe,p.robeTrim,p.robeDark,p.robeDark,p.robeTrim,p.robe,p.robeDark,_],
       [p.staffHl,p.boot,  p.bootHl, p.boot,   _,    _,    p.boot,   p.bootHl, p.boot,   _],
     ];
   },
-  rogue(p){
+  rogue(p,attacking){
     const _=null;
-    return[
-      // Row 0 — hood peak
+    if(attacking) return [
       [_,    _,    p.hoodShad,p.hood,   p.hoodRim,p.hood,   p.hoodShad,_,    _,    _    ],
-      // Row 1 — hood upper
       [_,    p.hoodShad,p.hood, p.hoodHl, p.hood,   p.hoodHl, p.hood,   p.hoodShad,_,  _],
-      // Row 2 — hood face shadow
       [p.cloakShad,p.hood,p.hoodShad,p.skin,p.skinHl,p.skin,p.hoodShad,p.hood,p.cloakShad,_],
-      // Row 3 — eyes
       [p.cloakShad,p.hood,p.skin,p.e,p.skinHl,p.skinHl,p.e,p.skin,p.hood,p.cloakShad],
-      // Row 4 — lower face + blade peek
       [p.cloakShad,p.hood,p.hoodShad,p.skin,p.skinShad,p.skinShad,p.skin,p.hoodShad,p.blade,p.cloakShad],
-      // Row 5 — shoulders
-      [p.cloak,p.cloakHl,p.cloakRim,p.cloak,p.accent,p.accent,p.cloak,p.cloakRim,p.blade,p.cloakShad],
-      // Row 6 — chest + blade
-      [p.cloakShad,p.cloakHl,p.cloak,p.accent,p.cloakHl,p.cloakHl,p.accent,p.cloak,p.bladeHl,p.bladeShad],
-      // Row 7 — mid torso
-      [p.cloak,p.cloakShad,p.cloakRim,p.cloak,p.cloakShad,p.cloakShad,p.cloak,p.cloakRim,p.blade,p.bladeEdge],
-      // Row 8 — waist with belt
-      [p.cloakShad,p.cloak,p.accent,p.accentHl,p.cloak,p.cloak,p.accentHl,p.accent,p.blade,p.bladeShad],
-      // Row 9 — hips
-      [p.cloak,p.cloakShad,p.cloakHl,p.cloak,p.cloakShad,p.cloakShad,p.cloak,p.cloakHl,p.bladeEdge,_],
-      // Row 10 — upper legs
+      // Lunge — body tilted, blade fully extended forward
+      [_,    p.cloakHl,p.cloakRim,p.cloak,p.accent,p.accent,p.cloak,p.bladeHl,p.bladeEdge,p.bladeShad],
+      [p.cloakShad,p.cloak,p.accent,p.accentHl,p.cloakHl,p.cloakHl,p.bladeHl,p.bladeEdge,p.bladeShad,_],
+      [p.cloak,p.cloakShad,p.cloakHl,p.cloak,p.cloakShad,p.bladeHl,p.bladeEdge,p.bladeShad,_,    _],
+      [p.cloakShad,p.cloak,p.accent,p.accentHl,p.cloak,p.cloak,p.accentHl,p.accent,_,    _],
+      [p.cloak,p.cloakShad,p.cloakHl,p.cloak,p.cloakShad,p.cloakShad,p.cloak,p.cloakHl,_,    _],
       [_,    p.cloakShad,p.cloak,p.cloakHl,_,    _,    p.cloakHl,p.cloak,p.cloakShad,_],
-      // Row 11 — knee
       [_,    p.cloak,p.cloakRim,p.cloakShad,_,    _,    p.cloakShad,p.cloakRim,p.cloak,_],
-      // Row 12 — lower legs
       [_,    p.cloakShad,p.cloakHl,p.cloak,_,    _,    p.cloak,p.cloakHl,p.cloakShad,_],
-      // Row 13 — boots
+      [_,    p.boot,p.bootHl,p.boot,_,    _,    p.boot,p.bootHl,p.boot,_],
+    ];
+    return[
+      [_,    _,    p.hoodShad,p.hood,   p.hoodRim,p.hood,   p.hoodShad,_,    _,    _    ],
+      [_,    p.hoodShad,p.hood, p.hoodHl, p.hood,   p.hoodHl, p.hood,   p.hoodShad,_,  _],
+      [p.cloakShad,p.hood,p.hoodShad,p.skin,p.skinHl,p.skin,p.hoodShad,p.hood,p.cloakShad,_],
+      [p.cloakShad,p.hood,p.skin,p.e,p.skinHl,p.skinHl,p.e,p.skin,p.hood,p.cloakShad],
+      [p.cloakShad,p.hood,p.hoodShad,p.skin,p.skinShad,p.skinShad,p.skin,p.hoodShad,p.blade,p.cloakShad],
+      [p.cloak,p.cloakHl,p.cloakRim,p.cloak,p.accent,p.accent,p.cloak,p.cloakRim,p.blade,p.cloakShad],
+      [p.cloakShad,p.cloakHl,p.cloak,p.accent,p.cloakHl,p.cloakHl,p.accent,p.cloak,p.bladeHl,p.bladeShad],
+      [p.cloak,p.cloakShad,p.cloakRim,p.cloak,p.cloakShad,p.cloakShad,p.cloak,p.cloakRim,p.blade,p.bladeEdge],
+      [p.cloakShad,p.cloak,p.accent,p.accentHl,p.cloak,p.cloak,p.accentHl,p.accent,p.blade,p.bladeShad],
+      [p.cloak,p.cloakShad,p.cloakHl,p.cloak,p.cloakShad,p.cloakShad,p.cloak,p.cloakHl,p.bladeEdge,_],
+      [_,    p.cloakShad,p.cloak,p.cloakHl,_,    _,    p.cloakHl,p.cloak,p.cloakShad,_],
+      [_,    p.cloak,p.cloakRim,p.cloakShad,_,    _,    p.cloakShad,p.cloakRim,p.cloak,_],
+      [_,    p.cloakShad,p.cloakHl,p.cloak,_,    _,    p.cloak,p.cloakHl,p.cloakShad,_],
       [_,    p.boot,p.bootHl,p.boot,_,    _,    p.boot,p.bootHl,p.boot,_],
     ];
   },
-  paladin(p){
+  paladin(p,attacking){
     const _=null;
-    return[
-      // Row 0 — helm crown
+    if(attacking) return [
       [_,    _,    p.helmShad,p.helmRim,p.holy,   p.helmRim,p.helmShad,_,    _,    _    ],
-      // Row 1 — helm upper
       [_,    p.helmShad,p.helm,p.helmHl,p.helmRim,p.helmRim,p.helmHl,p.helm,p.helmShad,_],
-      // Row 2 — visor
       [_,    p.helmShad,p.helmHl,p.armorShad,p.armorDark,p.armorDark,p.armorShad,p.helmHl,p.helmShad,_],
-      // Row 3 — visor eye slit
       [_,    p.helm,p.armorDark,p.ep,p.holyGlow,p.holyGlow,p.ep,p.armorDark,p.helm,_],
-      // Row 4 — chin guard
       [_,    p.helmShad,p.helm,p.helmHl,p.helm,p.helm,p.helmHl,p.helm,p.helmShad,_],
-      // Row 5 — pauldrons glowing
-      [p.armorShad,p.armorHl,p.armorRim,p.holy,p.holyGlow,p.holyGlow,p.holy,p.armorRim,p.armorHl,p.armorShad],
-      // Row 6 — chest plate
-      [p.cape,p.armorHl,p.armorRim,p.armorHl,p.holyDim,p.holyDim,p.armorHl,p.armorRim,p.armorHl,p.cape],
-      // Row 7 — holy symbol on chest
-      [p.capeShad,p.armor,p.armorHl,p.holy,p.holyGlow,p.holyGlow,p.holy,p.armorHl,p.armor,p.capeShad],
-      // Row 8 — mid plate
-      [p.cape,p.armorShad,p.armor,p.armorHl,p.armor,p.armor,p.armorHl,p.armor,p.armorShad,p.cape],
-      // Row 9 — tassets
+      // Smite — both arms raised overhead, holy glow bursting
+      [p.holyGlow,p.armorRim,p.holy,p.holyGlow,p.holyGlow,p.holyGlow,p.holy,p.armorRim,p.holyGlow,p.holy],
+      [p.armorHl,p.armorRim,p.holyDim,p.holy,p.holyGlow,p.holyGlow,p.holy,p.holyDim,p.armorRim,p.armorHl],
+      [p.cape,p.armorHl,p.armorRim,p.holy,p.holyGlow,p.holyGlow,p.holy,p.armorRim,p.armorHl,p.cape],
+      [p.capeShad,p.armor,p.armorHl,p.armorRim,p.armor,p.armor,p.armorRim,p.armorHl,p.armor,p.capeShad],
       [p.capeShad,p.armor,p.armorShad,p.armorHl,p.armorDark,p.armorDark,p.armorHl,p.armorShad,p.armor,p.capeShad],
-      // Row 10 — upper legs armored
       [_,    p.armorShad,p.armorDark,p.armor,_,    _,    p.armor,p.armorDark,p.armorShad,_],
-      // Row 11 — knees
       [_,    p.armor,p.armorRim,p.armorShad,_,    _,    p.armorShad,p.armorRim,p.armor,_],
-      // Row 12 — greaves
       [_,    p.armorShad,p.armor,p.armorHl,_,    _,    p.armorHl,p.armor,p.armorShad,_],
-      // Row 13 — sabatons
+      [_,    p.boot,p.bootHl,p.armorRim,_,    _,    p.armorRim,p.bootHl,p.boot,_],
+    ];
+    return[
+      [_,    _,    p.helmShad,p.helmRim,p.holy,   p.helmRim,p.helmShad,_,    _,    _    ],
+      [_,    p.helmShad,p.helm,p.helmHl,p.helmRim,p.helmRim,p.helmHl,p.helm,p.helmShad,_],
+      [_,    p.helmShad,p.helmHl,p.armorShad,p.armorDark,p.armorDark,p.armorShad,p.helmHl,p.helmShad,_],
+      [_,    p.helm,p.armorDark,p.ep,p.holyGlow,p.holyGlow,p.ep,p.armorDark,p.helm,_],
+      [_,    p.helmShad,p.helm,p.helmHl,p.helm,p.helm,p.helmHl,p.helm,p.helmShad,_],
+      [p.armorShad,p.armorHl,p.armorRim,p.holy,p.holyGlow,p.holyGlow,p.holy,p.armorRim,p.armorHl,p.armorShad],
+      [p.cape,p.armorHl,p.armorRim,p.armorHl,p.holyDim,p.holyDim,p.armorHl,p.armorRim,p.armorHl,p.cape],
+      [p.capeShad,p.armor,p.armorHl,p.holy,p.holyGlow,p.holyGlow,p.holy,p.armorHl,p.armor,p.capeShad],
+      [p.cape,p.armorShad,p.armor,p.armorHl,p.armor,p.armor,p.armorHl,p.armor,p.armorShad,p.cape],
+      [p.capeShad,p.armor,p.armorShad,p.armorHl,p.armorDark,p.armorDark,p.armorHl,p.armorShad,p.armor,p.capeShad],
+      [_,    p.armorShad,p.armorDark,p.armor,_,    _,    p.armor,p.armorDark,p.armorShad,_],
+      [_,    p.armor,p.armorRim,p.armorShad,_,    _,    p.armorShad,p.armorRim,p.armor,_],
+      [_,    p.armorShad,p.armor,p.armorHl,_,    _,    p.armorHl,p.armor,p.armorShad,_],
       [_,    p.boot,p.bootHl,p.armorRim,_,    _,    p.armorRim,p.bootHl,p.boot,_],
     ];
   },
-  ranger(p){
+  ranger(p,attacking){
     const _=null;
-    return[
-      // Row 0 — hood peak
+    if(attacking) return [
       [_,    _,    p.hoodShad,p.hood,   p.leaf,   p.hood,   p.hoodShad,_,    _,    _    ],
-      // Row 1 — hood with leaf adorn
       [_,    p.hoodShad,p.hood,p.hoodHl,p.leafHl, p.hoodHl, p.hood,   p.hoodShad,_,    _    ],
-      // Row 2 — face in shadow
       [p.leafShad,p.hood,p.hoodShad,p.skin,p.skinHl,p.skin,p.hoodShad,p.hood,p.leafShad,_],
-      // Row 3 — eyes
       [p.leafShad,p.hood,p.skin,p.e,p.skinHl,p.skinHl,p.e,p.skin,p.hood,p.leafShad],
-      // Row 4 — lower face
       [p.leafShad,p.hood,p.hoodShad,p.skin,p.skinShad,p.skinShad,p.skin,p.hoodShad,p.hood,_],
-      // Row 5 — shoulders with leaves
-      [p.leaf,p.gearHl,p.gearRim,p.gear,p.gearHl,p.gearHl,p.gear,p.gearRim,p.bow,p.leafShad],
-      // Row 6 — chest + bow
-      [p.leafShad,p.gear,p.gearHl,p.leafHl,p.gear,p.gear,p.leafHl,p.gearHl,p.bowHl,p.bow],
-      // Row 7 — mid torso
-      [p.leaf,p.gearShad,p.gear,p.gearHl,p.gearShad,p.gearShad,p.gearHl,p.gear,p.bow,p.bowHl],
-      // Row 8 — quiver + belt
-      [p.leafShad,p.gear,p.leafHl,p.leaf,p.gear,p.gear,p.leaf,p.leafHl,p.bow,p.bowStr],
-      // Row 9 — hips + bow lower
-      [p.leaf,p.gearShad,p.gearHl,p.gear,p.gearShad,p.gearShad,p.gear,p.gearHl,p.bowHl,p.bow],
-      // Row 10 — upper legs
+      // Draw — bow arm fully extended, string pulled back
+      [p.bowStr,p.bowHl,p.gearRim,p.gear,p.gearHl,p.gearHl,p.gear,p.bow,p.bowHl,p.bowStr],
+      [p.bowStr,p.gear,p.gearHl,p.leafHl,p.gear,p.gear,p.bow,p.bowHl,p.bow,p.bowStr],
+      [p.bowStr,p.gearShad,p.gear,p.gearHl,p.gearShad,p.bow,p.bowHl,p.bow,_,    p.bowStr],
+      [p.leafShad,p.gear,p.leafHl,p.leaf,p.gear,p.gear,p.leaf,p.leafHl,_,    _    ],
+      [p.leaf,p.gearShad,p.gearHl,p.gear,p.gearShad,p.gearShad,p.gear,p.gearHl,_,    _    ],
       [_,    p.gearShad,p.gear,p.gearHl,_,    _,    p.gearHl,p.gear,p.gearShad,_],
-      // Row 11 — knee
       [_,    p.gear,p.gearRim,p.gearShad,_,    _,    p.gearShad,p.gearRim,p.gear,_],
-      // Row 12 — lower legs
       [_,    p.gearShad,p.gearHl,p.gear,_,    _,    p.gear,p.gearHl,p.gearShad,_],
-      // Row 13 — boots
+      [_,    p.boot,p.bootHl,p.boot,_,    _,    p.boot,p.bootHl,p.boot,_],
+    ];
+    return[
+      [_,    _,    p.hoodShad,p.hood,   p.leaf,   p.hood,   p.hoodShad,_,    _,    _    ],
+      [_,    p.hoodShad,p.hood,p.hoodHl,p.leafHl, p.hoodHl, p.hood,   p.hoodShad,_,    _    ],
+      [p.leafShad,p.hood,p.hoodShad,p.skin,p.skinHl,p.skin,p.hoodShad,p.hood,p.leafShad,_],
+      [p.leafShad,p.hood,p.skin,p.e,p.skinHl,p.skinHl,p.e,p.skin,p.hood,p.leafShad],
+      [p.leafShad,p.hood,p.hoodShad,p.skin,p.skinShad,p.skinShad,p.skin,p.hoodShad,p.hood,_],
+      [p.leaf,p.gearHl,p.gearRim,p.gear,p.gearHl,p.gearHl,p.gear,p.gearRim,p.bow,p.leafShad],
+      [p.leafShad,p.gear,p.gearHl,p.leafHl,p.gear,p.gear,p.leafHl,p.gearHl,p.bowHl,p.bow],
+      [p.leaf,p.gearShad,p.gear,p.gearHl,p.gearShad,p.gearShad,p.gearHl,p.gear,p.bow,p.bowHl],
+      [p.leafShad,p.gear,p.leafHl,p.leaf,p.gear,p.gear,p.leaf,p.leafHl,p.bow,p.bowStr],
+      [p.leaf,p.gearShad,p.gearHl,p.gear,p.gearShad,p.gearShad,p.gear,p.gearHl,p.bowHl,p.bow],
+      [_,    p.gearShad,p.gear,p.gearHl,_,    _,    p.gearHl,p.gear,p.gearShad,_],
+      [_,    p.gear,p.gearRim,p.gearShad,_,    _,    p.gearShad,p.gearRim,p.gear,_],
+      [_,    p.gearShad,p.gearHl,p.gear,_,    _,    p.gear,p.gearHl,p.gearShad,_],
       [_,    p.boot,p.bootHl,p.boot,_,    _,    p.boot,p.bootHl,p.boot,_],
     ];
   },
@@ -1978,13 +1995,34 @@ function drawArena32(){
   gnd.addColorStop(1,'#030202');
   ctx.fillStyle=gnd;ctx.fillRect(0,H*.6,W,H*.4);
 
-  // Ground pixel-texture scan lines for 32-bit feel
+  // === Ground tile texture — cobble/dirt pattern ===
+  const groundTop=Math.round(H*.60);
+  ctx.save();
+  ctx.globalAlpha=0.09;
+  // Horizontal mortar lines
+  ctx.fillStyle='#000000';
+  for(let gy=groundTop;gy<H;gy+=8){ctx.fillRect(0,gy,W,1);}
+  // Vertical brick offsets
   ctx.globalAlpha=0.06;
-  ctx.fillStyle='#ffffff';
-  for(let y=Math.round(H*.61);y<H;y+=3){
-    ctx.fillRect(0,y,W,1);
+  let brickRow=0;
+  for(let gy=groundTop;gy<H;gy+=8){
+    const offset=brickRow%2===0?0:14;
+    for(let gx=offset;gx<W;gx+=28){ctx.fillRect(gx,gy,1,8);}
+    brickRow++;
   }
-  ctx.globalAlpha=1;
+  // Subtle highlight on top edge of each brick row
+  ctx.globalAlpha=0.07;
+  ctx.fillStyle='#ffffff';
+  for(let gy=groundTop+1;gy<H;gy+=8){ctx.fillRect(0,gy,W,1);}
+  // Scattered dirt/grime dots
+  ctx.globalAlpha=0.05;
+  ctx.fillStyle='#000000';
+  for(let i=0;i<60;i++){
+    const dx=((i*137+bgScroll*.5)%W);
+    const dy=groundTop+4+((i*79)%(H-groundTop-4));
+    ctx.fillRect(dx,dy,2,1);
+  }
+  ctx.restore();
 
   // === Zone label ===
   ctx.font=`bold ${Math.max(7,Math.round(W*.017))}px Cinzel,serif`;
@@ -2071,7 +2109,8 @@ function drawArena32(){
     const py=PA.y+Math.sin(PA.bob)*3;
     const pal=PAL32[G.cls]||PAL32.warrior;
     const sprFn=SPR32[G.cls]||SPR32.warrior;
-    const spr=sprFn(pal);
+    const isAttacking=PA.aflash>0.5;
+    const spr=sprFn(pal,isAttacking);
 
     // 32-bit: player glow shadow
     ctx.save();
