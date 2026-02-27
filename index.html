@@ -992,6 +992,7 @@ CURSES TAB
 /* ===============================================
    AUDIO
 =============================================== */
+const _=null;
 let AC=null,audioOn=false;
 function initAudio(){if(AC)return;try{AC=new(window.AudioContext||window.webkitAudioContext)();audioOn=true;}catch(e){}}
 function tone(f,t,d,v,dl=0){if(!AC||!audioOn)return;const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);o.type=t;o.frequency.value=f;const ts=AC.currentTime+dl;g.gain.setValueAtTime(v,ts);g.gain.exponentialRampToValueAtTime(.001,ts+d);o.start(ts);o.stop(ts+d+.01);}
