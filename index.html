@@ -1528,50 +1528,38 @@ const SKTREES={
 =============================================== */
 const SK_INVEST=[
   {id:'si_atk',ico:'⚔',name:'Iron Mastery',
-   desc:'Each point grants +1% base ATK. Diminishes: every 10 points the bonus halves.',
+   desc:'Each point grants +1% base ATK.',
    maxPts:100,
    reward(pts){
-     // +1% per pt up to 10, +0.5% per pt 11-30, +0.25% per pt 31-100
-     let bonus=0;
-     const t1=Math.min(pts,10),t2=Math.max(0,Math.min(pts-10,20)),t3=Math.max(0,pts-30);
-     bonus+=t1*1+t2*0.5+t3*0.25;
-     return{label:`+${bonus.toFixed(1)}% ATK`,atkPct:bonus};
+     return{label:`+${pts}% ATK`,atkPct:pts};
    }
   },
   {id:'si_def',ico:'🛡',name:'Fortress Mind',
-   desc:'Each point grants +1% base DEF. Diminishes every 10 points.',
+   desc:'Each point grants +1% base DEF.',
    maxPts:100,
    reward(pts){
-     const t1=Math.min(pts,10),t2=Math.max(0,Math.min(pts-10,20)),t3=Math.max(0,pts-30);
-     const bonus=t1*1+t2*0.5+t3*0.25;
-     return{label:`+${bonus.toFixed(1)}% DEF`,defPct:bonus};
+     return{label:`+${pts}% DEF`,defPct:pts};
    }
   },
   {id:'si_hp',ico:'❤',name:'Vital Endurance',
-   desc:'Each point grants +0.5% Max HP. Diminishes every 20 points.',
+   desc:'Each point grants +1% Max HP.',
    maxPts:100,
    reward(pts){
-     const t1=Math.min(pts,20),t2=Math.max(0,Math.min(pts-20,30)),t3=Math.max(0,pts-50);
-     const bonus=t1*0.5+t2*0.25+t3*0.1;
-     return{label:`+${bonus.toFixed(1)}% Max HP`,hpPct:bonus};
+     return{label:`+${pts}% Max HP`,hpPct:pts};
    }
   },
   {id:'si_gold',ico:'💰',name:'Hoarder\'s Instinct',
-   desc:'Each point grants +0.5% gold from kills. Diminishes every 20 points.',
+   desc:'Each point grants +1% gold from kills.',
    maxPts:100,
    reward(pts){
-     const t1=Math.min(pts,20),t2=Math.max(0,Math.min(pts-20,30)),t3=Math.max(0,pts-50);
-     const bonus=t1*0.5+t2*0.25+t3*0.1;
-     return{label:`+${bonus.toFixed(1)}% gold`,goldPct:bonus};
+     return{label:`+${pts}% gold`,goldPct:pts};
    }
   },
   {id:'si_xp',ico:'⭐',name:'Soulward Study',
-   desc:'Each point grants +0.5% XP from kills. Diminishes every 20 points.',
+   desc:'Each point grants +1% XP from kills.',
    maxPts:100,
    reward(pts){
-     const t1=Math.min(pts,20),t2=Math.max(0,Math.min(pts-20,30)),t3=Math.max(0,pts-50);
-     const bonus=t1*0.5+t2*0.25+t3*0.1;
-     return{label:`+${bonus.toFixed(1)}% XP`,xpPct:bonus};
+     return{label:`+${pts}% XP`,xpPct:pts};
    }
   },
 ];
