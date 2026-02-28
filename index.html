@@ -1528,36 +1528,36 @@ const SKTREES={
 =============================================== */
 const SK_INVEST=[
   {id:'si_atk',ico:'⚔',name:'Iron Mastery',
-   desc:'Each point grants +1% base ATK.',
-   maxPts:100,
+   desc:'Each point grants +1% base ATK. No limit.',
+   maxPts:Infinity,
    reward(pts){
      return{label:`+${pts}% ATK`,atkPct:pts};
    }
   },
   {id:'si_def',ico:'🛡',name:'Fortress Mind',
-   desc:'Each point grants +1% base DEF.',
-   maxPts:100,
+   desc:'Each point grants +1% base DEF. No limit.',
+   maxPts:Infinity,
    reward(pts){
      return{label:`+${pts}% DEF`,defPct:pts};
    }
   },
   {id:'si_hp',ico:'❤',name:'Vital Endurance',
-   desc:'Each point grants +1% Max HP.',
-   maxPts:100,
+   desc:'Each point grants +1% Max HP. No limit.',
+   maxPts:Infinity,
    reward(pts){
      return{label:`+${pts}% Max HP`,hpPct:pts};
    }
   },
   {id:'si_gold',ico:'💰',name:'Hoarder\'s Instinct',
-   desc:'Each point grants +1% gold from kills.',
-   maxPts:100,
+   desc:'Each point grants +1% gold from kills. No limit.',
+   maxPts:Infinity,
    reward(pts){
      return{label:`+${pts}% gold`,goldPct:pts};
    }
   },
   {id:'si_xp',ico:'⭐',name:'Soulward Study',
-   desc:'Each point grants +1% XP from kills.',
-   maxPts:100,
+   desc:'Each point grants +1% XP from kills. No limit.',
+   maxPts:Infinity,
    reward(pts){
      return{label:`+${pts}% XP`,xpPct:pts};
    }
@@ -2627,16 +2627,16 @@ function buildInvest(){
     const pts=G.skInvest[si.id]||0;
     const rew=si.reward(pts);
     const nextRew=pts<si.maxPts?si.reward(pts+1):null;
-    const pct=Math.min(100,(pts/si.maxPts)*100);
-    const maxed=pts>=si.maxPts;
-    const canBuy=G.sp>0&&!maxed;
+    const pct=0;
+    const maxed=false;
+    const canBuy=G.sp>0;
     h+=`<div class="sk-invest-card${maxed?' maxed':''}">
       <div class="sk-invest-ico">${si.ico}</div>
       <div class="sk-invest-body">
         <div class="sk-invest-name">${si.name}</div>
         <div class="sk-invest-desc">${si.desc}</div>
         <div class="sk-invest-bar-wrap"><div class="sk-invest-bar" style="width:${pct}%"></div></div>
-        <div class="sk-invest-prog">${pts} / ${si.maxPts} points</div>
+        <div class="sk-invest-prog">${pts} points invested</div>
         <div class="sk-invest-rew">Current: ${rew.label}</div>
         ${nextRew&&!maxed?`<div class="sk-invest-diminish">Next point → ${nextRew.label}</div>`:''}
         ${maxed?`<div class="sk-invest-rew" style="color:var(--gold)">★ MAXED</div>`:''}
@@ -2722,7 +2722,6 @@ function buyInvest(id){
   const si=SK_INVEST.find(x=>x.id===id);if(!si)return;
   if(!G.skInvest)G.skInvest={};
   const cur=G.skInvest[id]||0;
-  if(cur>=si.maxPts){toast('Already maxed!');return;}
   G.sp--;
   G.skInvest[id]=(G.skInvest[id]||0)+1;
   SFX.skill();
