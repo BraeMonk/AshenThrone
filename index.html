@@ -2724,6 +2724,7 @@ function buyInvest(id){
   const cur=G.skInvest[id]||0;
   G.sp--;
   G.skInvest[id]=(G.skInvest[id]||0)+1;
+  G.skInvestWasted=(G.skInvestWasted||0)+1;
   SFX.skill();
   renderTab();updateHUD();saveG();
 }
