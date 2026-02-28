@@ -2656,7 +2656,62 @@ function buildInvest(){
       <button class="btn-invest" onclick="buyInvest('${si.id}')" ${canBuy?'':'disabled'}>+1</button>
     </div>`;
   });
-  return h+'</div>';
+
+  h+='</div>';
+
+  // === ASHEN MEMORY — Bonus Boon at bottom of Invest tab ===
+  const memUnlocked = G.everReachedLv100 || (G.ashenMemoryLevel||0) > 0 || G.lv >= 100;
+  const memLv = G.ashenMemoryLevel || 0;
+  const wastedSince = (G.skInvestWasted||0) - (G.skInvestWastedAtLastMemory||0);
+  const wouldReturn = memLv === 0
+    ? Math.floor((G.skInvestWasted||0) * 0.5)
+    : Math.floor(wastedSince * 0.5);
+  const upgCost = memLv === 0 ? 0 : Math.round(8000 * Math.pow(2, memLv - 1));
+  const canAfford = upgCost === 0 || G.gold >= upgCost;
+
+  if(memUnlocked){
+    h+=`<div style="margin-top:var(--sp-lg);border-top:1px solid #3a2a5a;padding-top:var(--sp-lg)">
+      <div style="font-size:var(--fs-xs);color:#7a5aaa;letter-spacing:3px;text-transform:uppercase;margin-bottom:var(--sp-md);text-shadow:0 0 8px rgba(140,80,220,0.4)">
+        ✦ BONUS BOON — UNLOCKED AT LEVEL 100
+      </div>
+      <div class="ashen-memory-card">
+        <div class="ashen-memory-header">
+          <span class="ashen-memory-ico">🌒</span>
+          <div>
+            <div class="ashen-memory-title">Ashen Memory</div>
+            <div class="ashen-memory-lv">${memLv===0?'NOT YET ACQUIRED':'LEVEL '+memLv}</div>
+          </div>
+        </div>
+        <div class="ashen-memory-desc">"The ashes remember every point you poured into the earth and lost. Once in a while, some of it finds its way back."</div>
+        <div class="ashen-memory-effect">
+          ${memLv===0
+            ? `First unlock returns <strong style="color:#c090f0">50%</strong> of all SP ever spent on skills.<br>That's <strong style="color:#c090f0">${wouldReturn}</strong> SP right now.`
+            : `Upgrade returns <strong style="color:#c090f0">50%</strong> of SP spent since last upgrade.<br>That's <strong style="color:#c090f0">${wouldReturn}</strong> SP right now.`
+          }
+        </div>
+        ${upgCost>0?`<div class="ashen-memory-cost">Cost: 💰${fmt(upgCost)}</div>`:'<div class="ashen-memory-cost">Cost: Free (first unlock)</div>'}
+        <button class="btn-ashen-memory" onclick="buyAshenMemory()" ${canAfford?'':'disabled'}>
+          ${memLv===0?'🌒 UNLOCK ASHEN MEMORY':`🌒 UPGRADE — Reclaim ${wouldReturn} SP`}
+        </button>
+      </div>
+    </div>`;
+  } else {
+    h+=`<div style="margin-top:var(--sp-lg);border-top:1px solid #2a1a3a;padding-top:var(--sp-lg)">
+      <div class="ashen-memory-card" style="opacity:0.35;pointer-events:none">
+        <div class="ashen-memory-header">
+          <span class="ashen-memory-ico" style="filter:grayscale(1)">🌒</span>
+          <div>
+            <div class="ashen-memory-title" style="color:#806090">Ashen Memory</div>
+            <div class="ashen-memory-lv">🔒 LOCKED UNTIL LEVEL 100</div>
+          </div>
+        </div>
+        <div class="ashen-memory-desc">"Some knowledge can only be earned through true mastery. Return when you have proven yourself."</div>
+        <div class="ashen-memory-locked">Reach Level 100 to unlock this boon</div>
+      </div>
+    </div>`;
+  }
+
+  return h;
 }
 
 function setSkSub(s){skSub=s;renderTab();}
