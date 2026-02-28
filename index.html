@@ -1611,10 +1611,10 @@ const BOONS=[
   {id:'b17',ico:'⚔',name:'War Covenant',desc:'Kill streaks stack +3% ATK per level (max 30%).',cost:2000,rarity:'epic',cat:'combat'},
   {id:'b18',ico:'🧿',name:'Ward of the Ancients',desc:'+20% block per level. Blocked damage fuels a reflect strike.',cost:2800,rarity:'epic',cat:'survival'},
   {id:'b19',ico:'💧',name:'Arcane Flow',desc:'+25% mana regen speed per level.',cost:800,rarity:'common',cat:'combat'},
-  {id:'b20',ico:'🏦',name:'Ashen Vault',desc:'Generates 250 gold/sec per level.',cost:400,rarity:'common',cat:'wealth'},
-  {id:'b21',ico:'💀',name:'Bone Market',desc:'Generates 800 gold/sec per level.',cost:1500,rarity:'rare',cat:'wealth'},
-  {id:'b22',ico:'🌑',name:'Shadow Exchange',desc:'Generates 2,500 gold/sec per level.',cost:5000,rarity:'epic',cat:'wealth'},
-  {id:'b23',ico:'👑',name:'Infernal Mint',desc:'Generates 15,000 gold/sec per level. Scales with Age.',cost:18000,rarity:'legendary',cat:'wealth'},
+  {id:'b20',ico:'🏦',name:'Ashen Vault',desc:'Generates 250,000 gold/sec per level.',cost:400,rarity:'common',cat:'wealth'},
+  {id:'b21',ico:'💀',name:'Bone Market',desc:'Generates 800,000 gold/sec per level.',cost:1500,rarity:'rare',cat:'wealth'},
+  {id:'b22',ico:'🌑',name:'Shadow Exchange',desc:'Generates 2,500,000 gold/sec per level.',cost:5000,rarity:'epic',cat:'wealth'},
+  {id:'b23',ico:'👑',name:'Infernal Mint',desc:'Generates 15,000,000 gold/sec per level. Scales with Age.',cost:18000,rarity:'legendary',cat:'wealth'},
   {id:'b_memory',ico:'🌒',name:'Ashen Memory',desc:'Reclaims 50% of all skill points lost to the void between upgrades. Unlocked at level 100.',cost:0,rarity:'legendary',cat:'growth',memoryBoon:true},
 ];
 
@@ -2471,10 +2471,10 @@ function tickVault(){
   if(!G)return;
   const ageMult=Math.pow(1.15,(G.age||1)-1);
   let gps=0;
-  gps+=(G.boons.b20||0)*250;
-  gps+=(G.boons.b21||0)*800;
-  gps+=(G.boons.b22||0)*2500;
-  gps+=(G.boons.b23||0)*15000*ageMult;
+  gps+=(G.boons.b20||0)*250000;
+  gps+=(G.boons.b21||0)*800000;
+  gps+=(G.boons.b22||0)*2500000;
+  gps+=(G.boons.b23||0)*15000000*ageMult;
   gps*=G.pbonus;
   if(G.sacrifices&&G.sacrifices.sa1)gps*=1.40;
   gps=Math.round(gps*10)/10;
@@ -2495,7 +2495,7 @@ function updateHUD(){
   const xp=Math.max(0,Math.min(100,G.xp/G.xpNext*100));
   document.getElementById('b-hp').style.width=hp+'%';document.getElementById('b-mp').style.width=mp+'%';document.getElementById('b-xp').style.width=xp+'%';
   document.getElementById('v-hp').textContent=Math.round(G.hp)+'/'+st.maxHp;document.getElementById('v-mp').textContent=Math.round(G.mana)+'/'+st.maxMana;document.getElementById('v-xp').textContent=G.xp+'/'+G.xpNext;
-  document.getElementById('hud-gold-val').textContent=fmt(G.gold);const gpsEl=document.getElementById('hud-gps');if(gpsEl){const ageMult=Math.pow(1.15,(G.age||1)-1);let gps=(G.boons.b20||0)*250+(G.boons.b21||0)*800+(G.boons.b22||0)*2500+(G.boons.b23||0)*15000*ageMult;gps=Math.round(gps*G.pbonus*10)/10;gpsEl.textContent=gps>0?'+'+fmt(Math.round(gps))+'/s':'';}
+  document.getElementById('hud-gold-val').textContent=fmt(G.gold);const gpsEl=document.getElementById('hud-gps');if(gpsEl){const ageMult=Math.pow(1.15,(G.age||1)-1);let gps=(G.boons.b20||0)*250000+(G.boons.b21||0)*800000+(G.boons.b22||0)*2500000+(G.boons.b23||0)*15000000*ageMult;gps=Math.round(gps*G.pbonus*10)/10;gpsEl.textContent=gps>0?'+'+fmt(Math.round(gps))+'/s':'';}
   document.getElementById('hud-lv-val').textContent=G.lv;document.getElementById('hud-cls-name').textContent=CLASSES[G.cls].name.split(' ')[0];document.getElementById('hud-zone-val').textContent=G.zone;const ageEl=document.getElementById('hud-age-val');if(ageEl)ageEl.textContent=G.age;
   updateZoneBar();const sp=document.getElementById('sp-badge');if(sp)sp.textContent='SP: '+G.sp;
 }
