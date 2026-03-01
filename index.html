@@ -2471,7 +2471,7 @@ function tickMana(){
   if(G.skInvest){
     const pts=G.skInvest.si_xp||0;
     if(pts>0){
-      const passiveXP=Math.round(pts*G.lv*0.5);
+      const passiveXP=Math.round(pts*G.lv*2.0);
       G.xp+=passiveXP;
       while(G.xp>=G.xpNext){G.xp-=G.xpNext;G.lv++;G.xpNext=xpFor(G.lv);G.sp++;showLvlUp();}
     }
