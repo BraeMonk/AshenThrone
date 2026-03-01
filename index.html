@@ -2486,7 +2486,7 @@ function tickVault(){
 function tickBank(){
   if(!G||!G.bankDeposit||G.bankDeposit<=0)return;
   if(!(G.boons&&G.boons.b_bank))return;
-  const interest=Math.floor(G.bankDeposit*0.05);
+  const interest=Math.floor(G.bankDeposit*0.40);
   // Add interest directly to spendable gold, not the deposit
   G.gold+=interest;
   G.gtotal+=interest;
@@ -3201,7 +3201,7 @@ function buildBankCard(){
       </div>
       <div style="display:flex;justify-content:space-between;margin-bottom:6px">
         <span style="color:#c0a030">Interest / min</span>
-        <strong style="color:#80d080">+${fmt(interest)} (5%)</strong>
+        <strong style="color:#80d080">+${fmt(interest)} (40%)</strong>
       </div>
       <div style="display:flex;justify-content:space-between">
         <span style="color:#c0a030">Your gold</span>
