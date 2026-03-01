@@ -2381,7 +2381,7 @@ function killEnemy(){
   // Affliction: Brittle Bones +20% gold
   if(G.curses&&G.curses.af1)gold=Math.round(gold*1.20);
   // Skill investment: gold bonus
-  if(G.skInvest){const si=SK_INVEST.find(x=>x.id==='si_gold');if(si){const pts=G.skInvest.si_gold||0;if(pts>0)gold=Math.round(gold*(1+si.reward(pts).goldPct/100));}}
+  if(G.skInvest){const si=SK_INVEST.find(x=>x.id==='si_gold');if(si){const pts=G.skInvest.si_gold||0;if(pts>0){gold=Math.round(gold*(1+pts/100));xpg=Math.round(xpg*(1+pts/100));}}}
   G.gold+=gold;G.gtotal+=gold;SFX.gold();
   let xpg=Math.round(13*Math.pow(1.45,G.zone-1)*Math.pow(1.2,G.age-1));
   if(boonLevel('b3'))xpg=Math.round(xpg*(1+0.25*boonLevel('b3')));
@@ -2458,16 +2458,27 @@ function tickCurses(){
     }
   }
 }
+
 function tickMana(){
   if(!G)return;
   const st=getStats();
-  if(G.mana>=st.maxMana)return;
-  // Regen ~5% of maxMana per second, minimum 1
-  const regenMult=1+0.25*(G.boons.b19||0);
-  const regen=Math.max(1,Math.round(st.maxMana*0.05*regenMult));
-  G.mana=Math.min(st.maxMana,G.mana+regen);
+  if(G.mana<st.maxMana){
+    const regenMult=1+0.25*(G.boons.b19||0);
+    const regen=Math.max(1,Math.round(st.maxMana*0.05*regenMult));
+    G.mana=Math.min(st.maxMana,G.mana+regen);
+  }
+  // Soulward Study — passive XP gain scaled with investment
+  if(G.skInvest){
+    const pts=G.skInvest.si_xp||0;
+    if(pts>0){
+      const passiveXP=Math.round(pts*G.lv*0.5);
+      G.xp+=passiveXP;
+      while(G.xp>=G.xpNext){G.xp-=G.xpNext;G.lv++;G.xpNext=xpFor(G.lv);G.sp++;showLvlUp();}
+    }
+  }
   updateHUD();
 }
+
 function tickVault(){
   if(!G)return;
   const ageMult=Math.pow(1.15,(G.age||1)-1);
@@ -2478,6 +2489,7 @@ function tickVault(){
   gps+=(G.boons.b23||0)*15000000*ageMult;
   gps*=G.pbonus;
   if(G.sacrifices&&G.sacrifices.sa1)gps*=1.40;
+  if(G.skInvest){const pts=G.skInvest.si_gold||0;if(pts>0)gps*=(1+pts/100);}
   gps=Math.round(gps*10)/10;
   if(gps<=0)return;
   G.gold+=gps;G.gtotal+=gps;
