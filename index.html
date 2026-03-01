@@ -2499,7 +2499,7 @@ function doAttackTouch(e){e.preventDefault();doAttack();}
 /* ===============================================
    HUD
 =============================================== */
-function fmt(n){return n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':String(n);}
+function fmt(n){return n>=1e4?n.toExponential(2):n>=1e3?(n/1e3).toFixed(1)+'K':String(n);}
 function updateHUD(){
   if(!G)return;const st=getStats();
   const hp=Math.max(0,Math.min(100,G.hp/st.maxHp*100));
