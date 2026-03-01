@@ -3177,7 +3177,7 @@ function gotoClassSelect(){
 function buildBankCard(){
   const owned=G.boons&&G.boons.b_bank;
   const deposit=G.bankDeposit||0;
-  const canInvest=owned&&G.gold>=50000;
+  const canInvest=owned&&G.gold>0;
   const canWithdraw=owned&&deposit>0;
   const interest=Math.floor(deposit*0.05);
 
@@ -3209,7 +3209,7 @@ function buildBankCard(){
     <div style="display:flex;gap:10px;margin-top:10px">
       <button class="btn-ashen-memory" style="background:linear-gradient(180deg,#e0c050,#a08010,#604800);box-shadow:0 4px 0 #302200,0 0 20px rgba(180,140,20,0.4)"
         onclick="bankDeposit()" ${canInvest?'':'disabled'}>
-        💰 Deposit 50k
+        💰 Deposit 50%
       </button>
       <button class="btn-ashen-memory" style="background:linear-gradient(180deg,#50c080,#208050,#104030);box-shadow:0 4px 0 #082018,0 0 20px rgba(30,160,80,0.4)"
         onclick="bankWithdraw()" ${canWithdraw?'':'disabled'}>
@@ -3229,12 +3229,13 @@ function buildBankCard(){
 function bankDeposit(){
   initAudio();
   if(!G.boons||!G.boons.b_bank){toast('Unlock the Ashen Bank first!');return;}
-  if(G.gold<50000){toast('Not enough gold! Need 50,000.');return;}
-  G.gold-=50000;
-  G.bankDeposit=(G.bankDeposit||0)+50000;
+  const amount=Math.floor(G.gold*0.5);
+  if(amount<=0){toast('No gold to deposit!');return;}
+  G.gold-=amount;
+  G.bankDeposit=(G.bankDeposit||0)+amount;
   G.bankLastTick=Date.now();
   SFX.gold();
-  toast(`🏛 Deposited 50,000 gold. Total: ${fmt(G.bankDeposit)}`);
+  toast(`🏛 Deposited 50% gold. Total: ${fmt(G.bankDeposit)}`);
   renderTab();updateHUD();saveG();
 }
 
