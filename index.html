@@ -2487,8 +2487,10 @@ function tickBank(){
   if(!G||!G.bankDeposit||G.bankDeposit<=0)return;
   if(!(G.boons&&G.boons.b_bank))return;
   const interest=Math.floor(G.bankDeposit*0.05);
-  G.bankDeposit+=interest;
-  toast(`🏛 Ashen Bank: +${fmt(interest)} interest! Total: ${fmt(G.bankDeposit)}`);
+  // Add interest directly to spendable gold, not the deposit
+  G.gold+=interest;
+  G.gtotal+=interest;
+  toast(`🏛 Ashen Bank: +${fmt(interest)} interest added to your gold! Deposit: ${fmt(G.bankDeposit)}`);
   saveG();
 }
 
