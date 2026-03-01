@@ -1616,6 +1616,7 @@ const BOONS=[
   {id:'b22',ico:'🌑',name:'Shadow Exchange',desc:'Generates 2,500,000 gold/sec per level.',cost:5000,rarity:'epic',cat:'wealth'},
   {id:'b23',ico:'👑',name:'Infernal Mint',desc:'Generates 15,000,000 gold/sec per level. Scales with Age.',cost:18000,rarity:'legendary',cat:'wealth'},
   {id:'b_memory',ico:'🌒',name:'Ashen Memory',desc:'Reclaims 50% of all skill points lost to the void between upgrades. Unlocked at level 100.',cost:0,rarity:'legendary',cat:'growth',memoryBoon:true},
+  {id:'b_bank',ico:'🏛',name:'Ashen Bank',desc:'Deposit gold to earn 5% interest per minute. Withdraw anytime.',cost:2000,rarity:'rare',cat:'wealth',bankBoon:true},
 ];
 
 /* ===============================================
@@ -1698,14 +1699,14 @@ const SAVE='ashen_v7';
 let G=null;
 function mkState(){return{cls:'warrior',selCls:null,lv:1,xp:0,xpNext:100,hp:160,maxHp:160,mana:30,maxMana:30,gold:0,gtotal:0,kills:0,deaths:0,zone:1,age:1,zoneKills:0,zoneTarget:10,sp:0,prestige:0,pbonus:1.0,sk:{},quests:QUESTS.map(q=>({...q})),boons:{},boonCount:0,idle:false,lastSave:Date.now(),sktotal:0,chapters:STORY_CHAPTERS.map(c=>({...c,objs:c.objs.map(o=>({...o}))})),chainKills:0,divineReady:true,deathBargain:true,
 curses:{},sacrifices:{},deathTollDebt:0,deathTollKills:0,
-skInvest:{},skInvestWasted:0,skInvestWastedAtLastMemory:0,ashenMemoryLevel:0,spSpentTotal:0,everReachedLv100:false};}
+skInvest:{},skInvestWasted:0,skInvestWastedAtLastMemory:0,ashenMemoryLevel:0,spSpentTotal:0,everReachedLv100:false,bankDeposit:0,bankLastTick:0};}
 function saveG(){try{localStorage.setItem(SAVE,JSON.stringify({...G,idle:false,lastSave:Date.now()}));}catch(e){}}
 function loadG(){
   try{
     const d=localStorage.getItem(SAVE);
     if(d){
       const s=JSON.parse(d);G=mkState();
-      ['cls','selCls','lv','xp','xpNext','hp','maxHp','mana','maxMana','gold','gtotal','kills','deaths','zone','age','zoneKills','zoneTarget','sp','prestige','pbonus','sk','boons','boonCount','sktotal','curses','sacrifices','deathTollDebt','deathTollKills','skInvest','skInvestWasted','skInvestWastedAtLastMemory','ashenMemoryLevel','spSpentTotal','everReachedLv100'].forEach(k=>{if(s[k]!==undefined)G[k]=s[k];});
+      ['cls','selCls','lv','xp','xpNext','hp','maxHp','mana','maxMana','gold','gtotal','kills','deaths','zone','age','zoneKills','zoneTarget','sp','prestige','pbonus','sk','boons','boonCount','sktotal','curses','sacrifices','deathTollDebt','deathTollKills','skInvest','skInvestWasted','skInvestWastedAtLastMemory','ashenMemoryLevel','spSpentTotal','everReachedLv100','bankDeposit','bankLastTick'].forEach(k=>{if(s[k]!==undefined)G[k]=s[k];});
       G.quests=QUESTS.map(q=>{const sq=(s.quests||[]).find(x=>x.id===q.id);return sq?{...q,...sq}:{...q};});
       G.chapters=STORY_CHAPTERS.map(c=>{const sc=(s.chapters||[]).find(x=>x.id===c.id);if(!sc)return{...c,objs:c.objs.map(o=>({...o}))};return{...c,...sc,objs:c.objs.map((o,i)=>sc.objs&&sc.objs[i]?{...o,...sc.objs[i]}:{...o})};});
       // Offline progress — full simulation
@@ -2482,6 +2483,15 @@ function tickVault(){
   G.gold+=gps;G.gtotal+=gps;
   updateHUD();
 }
+function tickBank(){
+  if(!G||!G.bankDeposit||G.bankDeposit<=0)return;
+  if(!(G.boons&&G.boons.b_bank))return;
+  const interest=Math.floor(G.bankDeposit*0.05);
+  G.bankDeposit+=interest;
+  toast(`🏛 Ashen Bank: +${fmt(interest)} interest! Total: ${fmt(G.bankDeposit)}`);
+  saveG();
+}
+
 function doAttackTouch(e){e.preventDefault();doAttack();}
 
 /* ===============================================
@@ -2762,9 +2772,10 @@ const BCATS=['all','combat','survival','wealth','growth'];
 function buildBoons(){
   const cats=`<div class="filter-row">${BCATS.map(c=>`<div class="f-btn${boonCat===c?' on':''}" onclick="setBoonCat('${c}')">${c[0].toUpperCase()+c.slice(1)}</div>`).join('')}</div>`;
 
-  const sorted=[...BOONS].filter(b=>!b.memoryBoon).sort((a,b)=>({common:0,rare:1,epic:2,legendary:3}[a.rarity])-({common:0,rare:1,epic:2,legendary:3}[b.rarity]));
+  const sorted=[...BOONS].filter(b=>!b.memoryBoon&&!b.bankBoon).sort(...)
   const filtered=sorted.filter(b=>boonCat==='all'||b.cat===boonCat);
-  let h=`<div class="sec"><div class="sec-hdr">PERMANENT BOONS</div>${cats}<div class="boon-list">`;
+  const bankSection=(G.boons&&G.boons.b_bank)||(BOONS.find(b=>b.bankBoon))?buildBankCard():'';
+  let h=`<div class="sec"><div class="sec-hdr">PERMANENT BOONS</div>${bankSection}${cats}<div class="boon-list">`;
   filtered.forEach(b=>{
     const lv=boonLevel(b.id);
     const upgCost=boonUpgradeCost(b);
@@ -3121,6 +3132,7 @@ function confirmClass(){
   document.getElementById('hud-av').textContent=CLASSES[G.cls].icon;
   showScr('s2');initCanvas();spawnEnemy();updateHUD();openTab('story');renderTab();
   setStoryTicker('Your legend begins in the Ashen Fields.',true);startBGM();if(G.idle)startIdle();setInterval(saveG,30000);if(!manaTimer)manaTimer=setInterval(tickMana,1000);if(!vaultTimer)vaultTimer=setInterval(tickVault,1000);
+  setInterval(tickBank, 60000);
 }
 
 /* ===============================================
@@ -3144,6 +3156,7 @@ function gotoClassSelect(){
     document.getElementById('hud-av').textContent=CLASSES[G.cls].icon;
     showScr('s2');initCanvas();spawnEnemy();updateHUD();openTab('story');renderTab();
     setStoryTicker(ZONES[Math.min(G.zone-1,ZONES.length-1)].story);startBGM();if(G.idle)startIdle();setInterval(saveG,30000);if(!manaTimer)manaTimer=setInterval(tickMana,1000);if(!vaultTimer)vaultTimer=setInterval(tickVault,1000);
+    setInterval(tickBank, 60000);
       if(G._offlineRecap){
         const r=G._offlineRecap;delete G._offlineRecap;
         const hrs=Math.floor(r.seconds/3600),mins=Math.floor((r.seconds%3600)/60);
@@ -3156,6 +3169,77 @@ function gotoClassSelect(){
         setTimeout(()=>toast(`⏳ Away ${timeStr}: ${parts.join(' · ')}`),800);
       }
   }else{G=mkState();buildClassCards();showScr('s1');}
+}
+
+function buildBankCard(){
+  const owned=G.boons&&G.boons.b_bank;
+  const deposit=G.bankDeposit||0;
+  const canInvest=owned&&G.gold>=50000;
+  const canWithdraw=owned&&deposit>0;
+  const interest=Math.floor(deposit*0.05);
+
+  return`<div class="ashen-memory-card" style="border-color:#8a7020;box-shadow:0 0 28px rgba(180,140,20,0.2),0 4px 16px rgba(0,0,0,0.6);margin-bottom:var(--sp-lg)">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#c0a030,transparent)"></div>
+    <div class="ashen-memory-header">
+      <span class="ashen-memory-ico" style="filter:drop-shadow(0 0 12px rgba(220,180,20,0.7))">🏛</span>
+      <div>
+        <div class="ashen-memory-title" style="color:#e0c050">Ashen Bank</div>
+        <div class="ashen-memory-lv" style="color:#8a7020">${owned?'ACTIVE':'LOCKED — Purchase to unlock'}</div>
+      </div>
+    </div>
+    <div class="ashen-memory-desc" style="color:#9a8040">"The old treasury still stands. Gold left within its vaults does not sleep — it multiplies."</div>
+    ${owned?`
+    <div class="ashen-memory-effect" style="border-color:rgba(180,140,20,0.25);background:rgba(180,140,20,0.08)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="color:#c0a030">Deposited</span>
+        <strong style="color:#f0d060">💰 ${fmt(deposit)}</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="color:#c0a030">Interest / min</span>
+        <strong style="color:#80d080">+${fmt(interest)} (5%)</strong>
+      </div>
+      <div style="display:flex;justify-content:space-between">
+        <span style="color:#c0a030">Your gold</span>
+        <strong style="color:#f0d060">💰 ${fmt(G.gold)}</strong>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;margin-top:10px">
+      <button class="btn-ashen-memory" style="background:linear-gradient(180deg,#e0c050,#a08010,#604800);box-shadow:0 4px 0 #302200,0 0 20px rgba(180,140,20,0.4)"
+        onclick="bankDeposit()" ${canInvest?'':'disabled'}>
+        💰 Deposit 50k
+      </button>
+      <button class="btn-ashen-memory" style="background:linear-gradient(180deg,#50c080,#208050,#104030);box-shadow:0 4px 0 #082018,0 0 20px rgba(30,160,80,0.4)"
+        onclick="bankWithdraw()" ${canWithdraw?'':'disabled'}>
+        🏛 Withdraw All
+      </button>
+    </div>`
+    :`<div class="ashen-memory-locked" style="color:#6a5820;margin-top:8px">Purchase this boon from the shop to unlock the bank</div>`}
+  </div>`;
+}
+
+function bankDeposit(){
+  initAudio();
+  if(!G.boons||!G.boons.b_bank){toast('Unlock the Ashen Bank first!');return;}
+  if(G.gold<50000){toast('Not enough gold! Need 50,000.');return;}
+  G.gold-=50000;
+  G.bankDeposit=(G.bankDeposit||0)+50000;
+  G.bankLastTick=Date.now();
+  SFX.gold();
+  toast(`🏛 Deposited 50,000 gold. Total: ${fmt(G.bankDeposit)}`);
+  renderTab();updateHUD();saveG();
+}
+
+function bankWithdraw(){
+  initAudio();
+  if(!G.boons||!G.boons.b_bank){return;}
+  const amt=G.bankDeposit||0;
+  if(amt<=0){toast('Nothing to withdraw!');return;}
+  G.gold+=amt;
+  G.gtotal+=amt;
+  G.bankDeposit=0;
+  SFX.gold();tone(860,'sine',.042,.09);tone(1290,'sine',.036,.07,.042);
+  toast(`🏛 Withdrew ${fmt(amt)} gold from the Ashen Bank!`);
+  renderTab();updateHUD();saveG();
 }
 
 /* ===============================================
