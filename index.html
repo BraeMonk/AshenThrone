@@ -3160,7 +3160,6 @@ function gotoClassSelect(){
     document.getElementById('hud-av').textContent=CLASSES[G.cls].icon;
     showScr('s2');initCanvas();spawnEnemy();updateHUD();openTab('story');renderTab();
     setStoryTicker(ZONES[Math.min(G.zone-1,ZONES.length-1)].story);startBGM();if(G.idle)startIdle();setInterval(saveG,30000);if(!manaTimer)manaTimer=setInterval(tickMana,1000);if(!vaultTimer)vaultTimer=setInterval(tickVault,1000);
-    setInterval(tickBank, 60000);
       if(G._offlineRecap){
         const r=G._offlineRecap;delete G._offlineRecap;
         const hrs=Math.floor(r.seconds/3600),mins=Math.floor((r.seconds%3600)/60);
