@@ -2772,7 +2772,11 @@ const BCATS=['all','combat','survival','wealth','growth'];
 function buildBoons(){
   const cats=`<div class="filter-row">${BCATS.map(c=>`<div class="f-btn${boonCat===c?' on':''}" onclick="setBoonCat('${c}')">${c[0].toUpperCase()+c.slice(1)}</div>`).join('')}</div>`;
 
-  const sorted=[...BOONS].filter(b=>!b.memoryBoon&&!b.bankBoon).sort(...)
+  const rarityOrder = {common:0, rare:1, epic:2, legendary:3};
+  const sorted = [...BOONS]
+  .filter(b => !b.memoryBoon && !b.bankBoon)
+  .sort((a,b) => rarityOrder[a.rarity] - rarityOrder[b.rarity]);
+
   const filtered=sorted.filter(b=>boonCat==='all'||b.cat===boonCat);
   const bankSection=(G.boons&&G.boons.b_bank)||(BOONS.find(b=>b.bankBoon))?buildBankCard():'';
   let h=`<div class="sec"><div class="sec-hdr">PERMANENT BOONS</div>${bankSection}${cats}<div class="boon-list">`;
