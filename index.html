@@ -3216,7 +3216,13 @@ function buildBankCard(){
         🏛 Withdraw All
       </button>
     </div>`
-    :`<div class="ashen-memory-locked" style="color:#6a5820;margin-top:8px">Purchase this boon from the shop to unlock the bank</div>`}
+    :`<div style="margin-top:10px">
+      <div style="color:#8a7020;font-size:var(--fs-xs);margin-bottom:8px">Cost: 💰 ${fmt(boonUpgradeCost(BOONS.find(b=>b.bankBoon)))}</div>
+      <button class="btn-ashen-memory" style="background:linear-gradient(180deg,#e0c050,#a08010,#604800);box-shadow:0 4px 0 #302200,0 0 20px rgba(180,140,20,0.4)"
+        onclick="buyBoon('b_bank')" ${G.gold>=boonUpgradeCost(BOONS.find(b=>b.bankBoon))?'':'disabled'}>
+        💰 Purchase — ${fmt(boonUpgradeCost(BOONS.find(b=>b.bankBoon)))} gold
+      </button>
+    </div>`}
   </div>`;
 }
 
