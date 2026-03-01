@@ -2488,8 +2488,8 @@ function tickVault(){
   gps+=(G.boons.b22||0)*2500000;
   gps+=(G.boons.b23||0)*15000000*ageMult;
   gps*=G.pbonus;
-  if(G.sacrifices&&G.sacrifices.sa1)gps*=1.40;
-  if(G.skInvest){const pts=G.skInvest.si_gold||0;if(pts>0)gps*=(1+pts/100);}
+  if(G.sacrifices&&G.sacrifices.sa1)gps*=3.0;
+  if(G.skInvest){const pts=G.skInvest.si_gold||0;if(pts>0)gps*=(1+pts*3/100);}
   gps=Math.round(gps*10)/10;
   if(gps<=0)return;
   G.gold+=gps;G.gtotal+=gps;
@@ -2498,7 +2498,7 @@ function tickVault(){
 function tickBank(){
   if(!G||!G.bankDeposit||G.bankDeposit<=0)return;
   if(!(G.boons&&G.boons.b_bank))return;
-  const interest=Math.floor(G.bankDeposit*0.40);
+  const interest=Math.floor(G.bankDeposit*0.75);
   // Add interest directly to spendable gold, not the deposit
   G.gold+=interest;
   G.gtotal+=interest;
