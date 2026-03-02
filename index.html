@@ -1615,9 +1615,9 @@ const BOONS=[
   {id:'b21',ico:'💀',name:'Bone Market',desc:'Generates 800,000 gold/sec per level.',cost:1500,rarity:'rare',cat:'wealth'},
   {id:'b22',ico:'🌑',name:'Shadow Exchange',desc:'Generates 2,500,000 gold/sec per level.',cost:5000,rarity:'epic',cat:'wealth'},
   {id:'b23',ico:'👑',name:'Infernal Mint',desc:'Generates 15,000,000 gold/sec per level. Scales with Age.',cost:18000,rarity:'legendary',cat:'wealth'},
-  {id:'b_gold2x',ico:'💰',name:'Gilded Curse',desc:'Doubles all gold from kills and passive vaults (×2).',cost:12000,rarity:'epic',cat:'wealth'},
-  {id:'b_gold5x',ico:'🏆',name:'Fortune\'s Maw',desc:'Multiplies all gold from kills and passive vaults by ×5.',cost:50000,rarity:'legendary',cat:'wealth'},
-  {id:'b_gold10x',ico:'👑',name:'The Golden Throne',desc:'Multiplies all gold from kills and passive vaults by ×10. The realm bows to your greed.',cost:250000,rarity:'legendary',cat:'wealth'},
+  {id:'b_gold2x',ico:'⚡',name:'Gold Rush',desc:'Activate for 60 seconds of ×2 gold from all sources.',cost:2000,rarity:'common',cat:'wealth',timedBoost:true,multiplier:2,duration:60},
+  {id:'b_gold3x',ico:'🔥',name:'Gilded Frenzy',desc:'Activate for 45 seconds of ×3 gold from all sources.',cost:8000,rarity:'rare',cat:'wealth',timedBoost:true,multiplier:3,duration:45},
+  {id:'b_gold5x',ico:'👑',name:'Fortune\'s Maw',desc:'Activate for 30 seconds of ×5 gold from all sources.',cost:35000,rarity:'legendary',cat:'wealth',timedBoost:true,multiplier:5,duration:30},
   {id:'b_memory',ico:'🌒',name:'Ashen Memory',desc:'Reclaims 50% of all skill points lost to the void between upgrades. Unlocked at level 100.',cost:0,rarity:'legendary',cat:'growth',memoryBoon:true},
   {id:'b_bank',ico:'🏛',name:'Ashen Bank',desc:'Deposit gold to earn 5% interest per minute. Withdraw anytime.',cost:2000,rarity:'rare',cat:'wealth',bankBoon:true},
 ];
@@ -1780,7 +1780,7 @@ const SAVE='ashen_v7';
 let G=null;
 function mkState(){return{cls:'warrior',selCls:null,lv:1,xp:0,xpNext:100,hp:160,maxHp:160,mana:30,maxMana:30,gold:0,gtotal:0,kills:0,deaths:0,zone:1,age:1,zoneKills:0,zoneTarget:10,sp:0,prestige:0,pbonus:1.0,sk:{},quests:QUESTS.map(q=>({...q})),boons:{},boonCount:0,idle:false,lastSave:Date.now(),bankLastTick:Date.now(),sktotal:0,chapters:STORY_CHAPTERS.map(c=>({...c,objs:c.objs.map(o=>({...o}))})),chainKills:0,divineReady:true,deathBargain:true,
 curses:{},sacrifices:{},deathTollDebt:0,deathTollKills:0,
-skInvest:{},skInvestWasted:0,skInvestWastedAtLastMemory:0,ashenMemoryLevel:0,spSpentTotal:0,everReachedLv100:false,bankDeposit:0,bankLastTick:0};}
+skInvest:{},skInvestWasted:0,skInvestWastedAtLastMemory:0,ashenMemoryLevel:0,spSpentTotal:0,everReachedLv100:false,bankDeposit:0,bankLastTick:0,activeBoost:null, boostEnds:0,};}
 function saveG(){try{localStorage.setItem(SAVE,JSON.stringify({...G,idle:false,lastSave:Date.now()}));}catch(e){}}
 function loadG() {
     try {
@@ -2475,9 +2475,8 @@ function killEnemy(){
   if(boonLevel('b2'))gold=Math.round(gold*(1+0.15*boonLevel('b2')));
   if(boonLevel('b9'))gold=Math.round(gold*(1+0.25*boonLevel('b9')));
   if(G.boons&&G.boons.b11)gold=Math.round(gold*(1+G.prestige*0.12));
-  if(G.boons&&G.boons.b_gold2x) gold *= Math.pow(2, G.boons.b_gold2x);
-  if(G.boons&&G.boons.b_gold5x) gold *= Math.pow(5, G.boons.b_gold5x);
-  if(G.boons&&G.boons.b_gold10x) gold *= Math.pow(10, G.boons.b_gold10x);
+  if(G.activeBoost && Date.now() < G.boostEnds) gold = Math.round(gold * G.activeBoost);
+  else if(G.activeBoost && Date.now() >= G.boostEnds) { G.activeBoost=null; G.boostEnds=0; }
   gold = Math.round(gold);
   // Affliction: Soul Debt +60% gold
   if(G.curses&&G.curses.af3)gold=Math.round(gold*1.60);
@@ -2592,9 +2591,7 @@ function tickVault(){
   gps+=(G.boons.b23||0)*15000000*ageMult;
   gps*=G.pbonus;
   if(G.sacrifices&&G.sacrifices.sa1)gps*=3.0;
-  if(G.boons&&G.boons.b_gold2x) gps *= Math.pow(2, G.boons.b_gold2x);
-  if(G.boons&&G.boons.b_gold5x) gps *= Math.pow(5, G.boons.b_gold5x);
-  if(G.boons&&G.boons.b_gold10x) gps *= Math.pow(10, G.boons.b_gold10x);
+  if(G.activeBoost && Date.now() < G.boostEnds) gps *= G.activeBoost;
   if(G.skInvest){const pts=G.skInvest.si_gold||0;if(pts>0)gps*=(1+pts*3/100);}
   gps=Math.round(gps*10)/10;
   if(gps<=0)return;
@@ -2623,6 +2620,24 @@ function tickBank(){
 }
 
 function doAttackTouch(e){e.preventDefault();doAttack();}
+
+function activateBoost(id){
+  initAudio();
+  const b = BOONS.find(x=>x.id===id);
+  if(!b||!b.timedBoost) return;
+  if(G.activeBoost){ toast('⚡ A boost is already active!'); return; }
+  const cost = boonUpgradeCost(b);
+  if(G.gold < cost){ toast('Not enough gold!'); return; }
+  G.gold -= cost;
+  G.activeBoost = b.multiplier;
+  G.boostEnds = Date.now() + b.duration * 1000;
+  // Don't increment boon level — these are consumables
+  SFX.gold(); SFX.boon();
+  toast(`${b.ico} ${b.name} active! ×${b.multiplier} gold for ${b.duration}s!`);
+  renderTab(); updateHUD(); saveG();
+  // Auto-clear UI when boost expires
+  setTimeout(()=>{ G.activeBoost=null; G.boostEnds=0; toast(`${b.ico} ${b.name} expired.`); renderTab(); updateHUD(); saveG(); }, b.duration*1000);
+}
 
 /* ===============================================
    HUD
@@ -2914,8 +2929,10 @@ function buildBoons(){
     const lv=boonLevel(b.id);
     const upgCost=boonUpgradeCost(b);
     const cant=G.gold<upgCost;
+    const isActive = b.timedBoost && G.activeBoost === b.multiplier && Date.now() < G.boostEnds;
+    const secsLeft = isActive ? Math.ceil((G.boostEnds - Date.now())/1000) : 0;
     const cls='boon-card'+(cant?' cant':' can')+((b.rarity==='epic'||b.rarity==='legendary')?' elite':'');
-    h+=`<div class="${cls}" onpointerdown="${cant?'':  `buyBoon('${b.id}')`}">
+    h+=`<div class="${cls}" onpointerdown="${cant ? '' : b.timedBoost ? `activateBoost('${b.id}')` : `buyBoon('${b.id}')`}">
       <div class="boon-rar ${b.rarity}">${b.rarity}</div>
       <div class="boon-ico">${b.ico}</div>
       <div class="boon-body">
@@ -2923,7 +2940,7 @@ function buildBoons(){
         <div class="boon-desc">${b.desc}</div>
         <div style="margin-top:4px;display:flex;align-items:center;justify-content:space-between">
           ${lv>0?`<span style="color:var(--txt3);font-size:var(--fs-xs)">Lv ${lv} → ${lv+1}</span>`:`<span style="color:var(--txt3);font-size:var(--fs-xs)">Not acquired</span>`}
-          <div class="boon-cost">💰 ${fmt(upgCost)}</div>
+          <div class="boon-cost">${isActive ? `⏱ ${secsLeft}s remaining` : `💰 ${fmt(cost)} per use`}</div>
         </div>
       </div>
     </div>`;
