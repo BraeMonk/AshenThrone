@@ -1691,7 +1691,81 @@ const CURSES_OF_AGES=[
 
 function boonLevel(id){ return G.boons[id] || 0; }
 function boonUpgradeCost(b){ const lv = boonLevel(b.id); return Math.round(b.cost * Math.pow(1.5, lv)); }
- 
+
+// --- Apply offline bank/vault gains ---
+function applyOfflineProgress(savedState){
+    const s = savedState || G;
+    if(!s.lastSave) return;
+
+    const now = Date.now();
+    const secondsAway = Math.floor((now - s.lastSave)/1000);
+    if(secondsAway < 5) return;
+
+    let recap = {seconds: secondsAway, vaultGold:0, bankInterest:0};
+
+    // --- Vault Gold ---
+    const ageMult = Math.pow(1.15,(s.age||1)-1);
+    let gps = 0;
+    gps += (s.boons?.b20 || 0) * 250000;
+    gps += (s.boons?.b21 || 0) * 800000;
+    gps += (s.boons?.b22 || 0) * 2500000;
+    gps += (s.boons?.b23 || 0) * 15000000 * ageMult;
+
+    gps *= (s.pbonus || 1);
+
+    if(s.sacrifices?.sa1) gps *= 3.0;
+
+    const siGold = s.skInvest?.si_gold || 0;
+    if(siGold > 0) gps *= (1 + siGold*3/100);
+
+    const vaultGold = Math.floor(gps * secondsAway);
+    G.gold += vaultGold;
+    G.gtotal += vaultGold;
+    recap.vaultGold = vaultGold;
+
+    // --- Bank Interest (offline) ---
+    if(s.bankDeposit > 0){
+        const lastTick = s.bankLastTick || s.lastSave;
+        const offlineSeconds = Math.floor((now - lastTick)/1000);
+        const bankMinutes = Math.floor(offlineSeconds/60);
+
+        if(bankMinutes > 0){
+            const bankInterestPerMinute = s.bankDeposit * 0.0075; // 0.75% per minute
+            const totalInterest = Math.floor(bankInterestPerMinute * bankMinutes);
+            G.gold += totalInterest;
+            G.gtotal += totalInterest;
+            G.bankDeposit += totalInterest; // bank grows offline
+            recap.bankInterest = totalInterest;
+
+            // update last tick
+            G.bankLastTick = lastTick + bankMinutes*60*1000;
+        }
+    }
+
+    G._offlineRecap = recap;
+    console.log("Offline progress applied:", recap);
+}
+
+// --- Call this every tick for live bank interest ---
+function tickBankInterest(){
+    if(!G || G.bankDeposit <= 0) return;
+
+    const now = Date.now();
+    const lastTick = G.bankLastTick || now;
+    const elapsedSeconds = Math.floor((now - lastTick)/1000);
+    if(elapsedSeconds < 60) return; // not enough for 1 min
+
+    const minutes = Math.floor(elapsedSeconds / 60);
+    const perMin = G.bankDeposit * 0.0075; // 0.75%
+    const gain = Math.floor(perMin * minutes);
+
+    G.bankDeposit += gain;
+    G.gold += gain;
+    G.gtotal += gain;
+
+    G.bankLastTick = lastTick + minutes*60*1000;
+}
+   
 /* ===============================================
    GAME STATE
 =============================================== */
@@ -1701,168 +1775,152 @@ function mkState(){return{cls:'warrior',selCls:null,lv:1,xp:0,xpNext:100,hp:160,
 curses:{},sacrifices:{},deathTollDebt:0,deathTollKills:0,
 skInvest:{},skInvestWasted:0,skInvestWastedAtLastMemory:0,ashenMemoryLevel:0,spSpentTotal:0,everReachedLv100:false,bankDeposit:0,bankLastTick:0};}
 function saveG(){try{localStorage.setItem(SAVE,JSON.stringify({...G,idle:false,lastSave:Date.now()}));}catch(e){}}
-function loadG(){
-  try{
-    const d=localStorage.getItem(SAVE);
-    if(d){
-      const s=JSON.parse(d);G=mkState();
+function loadG() {
+    try {
+        const d = localStorage.getItem(SAVE);
+        if (!d) throw "No save";
 
-      ['cls','selCls','lv','xp','xpNext','hp','maxHp','mana','maxMana','gold','gtotal','kills','deaths','zone','age','zoneKills','zoneTarget','sp','prestige','pbonus','sk','boons','boonCount','sktotal','curses','sacrifices','deathTollDebt','deathTollKills','skInvest','skInvestWasted','skInvestWastedAtLastMemory','ashenMemoryLevel','spSpentTotal','everReachedLv100','bankDeposit','bankLastTick']
-      .forEach(k=>{if(s[k]!==undefined)G[k]=s[k];});
+        const s = JSON.parse(d);
+        G = mkState();
 
-      G.quests=QUESTS.map(q=>{
-        const sq=(s.quests||[]).find(x=>x.id===q.id);
-        return sq?{...q,...sq}:{...q};
-      });
+        // --- Restore basic properties ---
+        [
+            'cls','selCls','lv','xp','xpNext','hp','maxHp','mana','maxMana','gold','gtotal','kills','deaths',
+            'zone','age','zoneKills','zoneTarget','sp','prestige','pbonus','sk','boons','boonCount','sktotal',
+            'curses','sacrifices','deathTollDebt','deathTollKills','skInvest','skInvestWasted',
+            'skInvestWastedAtLastMemory','ashenMemoryLevel','spSpentTotal','everReachedLv100','bankDeposit','bankLastTick'
+        ].forEach(k => { if (s[k] !== undefined) G[k] = s[k]; });
 
-      G.chapters=STORY_CHAPTERS.map(c=>{
-        const sc=(s.chapters||[]).find(x=>x.id===c.id);
-        if(!sc)return{...c,objs:c.objs.map(o=>({...o}))};
-        return {...c,...sc,objs:c.objs.map((o,i)=>sc.objs&&sc.objs[i]?{...o,...sc.objs[i]}:{...o})};
-      });
+        // --- Restore quests ---
+        G.quests = QUESTS.map(q => {
+            const sq = (s.quests || []).find(x => x.id === q.id);
+            return sq ? {...q, ...sq} : {...q};
+        });
 
-      const now = Date.now();
-      const elapsed = Math.min((now - (s.lastSave || now)) / 1000, 8 * 3600);
+        // --- Restore chapters ---
+        G.chapters = STORY_CHAPTERS.map(c => {
+            const sc = (s.chapters || []).find(x => x.id === c.id);
+            if (!sc) return {...c, objs: c.objs.map(o => ({...o}))};
+            return {...c, ...sc, objs: c.objs.map((o, i) => sc.objs && sc.objs[i] ? {...o, ...sc.objs[i]} : {...o})};
+        });
 
-      if(elapsed > 10){
+        const now = Date.now();
+        const elapsed = Math.min((now - (s.lastSave || now)) / 1000, 8 * 3600); // cap 8h offline
 
-        const bl = id => (s.boons&&s.boons[id])||0;
-        const sk = id => (s.sk&&s.sk[id])||0;
+        // --- Apply vault + bank offline gains ---
+        applyOfflineProgress(s);
 
-        let offSpd = (s.cls ? CLASSES[s.cls].baseSpd : 1.0);
-        offSpd += sk('swift')*0.12 + bl('b5')*0.3;
-        offSpd = Math.max(0.5, offSpd);
+        if (elapsed > 10) {
+            // --- Offline combat simulation ---
+            const bl = id => (G.boons && G.boons[id]) || 0;
+            const sk = id => (G.sk && G.sk[id]) || 0;
 
-        const attacksPerSec = offSpd;
-        const killChance = 0.35;
+            let offSpd = (G.cls ? CLASSES[G.cls].baseSpd : 1.0);
+            offSpd += sk('swift')*0.12 + bl('b5')*0.3;
+            offSpd = Math.max(0.5, offSpd);
 
-        let simZone = s.zone||1;
-        let simAge  = s.age||1;
-        let simZoneKills = s.zoneKills||0;
-        let simZoneTarget = s.zoneTarget||10;
+            const attacksPerSec = offSpd;
+            const killChance = 0.35;
 
-        let offKills=0, offGold=0, offXP=0, offLevels=0, offSP=0;
-        let simLv = s.lv||1;
-        let simXp = s.xp||0;
-        let simXpNext = s.xpNext||100;
-        let offZoneAdv=0, offAgeAdv=0;
+            let simZone = G.zone;
+            let simAge = G.age;
+            let simZoneKills = G.zoneKills;
+            let simZoneTarget = G.zoneTarget;
 
-        // ===== VAULT OFFLINE =====
-        const vaultAgeMult = Math.pow(1.15, simAge-1);
-        const vaultGps = Math.round(
-          (bl('b20')*250 + bl('b21')*800 + bl('b22')*2500 + bl('b23')*15000*vaultAgeMult)
-          * (s.pbonus||1) * 10
-        )/10;
+            let offKills=0, offXP=0, offSP=0, offLevels=0;
+            let simLv = G.lv;
+            let simXp = G.xp;
+            let simXpNext = G.xpNext;
+            let offZoneAdv=0, offAgeAdv=0;
 
-        offGold += Math.floor(vaultGps * elapsed);
+            const CHUNK = 10;
+            const chunks = Math.floor(elapsed / CHUNK);
+            const remainder = elapsed % CHUNK;
 
-        // ===== BANK OFFLINE =====
-        if(s.bankDeposit && s.bankDeposit > 0 && bl('b_bank')){
-          const minsAway = Math.floor(elapsed / 60);
-          if(minsAway > 0){
-            const bankGain = Math.floor(s.bankDeposit * 0.75) * minsAway;
-            offGold += bankGain;
-          }
-        }
+            const simulateChunk = (secs) => {
+                const kills = Math.floor(attacksPerSec * secs * killChance);
+                for (let i=0;i<kills;i++){
+                    // Gold per kill (already applied vault + bank separately)
+                    let g = Math.round((6+simZone*5)*Math.pow(1.45, simZone-1) * 0.9 * Math.pow(1.2, simAge-1));
+                    if(bl('b2')) g = Math.round(g*(1+0.15*bl('b2')));
+                    if(bl('b9')) g = Math.round(g*(1+0.25*bl('b9')));
+                    if(bl('b11') && G.prestige) g = Math.round(g*(1+G.prestige*0.12));
+                    G.gold += g;
+                    G.gtotal += g;
 
-        const CHUNK = 10;
-        const chunks = Math.floor(elapsed / CHUNK);
-        const remainder = elapsed % CHUNK;
+                    // XP per kill
+                    let xpg = Math.round(13*Math.pow(1.45, simZone-1) * Math.pow(1.2, simAge-1));
+                    if(bl('b3')) xpg = Math.round(xpg*(1+0.25*bl('b3')));
+                    if(bl('b16') && simZone>=4) xpg = Math.round(xpg*(1+0.5*bl('b16')));
+                    offXP += xpg;
 
-        const simulateChunk = (secs) => {
-          const kills = Math.floor(attacksPerSec * secs * killChance);
-          for(let i=0;i<kills;i++){
+                    offKills++;
+                    simZoneKills++;
 
-            let g = Math.round((6+simZone*5)*Math.pow(1.45,simZone-1)*0.9*Math.pow(1.2,simAge-1));
-            if(bl('b2')) g = Math.round(g*(1+0.15*bl('b2')));
-            if(bl('b9')) g = Math.round(g*(1+0.25*bl('b9')));
-            if(bl('b11')&& s.prestige) g = Math.round(g*(1+s.prestige*0.12));
-            offGold += g;
+                    if(simZoneKills >= simZoneTarget){
+                        simZoneKills = 0;
+                        simZoneTarget = Math.round(simZoneTarget*1.22);
+                        if(simZone >= 8){ simZone=1; simAge++; offAgeAdv++; }
+                        else { simZone++; offZoneAdv++; }
+                    }
+                }
 
-            let xpg = Math.round(13*Math.pow(1.45,simZone-1)*Math.pow(1.2,simAge-1));
-            if(bl('b3')) xpg = Math.round(xpg*(1+0.25*bl('b3')));
-            if(bl('b16')&&simZone>=4) xpg = Math.round(xpg*(1+0.5*bl('b16')));
-            offXP += xpg;
+                simXp += offXP;
+                offXP = 0;
+                while(simXp >= simXpNext){
+                    simXp -= simXpNext;
+                    simLv++;
+                    simXpNext = xpFor(simLv);
+                    offSP++;
+                    offLevels++;
+                }
+            };
 
-            offKills++;
-            simZoneKills++;
+            for(let c=0;c<chunks;c++) simulateChunk(CHUNK);
+            if(remainder>0) simulateChunk(remainder);
 
-            if(simZoneKills >= simZoneTarget){
-              simZoneKills = 0;
-              simZoneTarget = Math.round(simZoneTarget*1.22);
-              if(simZone >= 8){ simZone=1; simAge++; offAgeAdv++; }
-              else { simZone++; offZoneAdv++; }
+            // Flush remaining XP
+            while(simXp >= simXpNext){
+                simXp -= simXpNext;
+                simLv++;
+                simXpNext = xpFor(simLv);
+                offSP++;
+                offLevels++;
             }
-          }
 
-          simXp += offXP;
-          offXP = 0;
+            // --- Apply simulated combat results ---
+            G.kills += offKills;
+            G.xp = simXp;
+            G.lv = simLv;
+            G.xpNext = simXpNext;
+            G.sp += offSP;
+            G.zone = simZone;
+            G.age = simAge;
+            G.zoneKills = simZoneKills;
+            G.zoneTarget = simZoneTarget;
 
-          while(simXp >= simXpNext){
-            simXp -= simXpNext;
-            simLv++;
-            simXpNext = xpFor(simLv);
-            offSP++;
-            offLevels++;
-          }
-        };
+            // --- HP/Mana scaling ---
+            const c = CLASSES[G.cls];
+            let mHp = c.baseHp + (G.lv-1)*13;
+            if(sk('vigor')) mHp += sk('vigor')*22;
+            if(bl('b14')) mHp = Math.round(mHp*(1+0.22*bl('b14')));
+            mHp = Math.round(mHp*(G.pbonus||1));
+            const mMana = c.baseMana + sk('manawell')*22;
 
-        for(let c=0;c<chunks;c++) simulateChunk(CHUNK);
-        if(remainder>0) simulateChunk(remainder);
-
-        simXp += offXP;
-        offXP = 0;
-
-        while(simXp >= simXpNext){
-          simXp -= simXpNext;
-          simLv++;
-          simXpNext = xpFor(simLv);
-          offSP++;
-          offLevels++;
+            G.hp = mHp;
+            G.maxHp = mHp;
+            G.mana = mMana;
+            G.maxMana = mMana;
         }
 
-        G.kills += offKills;
-        G.gold += offGold;
-        G.gtotal += offGold;
-        G.xp = simXp;
-        G.lv = simLv;
-        G.xpNext = simXpNext;
-        G.sp += offSP;
-        G.zone = simZone;
-        G.age = simAge;
-        G.zoneKills = simZoneKills;
-        G.zoneTarget = simZoneTarget;
-
-        const offSt = (() => {
-          const c = CLASSES[G.cls];
-          let mHp = c.baseHp + (G.lv-1)*13;
-          if(sk('vigor')) mHp += sk('vigor')*22;
-          if(bl('b14')) mHp = Math.round(mHp*(1+0.22*bl('b14')));
-          mHp = Math.round(mHp*(s.pbonus||1));
-          return { maxHp: mHp, maxMana: c.baseMana + sk('manawell')*22 };
-        })();
-
-        G.hp = offSt.maxHp;
-        G.mana = offSt.maxMana;
-
-        G._offlineRecap = {
-          kills: offKills,
-          gold: offGold,
-          levels: offLevels,
-          sp: offSP,
-          zoneAdv: offZoneAdv,
-          ageAdv: offAgeAdv,
-          seconds: Math.round(elapsed)
-        };
-      }
-
-      G.lastSave = now;
-      return true;
+        G.lastSave = now;
+        return true;
+    } catch(e){
+        console.error("Failed to load save:", e);
     }
-  }catch(e){}
 
-  G=mkState();
-  return false;
+    G = mkState();
+    return false;
 }
 function clearSavePrompt(){openModal('New Game','Are you sure you want to start over? All progress will be lost.','This cannot be undone.',()=>{localStorage.removeItem(SAVE);G=mkState();buildClassCards();showScr('s1');closeModal();},true);}
 
