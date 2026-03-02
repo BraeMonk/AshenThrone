@@ -1697,7 +1697,7 @@ function boonUpgradeCost(b){ const lv = boonLevel(b.id); return Math.round(b.cos
 =============================================== */
 const SAVE='ashen_v7';
 let G=null;
-function mkState(){return{cls:'warrior',selCls:null,lv:1,xp:0,xpNext:100,hp:160,maxHp:160,mana:30,maxMana:30,gold:0,gtotal:0,kills:0,deaths:0,zone:1,age:1,zoneKills:0,zoneTarget:10,sp:0,prestige:0,pbonus:1.0,sk:{},quests:QUESTS.map(q=>({...q})),boons:{},boonCount:0,idle:false,lastSave:Date.now(),sktotal:0,chapters:STORY_CHAPTERS.map(c=>({...c,objs:c.objs.map(o=>({...o}))})),chainKills:0,divineReady:true,deathBargain:true,
+function mkState(){return{cls:'warrior',selCls:null,lv:1,xp:0,xpNext:100,hp:160,maxHp:160,mana:30,maxMana:30,gold:0,gtotal:0,kills:0,deaths:0,zone:1,age:1,zoneKills:0,zoneTarget:10,sp:0,prestige:0,pbonus:1.0,sk:{},quests:QUESTS.map(q=>({...q})),boons:{},boonCount:0,idle:false,lastSave:Date.now(),bankLastTick:Date.now(),sktotal:0,chapters:STORY_CHAPTERS.map(c=>({...c,objs:c.objs.map(o=>({...o}))})),chainKills:0,divineReady:true,deathBargain:true,
 curses:{},sacrifices:{},deathTollDebt:0,deathTollKills:0,
 skInvest:{},skInvestWasted:0,skInvestWastedAtLastMemory:0,ashenMemoryLevel:0,spSpentTotal:0,everReachedLv100:false,bankDeposit:0,bankLastTick:0};}
 function saveG(){try{localStorage.setItem(SAVE,JSON.stringify({...G,idle:false,lastSave:Date.now()}));}catch(e){}}
@@ -1706,66 +1706,87 @@ function loadG(){
     const d=localStorage.getItem(SAVE);
     if(d){
       const s=JSON.parse(d);G=mkState();
-      ['cls','selCls','lv','xp','xpNext','hp','maxHp','mana','maxMana','gold','gtotal','kills','deaths','zone','age','zoneKills','zoneTarget','sp','prestige','pbonus','sk','boons','boonCount','sktotal','curses','sacrifices','deathTollDebt','deathTollKills','skInvest','skInvestWasted','skInvestWastedAtLastMemory','ashenMemoryLevel','spSpentTotal','everReachedLv100','bankDeposit','bankLastTick'].forEach(k=>{if(s[k]!==undefined)G[k]=s[k];});
-      G.quests=QUESTS.map(q=>{const sq=(s.quests||[]).find(x=>x.id===q.id);return sq?{...q,...sq}:{...q};});
-      G.chapters=STORY_CHAPTERS.map(c=>{const sc=(s.chapters||[]).find(x=>x.id===c.id);if(!sc)return{...c,objs:c.objs.map(o=>({...o}))};return{...c,...sc,objs:c.objs.map((o,i)=>sc.objs&&sc.objs[i]?{...o,...sc.objs[i]}:{...o})};});
-      // Offline progress — full simulation
+
+      ['cls','selCls','lv','xp','xpNext','hp','maxHp','mana','maxMana','gold','gtotal','kills','deaths','zone','age','zoneKills','zoneTarget','sp','prestige','pbonus','sk','boons','boonCount','sktotal','curses','sacrifices','deathTollDebt','deathTollKills','skInvest','skInvestWasted','skInvestWastedAtLastMemory','ashenMemoryLevel','spSpentTotal','everReachedLv100','bankDeposit','bankLastTick']
+      .forEach(k=>{if(s[k]!==undefined)G[k]=s[k];});
+
+      G.quests=QUESTS.map(q=>{
+        const sq=(s.quests||[]).find(x=>x.id===q.id);
+        return sq?{...q,...sq}:{...q};
+      });
+
+      G.chapters=STORY_CHAPTERS.map(c=>{
+        const sc=(s.chapters||[]).find(x=>x.id===c.id);
+        if(!sc)return{...c,objs:c.objs.map(o=>({...o}))};
+        return {...c,...sc,objs:c.objs.map((o,i)=>sc.objs&&sc.objs[i]?{...o,...sc.objs[i]}:{...o})};
+      });
+
       const now = Date.now();
       const elapsed = Math.min((now - (s.lastSave || now)) / 1000, 8 * 3600);
+
       if(elapsed > 10){
-        // Helpers that work off saved state (s) not live G
+
         const bl = id => (s.boons&&s.boons[id])||0;
         const sk = id => (s.sk&&s.sk[id])||0;
 
-        // Attack speed
         let offSpd = (s.cls ? CLASSES[s.cls].baseSpd : 1.0);
         offSpd += sk('swift')*0.12 + bl('b5')*0.3;
         offSpd = Math.max(0.5, offSpd);
+
         const attacksPerSec = offSpd;
         const killChance = 0.35;
 
-        // Simulate second by second
         let simZone = s.zone||1;
         let simAge  = s.age||1;
         let simZoneKills = s.zoneKills||0;
         let simZoneTarget = s.zoneTarget||10;
+
         let offKills=0, offGold=0, offXP=0, offLevels=0, offSP=0;
         let simLv = s.lv||1;
         let simXp = s.xp||0;
         let simXpNext = s.xpNext||100;
         let offZoneAdv=0, offAgeAdv=0;
 
-        // Vault g/s from saved boons
+        // ===== VAULT OFFLINE =====
         const vaultAgeMult = Math.pow(1.15, simAge-1);
-        const vaultGps = Math.round((bl('b20')*250 + bl('b21')*800 + bl('b22')*2500 + bl('b23')*15000*vaultAgeMult) * (s.pbonus||1) * 10)/10;
+        const vaultGps = Math.round(
+          (bl('b20')*250 + bl('b21')*800 + bl('b22')*2500 + bl('b23')*15000*vaultAgeMult)
+          * (s.pbonus||1) * 10
+        )/10;
 
-        // Gold from vault over full offline period
         offGold += Math.floor(vaultGps * elapsed);
 
-        // Simulate kills second by second (chunked for performance)
-        const CHUNK = 10; // simulate in 10s chunks
+        // ===== BANK OFFLINE =====
+        if(s.bankDeposit && s.bankDeposit > 0 && bl('b_bank')){
+          const minsAway = Math.floor(elapsed / 60);
+          if(minsAway > 0){
+            const bankGain = Math.floor(s.bankDeposit * 0.75) * minsAway;
+            offGold += bankGain;
+          }
+        }
+
+        const CHUNK = 10;
         const chunks = Math.floor(elapsed / CHUNK);
         const remainder = elapsed % CHUNK;
 
         const simulateChunk = (secs) => {
           const kills = Math.floor(attacksPerSec * secs * killChance);
           for(let i=0;i<kills;i++){
-            // Gold per kill
+
             let g = Math.round((6+simZone*5)*Math.pow(1.45,simZone-1)*0.9*Math.pow(1.2,simAge-1));
             if(bl('b2')) g = Math.round(g*(1+0.15*bl('b2')));
             if(bl('b9')) g = Math.round(g*(1+0.25*bl('b9')));
             if(bl('b11')&& s.prestige) g = Math.round(g*(1+s.prestige*0.12));
             offGold += g;
 
-            // XP per kill
             let xpg = Math.round(13*Math.pow(1.45,simZone-1)*Math.pow(1.2,simAge-1));
             if(bl('b3')) xpg = Math.round(xpg*(1+0.25*bl('b3')));
             if(bl('b16')&&simZone>=4) xpg = Math.round(xpg*(1+0.5*bl('b16')));
             offXP += xpg;
-            offKills++;
 
-            // Zone progression
+            offKills++;
             simZoneKills++;
+
             if(simZoneKills >= simZoneTarget){
               simZoneKills = 0;
               simZoneTarget = Math.round(simZoneTarget*1.22);
@@ -1773,25 +1794,33 @@ function loadG(){
               else { simZone++; offZoneAdv++; }
             }
           }
-          // Level ups from XP
+
           simXp += offXP;
           offXP = 0;
+
           while(simXp >= simXpNext){
-            simXp -= simXpNext; simLv++; simXpNext = xpFor(simLv); offSP++; offLevels++;
+            simXp -= simXpNext;
+            simLv++;
+            simXpNext = xpFor(simLv);
+            offSP++;
+            offLevels++;
           }
         };
 
         for(let c=0;c<chunks;c++) simulateChunk(CHUNK);
         if(remainder>0) simulateChunk(remainder);
 
-        // Flush remaining XP
         simXp += offXP;
         offXP = 0;
+
         while(simXp >= simXpNext){
-          simXp -= simXpNext; simLv++; simXpNext = xpFor(simLv); offSP++; offLevels++;
+          simXp -= simXpNext;
+          simLv++;
+          simXpNext = xpFor(simLv);
+          offSP++;
+          offLevels++;
         }
 
-        // Apply everything to live state
         G.kills += offKills;
         G.gold += offGold;
         G.gtotal += offGold;
@@ -1804,7 +1833,6 @@ function loadG(){
         G.zoneKills = simZoneKills;
         G.zoneTarget = simZoneTarget;
 
-        // HP/mana scale to new level
         const offSt = (() => {
           const c = CLASSES[G.cls];
           let mHp = c.baseHp + (G.lv-1)*13;
@@ -1813,6 +1841,7 @@ function loadG(){
           mHp = Math.round(mHp*(s.pbonus||1));
           return { maxHp: mHp, maxMana: c.baseMana + sk('manawell')*22 };
         })();
+
         G.hp = offSt.maxHp;
         G.mana = offSt.maxMana;
 
@@ -1826,9 +1855,14 @@ function loadG(){
           seconds: Math.round(elapsed)
         };
       }
+
+      G.lastSave = now;
       return true;
     }
-  }catch(e){}G=mkState();return false;
+  }catch(e){}
+
+  G=mkState();
+  return false;
 }
 function clearSavePrompt(){openModal('New Game','Are you sure you want to start over? All progress will be lost.','This cannot be undone.',()=>{localStorage.removeItem(SAVE);G=mkState();buildClassCards();showScr('s1');closeModal();},true);}
 
@@ -2496,14 +2530,21 @@ function tickVault(){
   updateHUD();
 }
 function tickBank(){
-  if(!G||!G.bankDeposit||G.bankDeposit<=0)return;
-  if(!(G.boons&&G.boons.b_bank))return;
-  const interest=Math.floor(G.bankDeposit*0.75);
-  // Add interest directly to spendable gold, not the deposit
-  G.gold+=interest;
-  G.gtotal+=interest;
-  toast(`🏛 Ashen Bank: +${fmt(interest)} interest added to your gold! Deposit: ${fmt(G.bankDeposit)}`);
-  saveG();
+  if(!G || !G.bankDeposit || G.bankDeposit <= 0) return;
+  if(!(G.boons && G.boons.b_bank)) return;
+
+  const now = Date.now();
+  const minsPassed = Math.floor((now - (G.bankLastTick||now)) / 60000);
+  if(minsPassed <= 0) return;
+
+  const interest = Math.floor(G.bankDeposit * 0.75) * minsPassed;
+
+  G.gold += interest;
+  G.gtotal += interest;
+
+  G.bankLastTick = now;
+
+  toast(`🏛 Ashen Bank: +${fmt(interest)} interest added to your gold!`);
 }
 
 function doAttackTouch(e){e.preventDefault();doAttack();}
