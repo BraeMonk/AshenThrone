@@ -2770,14 +2770,22 @@ function activateBoost(id){
 /* ===============================================
    HUD
 =============================================== */
-function fmt(n){return n>=1e4?n.toExponential(2):n>=1e3?(n/1e3).toFixed(1)+'K':String(n);}
+function fmt(n){
+  if(n>=1e12)return(n/1e12).toFixed(2)+'T';
+  if(n>=1e9)return(n/1e9).toFixed(2)+'B';
+  if(n>=1e6)return(n/1e6).toFixed(2)+'M';
+  if(n>=1e4)return(n/1e3).toFixed(1)+'K';
+  if(n>=1e3)return(n/1e3).toFixed(1)+'K';
+  return String(Math.round(n));
+}
+
 function updateHUD(){
   if(!G)return;const st=getStats();
   const hp=Math.max(0,Math.min(100,G.hp/st.maxHp*100));
   const mp=Math.max(0,Math.min(100,G.mana/st.maxMana*100));
   const xp=Math.max(0,Math.min(100,G.xp/G.xpNext*100));
   document.getElementById('b-hp').style.width=hp+'%';document.getElementById('b-mp').style.width=mp+'%';document.getElementById('b-xp').style.width=xp+'%';
-  document.getElementById('v-hp').textContent=Math.round(G.hp)+'/'+st.maxHp;document.getElementById('v-mp').textContent=Math.round(G.mana)+'/'+st.maxMana;document.getElementById('v-xp').textContent=G.xp+'/'+G.xpNext;
+  document.getElementById('v-hp').textContent=Math.round(G.hp)+'/'+st.maxHp;document.getElementById('v-mp').textContent=Math.round(G.mana)+'/'+st.maxMana;document.getElementById('v-xp').textContent=fmt(G.xp)+'/'+fmt(G.xpNext);
   document.getElementById('hud-gold-val').textContent=fmt(G.gold);const gpsEl=document.getElementById('hud-gps');if(gpsEl){const ageMult=Math.pow(1.15,(G.age||1)-1);let gps=(G.boons.b20||0)*250000+(G.boons.b21||0)*800000+(G.boons.b22||0)*2500000+(G.boons.b23||0)*15000000*ageMult;gps=Math.round(gps*G.pbonus*10)/10;gpsEl.textContent=gps>0?'+'+fmt(Math.round(gps))+'/s':'';}
   document.getElementById('hud-lv-val').textContent=G.lv;document.getElementById('hud-cls-name').textContent=CLASSES[G.cls].name.split(' ')[0];document.getElementById('hud-zone-val').textContent=G.zone;const ageEl=document.getElementById('hud-age-val');if(ageEl)ageEl.textContent=G.age;
   updateZoneBar();const sp=document.getElementById('sp-badge');if(sp)sp.textContent='SP: '+G.sp;
@@ -3347,7 +3355,7 @@ function buildStats(){
       </div>
       <div class="stat-grp">
         <div class="stat-grp-title">📊 LIFETIME</div>
-        ${sr('💀 Kills',G.kills.toLocaleString())}${sr('💰 Gold Earned',G.gtotal.toLocaleString())}${(()=>{const ageMult=Math.pow(1.15,(G.age||1)-1);let gps=(G.boons.b20||0)*250+(G.boons.b21||0)*800+(G.boons.b22||0)*2500+(G.boons.b23||0)*15000*ageMult;gps=Math.round(gps*G.pbonus*10)/10;return gps>0?sr('💰 Gold / Sec','+'+fmt(Math.round(gps))+'/s'):'';})()}
+        ${sr('💀 Kills',G.kills.toLocaleString())}${sr('💰 Gold Earned',fmt(G.gtotal))}${(()=>{const ageMult=Math.pow(1.15,(G.age||1)-1);let gps=(G.boons.b20||0)*250+(G.boons.b21||0)*800+(G.boons.b22||0)*2500+(G.boons.b23||0)*15000*ageMult;gps=Math.round(gps*G.pbonus*10)/10;return gps>0?sr('💰 Gold / Sec','+'+fmt(Math.round(gps))+'/s'):'';})()}
         ${sr('💀 Deaths',G.deaths)}${sr('✨ Prestige',G.prestige)}
         ${sr('⚗ Boons',G.boonCount||0)}${sr('📈 Stat Bonus','+'+Math.round((G.pbonus-1)*100)+'%')}
         ${sr('📜 Quests',G.quests.filter(q=>q.done).length+'/'+G.quests.length)}
