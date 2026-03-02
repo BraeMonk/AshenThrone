@@ -3193,7 +3193,7 @@ function buildBankCard(){
   const deposit=G.bankDeposit||0;
   const canInvest=owned&&G.gold>0;
   const canWithdraw=owned&&deposit>0;
-  const interest=Math.floor(deposit*0.05);
+  const interest=Math.floor(deposit*0.75);
 
   return`<div class="ashen-memory-card" style="border-color:#8a7020;box-shadow:0 0 28px rgba(180,140,20,0.2),0 4px 16px rgba(0,0,0,0.6);margin-bottom:var(--sp-lg)">
     <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#c0a030,transparent)"></div>
