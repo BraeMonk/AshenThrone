@@ -1718,10 +1718,6 @@ function applyOfflineProgress(savedState){
 
     if(s.sacrifices?.sa1) gps *= 3.0;
 
-    if(s.boons?.b_gold2x) gps *= Math.pow(2, s.boons.b_gold2x);
-    if(s.boons?.b_gold5x) gps *= Math.pow(5, s.boons.b_gold5x);
-    if(s.boons?.b_gold10x) gps *= Math.pow(10, s.boons.b_gold10x);
-
     const siGold = s.skInvest?.si_gold || 0;
     if(siGold > 0) gps *= (1 + siGold*3/100);
 
