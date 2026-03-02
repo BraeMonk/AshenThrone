@@ -2185,7 +2185,7 @@ function drawArena32(){
         ctx.font=`bold ${Math.max(6,Math.round(W*.016))}px Cinzel,serif`;
         ctx.textAlign='center';
         ctx.fillStyle='rgba(240,216,120,0.9)';
-        ctx.fillText(curEnemy.name,EA.x+PX*1.2*sc,by-4);
+        ctx.fillText(curEnemy.name+' '+fmt(eHP)+'/'+fmt(eMaxHP),EA.x+PX*1.2*sc,by-4);
         ctx.textAlign='left';
       }
     }
@@ -2771,10 +2771,16 @@ function activateBoost(id){
    HUD
 =============================================== */
 function fmt(n){
+  if(n>=1e33)return(n/1e33).toFixed(2)+'Dc';
+  if(n>=1e30)return(n/1e30).toFixed(2)+'No';
+  if(n>=1e27)return(n/1e27).toFixed(2)+'Oc';
+  if(n>=1e24)return(n/1e24).toFixed(2)+'Sp';
+  if(n>=1e21)return(n/1e21).toFixed(2)+'Sx';
+  if(n>=1e18)return(n/1e18).toFixed(2)+'Qt';
+  if(n>=1e15)return(n/1e15).toFixed(2)+'Q';
   if(n>=1e12)return(n/1e12).toFixed(2)+'T';
   if(n>=1e9)return(n/1e9).toFixed(2)+'B';
   if(n>=1e6)return(n/1e6).toFixed(2)+'M';
-  if(n>=1e4)return(n/1e3).toFixed(1)+'K';
   if(n>=1e3)return(n/1e3).toFixed(1)+'K';
   return String(Math.round(n));
 }
@@ -2785,7 +2791,9 @@ function updateHUD(){
   const mp=Math.max(0,Math.min(100,G.mana/st.maxMana*100));
   const xp=Math.max(0,Math.min(100,G.xp/G.xpNext*100));
   document.getElementById('b-hp').style.width=hp+'%';document.getElementById('b-mp').style.width=mp+'%';document.getElementById('b-xp').style.width=xp+'%';
-  document.getElementById('v-hp').textContent=Math.round(G.hp)+'/'+st.maxHp;document.getElementById('v-mp').textContent=Math.round(G.mana)+'/'+st.maxMana;document.getElementById('v-xp').textContent=fmt(G.xp)+'/'+fmt(G.xpNext);
+  document.getElementById('v-hp').textContent=fmt(Math.round(G.hp))+'/'+fmt(st.maxHp);
+  document.getElementById('v-mp').textContent=fmt(Math.round(G.mana))+'/'+fmt(st.maxMana);
+  document.getElementById('v-xp').textContent=fmt(G.xp)+'/'+fmt(G.xpNext);
   document.getElementById('hud-gold-val').textContent=fmt(G.gold);const gpsEl=document.getElementById('hud-gps');if(gpsEl){const ageMult=Math.pow(1.15,(G.age||1)-1);let gps=(G.boons.b20||0)*250000+(G.boons.b21||0)*800000+(G.boons.b22||0)*2500000+(G.boons.b23||0)*15000000*ageMult;gps=Math.round(gps*G.pbonus*10)/10;gpsEl.textContent=gps>0?'+'+fmt(Math.round(gps))+'/s':'';}
   document.getElementById('hud-lv-val').textContent=G.lv;document.getElementById('hud-cls-name').textContent=CLASSES[G.cls].name.split(' ')[0];document.getElementById('hud-zone-val').textContent=G.zone;const ageEl=document.getElementById('hud-age-val');if(ageEl)ageEl.textContent=G.age;
   updateZoneBar();const sp=document.getElementById('sp-badge');if(sp)sp.textContent='SP: '+G.sp;
@@ -3349,13 +3357,13 @@ function buildStats(){
     <div class="stats-grid">
       <div class="stat-grp">
         <div class="stat-grp-title">⚔ COMBAT</div>
-        ${sr('⚔ Attack',st.atk)}${sr('🛡 Defense',st.def)}${sr('⚡ Speed',st.spd+'×')}
-        ${sr('💥 Crit %',st.crit+'%')}${sr('🔮 Spell',st.spell)}${sr('🩸 Lifesteal',st.life+'%')}
+        ${sr('⚔ Attack',fmt(st.atk))}${sr('🛡 Defense',fmt(st.def))}${sr('⚡ Speed',st.spd+'×')}
+        ${sr('💥 Crit %',st.crit+'%')}${sr('🔮 Spell',fmt(st.spell))}${sr('🩸 Lifesteal',st.life+'%')}
         ${sr('👤 Dodge',st.dodge+'%')}${sr('🏰 Block',st.block+'%')}
       </div>
       <div class="stat-grp">
         <div class="stat-grp-title">📊 LIFETIME</div>
-        ${sr('💀 Kills',G.kills.toLocaleString())}${sr('💰 Gold Earned',fmt(G.gtotal))}${(()=>{const ageMult=Math.pow(1.15,(G.age||1)-1);let gps=(G.boons.b20||0)*250+(G.boons.b21||0)*800+(G.boons.b22||0)*2500+(G.boons.b23||0)*15000*ageMult;gps=Math.round(gps*G.pbonus*10)/10;return gps>0?sr('💰 Gold / Sec','+'+fmt(Math.round(gps))+'/s'):'';})()}
+        ${sr('💀 Kills',G.kills.toLocaleString())}${sr('💰 Gold Earned',fmt(G.gtotal))}${(()=>{const ageMult=Math.pow(1.15,(G.age||1)-1);let gps=(G.boons.b20||0)*250000+(G.boons.b21||0)*800000+(G.boons.b22||0)*2500000+(G.boons.b23||0)*15000000*ageMult;gps=Math.round(gps*G.pbonus*10)/10;return gps>0?sr('💰 Gold / Sec','+'+fmt(Math.round(gps))+'/s'):'';})()}
         ${sr('💀 Deaths',G.deaths)}${sr('✨ Prestige',G.prestige)}
         ${sr('⚗ Boons',G.boonCount||0)}${sr('📈 Stat Bonus','+'+Math.round((G.pbonus-1)*100)+'%')}
         ${sr('📜 Quests',G.quests.filter(q=>q.done).length+'/'+G.quests.length)}
