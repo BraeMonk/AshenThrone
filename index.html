@@ -2936,7 +2936,7 @@ function buildBoons(){
         <div class="boon-desc">${b.desc}</div>
         <div style="margin-top:4px;display:flex;align-items:center;justify-content:space-between">
           ${lv>0?`<span style="color:var(--txt3);font-size:var(--fs-xs)">Lv ${lv} → ${lv+1}</span>`:`<span style="color:var(--txt3);font-size:var(--fs-xs)">Not acquired</span>`}
-          <div class="boon-cost">${isActive ? `⏱ ${secsLeft}s remaining` : `💰 ${fmt(cost)} per use`}</div>
+          <div class="boon-cost">${isActive ? `⏱ ${secsLeft}s remaining` : `💰 ${fmt(upgCost)}`}</div>
         </div>
       </div>
     </div>`;
