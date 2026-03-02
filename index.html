@@ -1987,7 +1987,7 @@ function allSkList(){return Object.values(SKTREES).flatMap(t=>t.tiers.flat());}
 /* ===============================================
    CANVAS — 32-BIT ENHANCED RENDERING
 =============================================== */
-let CV=null,CTX=null,raf=null;
+let CV=null,CTX=null,raf=null,bankTimer=null;
 let PA={x:0,y:0,bob:0,aflash:0,hflash:0};
 let EA={x:0,y:0,bob:0,hflash:0,dead:false,deathT:0};
 let bgScroll=0,particles=[];
@@ -2589,20 +2589,23 @@ function tickVault(){
 }
 function tickBank(){
   if(!G || !G.bankDeposit || G.bankDeposit <= 0) return;
-  if(!(G.boons && G.boons.b_bank)) return;
+  if(!G.boons || !G.boons.b_bank) return;
 
   const now = Date.now();
-  const minsPassed = Math.floor((now - (G.bankLastTick||now)) / 60000);
+  const lastTick = G.bankLastTick || now;
+  const minsPassed = Math.floor((now - lastTick) / 60000);
   if(minsPassed <= 0) return;
 
-  const interest = Math.floor(G.bankDeposit * 0.75) * minsPassed;
+  const interestPerMin = G.bankDeposit * 0.15;
+  const totalInterest = Math.floor(interestPerMin * minsPassed);
 
-  G.gold += interest;
-  G.gtotal += interest;
+  G.bankDeposit += totalInterest;
+  G.gold += totalInterest;
+  G.gtotal += totalInterest;
+  G.bankLastTick = lastTick + minsPassed * 60000;
 
-  G.bankLastTick = now;
-
-  toast(`🏛 Ashen Bank: +${fmt(interest)} interest added to your gold!`);
+  updateHUD();
+  toast(`🏛 Ashen Bank: +${fmt(totalInterest)} interest earned!`);
 }
 
 function doAttackTouch(e){e.preventDefault();doAttack();}
@@ -3292,7 +3295,7 @@ function buildBankCard(){
   const deposit=G.bankDeposit||0;
   const canInvest=owned&&G.gold>0;
   const canWithdraw=owned&&deposit>0;
-  const interest=Math.floor(deposit*0.75);
+  const interest=Math.floor(deposit*0.15);
 
   return`<div class="ashen-memory-card" style="border-color:#8a7020;box-shadow:0 0 28px rgba(180,140,20,0.2),0 4px 16px rgba(0,0,0,0.6);margin-bottom:var(--sp-lg)">
     <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#c0a030,transparent)"></div>
@@ -3312,7 +3315,7 @@ function buildBankCard(){
       </div>
       <div style="display:flex;justify-content:space-between;margin-bottom:6px">
         <span style="color:#c0a030">Interest / min</span>
-        <strong style="color:#80d080">+${fmt(interest)} (75%)</strong>
+        <strong style="color:#80d080">+${fmt(interest)} (15%)</strong>
       </div>
       <div style="display:flex;justify-content:space-between">
         <span style="color:#c0a030">Your gold</span>
