@@ -1615,6 +1615,9 @@ const BOONS=[
   {id:'b21',ico:'💀',name:'Bone Market',desc:'Generates 800,000 gold/sec per level.',cost:1500,rarity:'rare',cat:'wealth'},
   {id:'b22',ico:'🌑',name:'Shadow Exchange',desc:'Generates 2,500,000 gold/sec per level.',cost:5000,rarity:'epic',cat:'wealth'},
   {id:'b23',ico:'👑',name:'Infernal Mint',desc:'Generates 15,000,000 gold/sec per level. Scales with Age.',cost:18000,rarity:'legendary',cat:'wealth'},
+  {id:'b_gold2x',ico:'💰',name:'Gilded Curse',desc:'Doubles all gold from kills and passive vaults (×2).',cost:12000,rarity:'epic',cat:'wealth'},
+  {id:'b_gold5x',ico:'🏆',name:'Fortune\'s Maw',desc:'Multiplies all gold from kills and passive vaults by ×5.',cost:50000,rarity:'legendary',cat:'wealth'},
+  {id:'b_gold10x',ico:'👑',name:'The Golden Throne',desc:'Multiplies all gold from kills and passive vaults by ×10. The realm bows to your greed.',cost:250000,rarity:'legendary',cat:'wealth'},
   {id:'b_memory',ico:'🌒',name:'Ashen Memory',desc:'Reclaims 50% of all skill points lost to the void between upgrades. Unlocked at level 100.',cost:0,rarity:'legendary',cat:'growth',memoryBoon:true},
   {id:'b_bank',ico:'🏛',name:'Ashen Bank',desc:'Deposit gold to earn 5% interest per minute. Withdraw anytime.',cost:2000,rarity:'rare',cat:'wealth',bankBoon:true},
 ];
@@ -1714,6 +1717,10 @@ function applyOfflineProgress(savedState){
     gps *= (s.pbonus || 1);
 
     if(s.sacrifices?.sa1) gps *= 3.0;
+
+    if(s.boons?.b_gold2x) gps *= Math.pow(2, s.boons.b_gold2x);
+    if(s.boons?.b_gold5x) gps *= Math.pow(5, s.boons.b_gold5x);
+    if(s.boons?.b_gold10x) gps *= Math.pow(10, s.boons.b_gold10x);
 
     const siGold = s.skInvest?.si_gold || 0;
     if(siGold > 0) gps *= (1 + siGold*3/100);
@@ -2468,6 +2475,10 @@ function killEnemy(){
   if(boonLevel('b2'))gold=Math.round(gold*(1+0.15*boonLevel('b2')));
   if(boonLevel('b9'))gold=Math.round(gold*(1+0.25*boonLevel('b9')));
   if(G.boons&&G.boons.b11)gold=Math.round(gold*(1+G.prestige*0.12));
+  if(G.boons&&G.boons.b_gold2x) gold *= Math.pow(2, G.boons.b_gold2x);
+  if(G.boons&&G.boons.b_gold5x) gold *= Math.pow(5, G.boons.b_gold5x);
+  if(G.boons&&G.boons.b_gold10x) gold *= Math.pow(10, G.boons.b_gold10x);
+  gold = Math.round(gold);
   // Affliction: Soul Debt +60% gold
   if(G.curses&&G.curses.af3)gold=Math.round(gold*1.60);
   // Affliction: Brittle Bones +20% gold
@@ -2581,6 +2592,9 @@ function tickVault(){
   gps+=(G.boons.b23||0)*15000000*ageMult;
   gps*=G.pbonus;
   if(G.sacrifices&&G.sacrifices.sa1)gps*=3.0;
+  if(G.boons&&G.boons.b_gold2x) gps *= Math.pow(2, G.boons.b_gold2x);
+  if(G.boons&&G.boons.b_gold5x) gps *= Math.pow(5, G.boons.b_gold5x);
+  if(G.boons&&G.boons.b_gold10x) gps *= Math.pow(10, G.boons.b_gold10x);
   if(G.skInvest){const pts=G.skInvest.si_gold||0;if(pts>0)gps*=(1+pts*3/100);}
   gps=Math.round(gps*10)/10;
   if(gps<=0)return;
@@ -3276,17 +3290,16 @@ function gotoClassSelect(){
     document.getElementById('hud-av').textContent=CLASSES[G.cls].icon;
     showScr('s2');initCanvas();spawnEnemy();updateHUD();openTab('story');renderTab();
     setStoryTicker(ZONES[Math.min(G.zone-1,ZONES.length-1)].story);startBGM();if(G.idle)startIdle();setInterval(saveG,30000);if(!manaTimer)manaTimer=setInterval(tickMana,1000);if(!vaultTimer)vaultTimer=setInterval(tickVault,1000);if(!bankTimer)bankTimer=setInterval(tickBank, 60000);
-      if(G._offlineRecap){
-        const r=G._offlineRecap;delete G._offlineRecap;
-        const hrs=Math.floor(r.seconds/3600),mins=Math.floor((r.seconds%3600)/60);
-        const timeStr=hrs>0?`${hrs}h ${mins}m`:`${mins}m`;
-        const parts=[`+${fmt(r.gold)}💰`,`+${r.kills} kills`];
-        if(r.levels>0)parts.push(`+${r.levels} levels`);
-        if(r.sp>0)parts.push(`+${r.sp} SP`);
-        if(r.ageAdv>0)parts.push(`+${r.ageAdv} ages`);
-        else if(r.zoneAdv>0)parts.push(`+${r.zoneAdv} zones`);
-        setTimeout(()=>toast(`⏳ Away ${timeStr}: ${parts.join(' · ')}`),800);
-      }
+    if(G._offlineRecap){
+       const r = G._offlineRecap;
+       delete G._offlineRecap;
+       const hrs = Math.floor(r.seconds/3600), mins = Math.floor((r.seconds%3600)/60);
+       const timeStr = hrs>0 ? `${hrs}h ${mins}m` : `${mins}m`;
+       const parts = [];
+       if(r.vaultGold>0) parts.push(`+${fmt(r.vaultGold)}💰 vault`);
+       if(r.bankInterest>0) parts.push(`+${fmt(r.bankInterest)}💰 bank`);
+       setTimeout(()=>toast(`⏳ Away ${timeStr}: ${parts.length ? parts.join(' · ') : 'welcome back!'}`), 800);
+    }
   }else{G=mkState();buildClassCards();showScr('s1');}
 }
 
