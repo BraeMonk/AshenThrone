@@ -5041,7 +5041,8 @@ function buildAscendTab() {
   ];
 
 
-  if (!window._ascSub) window._ascSub = 'tree';
+  window._ascSub = window._ascSub || 'tree';
+
   h += `<div style="display:flex;gap:6px;margin-bottom:var(--sp-lg)">
     ${subTabs.map(t => `<button onclick="window._ascSub='${t}';renderTab()"
       style="flex:1;padding:8px;font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:1px;border-radius:6px;cursor:pointer;min-height:36px;transition:all .18s;
@@ -5052,7 +5053,7 @@ function buildAscendTab() {
     </button>`).join('')}
   </div>`;
 
-    if (window._ascSub === 'tree') {
+  if (window._ascSub === 'tree') {
     h += buildAscTree();
   } else if (window._ascSub === 'relics') {
     h += buildRelicShop();
