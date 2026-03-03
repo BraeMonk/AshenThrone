@@ -2958,7 +2958,10 @@ function buildInvest(){
         ${nextRew&&!maxed?`<div class="sk-invest-diminish">Next point → ${nextRew.label}</div>`:''}
         ${maxed?`<div class="sk-invest-rew" style="color:var(--gold)">★ MAXED</div>`:''}
       </div>
-      <button class="btn-invest" onclick="buyInvest('${si.id}')" ${canBuy?'':'disabled'}>+1</button>
+      <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+        <button class="btn-invest" onclick="buyInvest('${si.id}')" ${canBuy?'':'disabled'}>+1</button>
+        <button class="btn-invest" onclick="dumpInvest('${si.id}')" ${canBuy?'':'disabled'} style="font-size:0.55rem;letter-spacing:0.5px;padding:6px 10px;background:linear-gradient(180deg,#c0a020,#806010,#503800);box-shadow:0 3px 0 #302000;">DUMP</button>
+      </div>
     </div>`;
   });
 
@@ -3043,6 +3046,21 @@ function buyInvest(id){
   G.skInvest[id]=(G.skInvest[id]||0)+1;
   G.skInvestWasted=(G.skInvestWasted||0)+1;
   SFX.skill();
+  renderTab();updateHUD();saveG();
+}
+
+function dumpInvest(id){
+  initAudio();
+  if(G.lv<90){toast('Reach level 90 to invest skill points!');return;}
+  if(G.sp<=0){toast('No skill points available!');return;}
+  const si=SK_INVEST.find(x=>x.id===id);if(!si)return;
+  if(!G.skInvest)G.skInvest={};
+  const spent=G.sp;
+  G.skInvest[id]=(G.skInvest[id]||0)+spent;
+  G.skInvestWasted=(G.skInvestWasted||0)+spent;
+  G.sp=0;
+  SFX.skill();
+  toast(`📈 Dumped ${spent} SP into ${si.name}!`);
   renderTab();updateHUD();saveG();
 }
 
