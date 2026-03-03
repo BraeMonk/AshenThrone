@@ -1020,7 +1020,7 @@ function startBGM(){
 /* ===============================================
    32-BIT SPRITES — More color depth, shading, highlights
 =============================================== */
-const PX=4;
+const PX=6;
 
 // 32-bit style pixel helpers — more palette colors, depth shading
 function drawSprite32(ctx,sprite,ox,oy,scale=1){
@@ -2002,7 +2002,11 @@ let lightPulse=0;
 
 function initCanvas(){CV=document.getElementById('arena-cv');CTX=CV.getContext('2d');resizeCv();window.addEventListener('resize',resizeCv);cancelAnimationFrame(raf);loop();}
 function resizeCv(){const w=document.getElementById('arena-wrap');CV.width=w.clientWidth;CV.height=w.clientHeight;PA.x=CV.width*.17;PA.y=CV.height*.42;EA.x=CV.width*.66;EA.y=CV.height*.38;}
-function loop(){
+let _lastFrame=0;
+function loop(ts=0){
+  const delta=ts-_lastFrame;
+  if(delta<33){raf=requestAnimationFrame(loop);return;}
+  _lastFrame=ts;
   PA.bob+=.042;EA.bob+=.036;bgScroll=(bgScroll+.28)%Math.max(CV.width,1);
   lightPulse+=0.035;
   if(PA.aflash>.01)PA.aflash-=.085;else PA.aflash=0;
@@ -3650,7 +3654,7 @@ function titleFX() {
       const a=Math.sin(e.life/e.maxLife*Math.PI);
       ctx.globalAlpha=a*.78;
       // 32-bit: ember glow
-      ctx.shadowBlur=e.sz*4;ctx.shadowColor=e.hue===0?'#ff4010':'#ff8010';
+      ctx.shadowBlur=0;
       ctx.fillStyle=e.life<e.maxLife*.5?'#e07018':'#c02808';
       ctx.fillRect(e.x,e.y,e.sz,e.sz);
     });
