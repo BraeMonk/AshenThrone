@@ -4992,9 +4992,10 @@ function buildAscendTab() {
   }
 
   const al = G.ascensionLevel;
-  const alData = ASCENSION_LEVELS[al - 1];
+  const alData = al > 0 ? ASCENSION_LEVELS[al - 1] : ASCENSION_LEVELS[0];
   const nextAge = canAscend() ? 0 : (75 * (al + 1));
   const ascSP = G.ascensionSP || 0;
+
 
   // Header
   let h = `<div class="sec">
