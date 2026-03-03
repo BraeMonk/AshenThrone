@@ -293,7 +293,7 @@ background:radial-gradient(ellipse,rgba(255,255,255,0.18),transparent);
 
 /* === TABS === */
 #tabs{
-flex-shrink:0;display:grid;grid-template-columns:repeat(6,1fr);
+flex-shrink:0;display:grid;grid-template-columns:repeat(7,1fr);
 background:var(--panel);border-top:2px solid var(--border2);
 border-bottom:2px solid var(--border);box-shadow:0 -2px 12px rgba(0,0,0,0.5);
 }
@@ -947,7 +947,7 @@ CURSES TAB
       <div id="hud-right">
         <div id="hud-gold">💰 <span id="hud-gold-val">0</span><span id="hud-gps" style="font-size:0.55rem;color:var(--golddim);margin-left:3px;"></span></div>
         <div id="hud-lv">Lv.<span id="hud-lv-val">1</span> · <span id="hud-cls-name">?</span></div>
-        <div id="hud-zb">Zone <span id="hud-zone-val">1</span> · Age <span id="hud-age-val">1</span></div>
+        <div id="hud-zb">Zone <span id="hud-zone-val">1</span> · Age <span id="hud-age-val">1</span> <span id="hud-al" style="display:none;color:#c090f0;margin-left:4px"></span></div>
       </div>
     </div>
     <div id="story-ticker">
@@ -969,6 +969,7 @@ CURSES TAB
       <div class="tab-btn" id="tb-boons" onclick="openTab('boons')"><span class="tab-ico">⚗</span><span class="tab-lbl">Boons</span></div>
       <div class="tab-btn" id="tb-curses" onclick="openTab('curses')"><span class="tab-ico">🩸</span><span class="tab-lbl">Curses</span></div>
       <div class="tab-btn" id="tb-stats" onclick="openTab('stats')"><span class="tab-ico">📊</span><span class="tab-lbl">Stats</span></div>
+      <div class="tab-btn" id="tb-ascend" onclick="openTab('ascend')" style="display:none"><span class="tab-ico">🌅</span><span class="tab-lbl">Ascend</span></div>
     </div>
   </div>
   <div id="game-right">
@@ -1353,8 +1354,8 @@ const ENEMIES32={
 
   wraith:{draw(ctx,x,y,sc){
     const p=PX*sc;
-    // Ethereal fade: time-based shimmer
-    const t=Date.now()*0.002;
+    const t=_lastFrame*0.002;
+
     const c={
       core1:'#2030c0',core2:'#4060e0',core3:'#7090f8',
       glow1:'#a0c0ff',glow2:'#c0d8ff',
@@ -1706,6 +1707,1329 @@ const CURSES_OF_AGES=[
    ageReq:3},
 ];
 
+/* ===============================================
+   ASCENSION SYSTEM — New Game+ layers
+   Unlocks at Age 75. Each Ascension Level (AL)
+   adds a new permanent mechanical layer.
+=============================================== */
+
+const ASCENSION_LEVELS = [
+  {
+    al: 1,
+    name: 'The Awakened',
+    ico: '🌅',
+    flavor: '"You have lived enough lifetimes to remember what you were before."',
+    desc: 'Unlocks the Ascension Skill Tree — a separate set of permanent skills that survive all future resets. Grants Ascension SP on kills. +25% to all stats.',
+    statMult: 1.25,
+  },
+  {
+    al: 2,
+    name: 'The Haunted',
+    ico: '💠',
+    flavor: '"The dead do not leave. They linger, and they pay rent."',
+    desc: 'Unlocks Soul Shards — a rare currency earned from kills, spent on permanent Relics that stack across ascensions.',
+    statMult: 1.55,
+  },
+  {
+    al: 3,
+    name: 'The Fractured',
+    ico: '🌀',
+    flavor: '"The void noticed you crossing it too many times. Now it pushes back."',
+    desc: 'Unlocks Void Rifts — periodic reality-tear events that spike difficulty for massive Soul Shard and XP rewards.',
+    statMult: 1.90,
+  },
+  {
+    al: 4,
+    name: 'The Eternal',
+    ico: '♾',
+    flavor: '"Some things cannot be taken away. They become part of the soul itself."',
+    desc: 'Unlocks Bloodline Traits — permanent bonuses that survive every reset, prestige, and ascension forever.',
+    statMult: 2.35,
+  },
+  {
+    al: 5,
+    name: 'The Ashen One',
+    ico: '🔱',
+    flavor: '"There is no end. There is only deeper ash."',
+    desc: 'Unlocks True Endgame — infinite enemy scaling, Depth Score tracking, and the eternal challenge of the Ashen Throne.',
+    statMult: 3.00,
+  },
+];
+
+// Ascension XP thresholds per AL
+const ASCENSION_XP_TABLE = [0, 1000, 4000, 12000, 35000, 100000];
+
+/* ===============================================
+   ASCENSION SKILL TREE
+   Separate from normal skill trees.
+   Survives all resets. Unlocked at AL1.
+   Points earned passively from kills (ascSpPerKill)
+   and as bonuses on ascension events.
+=============================================== */
+
+const ASC_TREE = {
+  core: {
+    label: 'Core',
+    ico: '🌅',
+    tiers: [
+      [
+        {
+          id: 'asc_atk',
+          name: 'Ashen Wrath',
+          ico: '⚔',
+          desc: '+5% ATK per rank. Never resets.',
+          max: 20,
+          eff: 'atk',
+          val: 5,
+        },
+        {
+          id: 'asc_def',
+          name: 'Ashen Fortress',
+          ico: '🛡',
+          desc: '+5% DEF per rank. Never resets.',
+          max: 20,
+          eff: 'def',
+          val: 5,
+        },
+      ],
+      [
+        {
+          id: 'asc_hp',
+          name: 'Undying Flesh',
+          ico: '❤',
+          desc: '+8% Max HP per rank. Never resets.',
+          max: 15,
+          eff: 'hp',
+          val: 8,
+          req: 'asc_atk',
+        },
+        {
+          id: 'asc_spd',
+          name: 'Eternal Haste',
+          ico: '⚡',
+          desc: '+0.1 attack speed per rank. Never resets.',
+          max: 10,
+          eff: 'spd',
+          val: 0.1,
+          req: 'asc_def',
+        },
+      ],
+      [
+        {
+          id: 'asc_crit',
+          name: 'Void Eye',
+          ico: '👁',
+          desc: '+4% crit chance per rank. Never resets.',
+          max: 15,
+          eff: 'crit',
+          val: 4,
+          req: 'asc_hp',
+        },
+        {
+          id: 'asc_gold',
+          name: 'Ashen Greed',
+          ico: '💰',
+          desc: '+8% gold from all sources per rank.',
+          max: 20,
+          eff: 'gold',
+          val: 8,
+          req: 'asc_spd',
+        },
+      ],
+      [
+        {
+          id: 'asc_xp',
+          name: 'Soul Memory',
+          ico: '⭐',
+          desc: '+8% XP from all sources per rank.',
+          max: 20,
+          eff: 'xp',
+          val: 8,
+          req: 'asc_crit',
+        },
+        {
+          id: 'asc_spell',
+          name: 'Void Resonance',
+          ico: '🔮',
+          desc: '+6% spell damage per rank. Never resets.',
+          max: 15,
+          eff: 'spell',
+          val: 6,
+          req: 'asc_gold',
+        },
+      ],
+      [
+        {
+          id: 'asc_cap1',
+          name: 'Ashen Dominion',
+          ico: '👑',
+          desc: 'All Ascension bonuses increased by 50%. Capstone.',
+          max: 1,
+          eff: 'capstone_all',
+          req: 'asc_xp',
+          cap: true,
+        },
+        {
+          id: 'asc_cap2',
+          name: 'Eternal Hunger',
+          ico: '🌑',
+          desc: 'Soul Shards gained +100%. Kill streaks grant +1% all stats per 5 kills (max 50%). Capstone.',
+          max: 1,
+          eff: 'capstone_shard',
+          req: 'asc_spell',
+          cap: true,
+        },
+      ],
+    ],
+  },
+  void: {
+    label: 'Void',
+    ico: '🌀',
+    tiers: [
+      [
+        {
+          id: 'asc_void1',
+          name: 'Rift Sense',
+          ico: '🌀',
+          desc: 'Void Rifts trigger 20% more often per rank.',
+          max: 5,
+          eff: 'rift_freq',
+          val: 20,
+        },
+        {
+          id: 'asc_shard1',
+          name: 'Shard Seeker',
+          ico: '💠',
+          desc: '+10% Soul Shards from kills per rank.',
+          max: 10,
+          eff: 'shard',
+          val: 10,
+        },
+      ],
+      [
+        {
+          id: 'asc_void2',
+          name: 'Rift Walker',
+          ico: '🌌',
+          desc: 'Survive Void Rifts at 1HP instead of dying.',
+          max: 1,
+          eff: 'rift_survive',
+          req: 'asc_void1',
+          cap: true,
+        },
+        {
+          id: 'asc_shard2',
+          name: 'Crystalline Soul',
+          ico: '💎',
+          desc: 'Soul Shards also grant +0.5% all stats per 10 shards owned.',
+          max: 1,
+          eff: 'shard_stats',
+          req: 'asc_shard1',
+          cap: true,
+        },
+      ],
+      [
+        {
+          id: 'asc_void3',
+          name: 'Void Touched',
+          ico: '⚫',
+          desc: '+15% all damage dealt during Void Rifts per rank.',
+          max: 5,
+          eff: 'rift_dmg',
+          val: 15,
+          req: 'asc_void2',
+        },
+        {
+          id: 'asc_shard3',
+          name: 'Shard Storm',
+          ico: '🌠',
+          desc: 'Every 100 Soul Shards: auto-trigger a free attack burst (5 hits).',
+          max: 1,
+          eff: 'shard_storm',
+          req: 'asc_shard2',
+          cap: true,
+        },
+      ],
+    ],
+  },
+  blood: {
+    label: 'Blood',
+    ico: '🩸',
+    tiers: [
+      [
+        {
+          id: 'asc_blood1',
+          name: 'Crimson Pact',
+          ico: '🩸',
+          desc: '+3% lifesteal per rank. Stacks with existing lifesteal.',
+          max: 10,
+          eff: 'life',
+          val: 3,
+        },
+        {
+          id: 'asc_death1',
+          name: 'Death Rite',
+          ico: '💀',
+          desc: 'Each death permanently grants +0.5% all stats (max 25%).',
+          max: 50,
+          eff: 'death_buff',
+          val: 0.5,
+        },
+      ],
+      [
+        {
+          id: 'asc_blood2',
+          name: 'Hemorrhage',
+          ico: '🔴',
+          desc: 'Crits cause bleed: 3 ticks of 30% ATK damage over 1.5s.',
+          max: 1,
+          eff: 'bleed',
+          req: 'asc_blood1',
+          cap: true,
+        },
+        {
+          id: 'asc_death2',
+          name: 'Undying Rage',
+          ico: '☠',
+          desc: 'On death: deal 500% ATK to current enemy before revival.',
+          max: 1,
+          eff: 'death_burst',
+          req: 'asc_death1',
+          cap: true,
+        },
+      ],
+      [
+        {
+          id: 'asc_blood3',
+          name: 'Blood Tithe',
+          ico: '🫀',
+          desc: 'Spend 10% max HP to deal 800% ATK. 8s cooldown.',
+          max: 1,
+          eff: 'blood_tithe',
+          req: 'asc_blood2',
+          cap: true,
+        },
+        {
+          id: 'asc_death3',
+          name: 'Deathless',
+          ico: '♾',
+          desc: 'Cannot die more than once per 30s. On prevented death: +100% ATK for 10s.',
+          max: 1,
+          eff: 'deathless',
+          req: 'asc_death2',
+          cap: true,
+        },
+      ],
+    ],
+  },
+};
+
+/* ===============================================
+   SOUL SHARDS — AL2 currency
+   Earned from kills, spent on Relics.
+   Survives all resets including Ascension.
+=============================================== */
+
+const RELICS = [
+  {
+    id: 'rel_1',
+    ico: '🗿',
+    name: 'Ashen Idol',
+    desc: '+10% to all stats per level. Scales with Ascension Level.',
+    cost: 50,
+    maxLevel: 10,
+    rarity: 'common',
+  },
+  {
+    id: 'rel_2',
+    ico: '💎',
+    name: 'Soul Prism',
+    desc: '+15% Soul Shards earned per level.',
+    cost: 80,
+    maxLevel: 10,
+    rarity: 'common',
+  },
+  {
+    id: 'rel_3',
+    ico: '🌑',
+    name: 'Void Heart',
+    desc: '+20% gold from all sources per level.',
+    cost: 120,
+    maxLevel: 8,
+    rarity: 'rare',
+  },
+  {
+    id: 'rel_4',
+    ico: '🔱',
+    name: 'Ashen Crown Shard',
+    desc: '+25% XP from all sources per level.',
+    cost: 150,
+    maxLevel: 8,
+    rarity: 'rare',
+  },
+  {
+    id: 'rel_5',
+    ico: '⚡',
+    name: 'Thunder Relic',
+    desc: '+0.2 attack speed per level. Permanent.',
+    cost: 200,
+    maxLevel: 5,
+    rarity: 'epic',
+  },
+  {
+    id: 'rel_6',
+    ico: '🔥',
+    name: 'Infernal Core',
+    desc: 'Every kill has 3% chance to deal 10× ATK chain explosion.',
+    cost: 300,
+    maxLevel: 3,
+    rarity: 'epic',
+  },
+  {
+    id: 'rel_7',
+    ico: '🌌',
+    name: 'Starless Abyss',
+    desc: '+50% all stats during Void Rifts. Permanent.',
+    cost: 500,
+    maxLevel: 1,
+    rarity: 'legendary',
+  },
+  {
+    id: 'rel_8',
+    ico: '👁',
+    name: 'The Watching Eye',
+    desc: 'Passive: every 60s, gain gold equal to 10% of lifetime kills × AL.',
+    cost: 400,
+    maxLevel: 5,
+    rarity: 'legendary',
+  },
+];
+
+/* ===============================================
+   VOID RIFTS — AL3 combat events
+   Periodic reality-tear events that spike
+   difficulty for massive rewards.
+   Triggered by kill count thresholds.
+   Duration: 30s. During a rift, enemies are
+   stronger but drop 5x shards and 3x XP.
+=============================================== */
+
+const VOID_RIFT_EVENTS = [
+  {
+    id: 'vr_surge',
+    name: 'Void Surge',
+    ico: '🌀',
+    desc: 'Enemies deal +60% damage. You deal +40% damage. Kill 15 enemies to close the rift.',
+    killTarget: 15,
+    enemyDmgMult: 1.60,
+    playerDmgMult: 1.40,
+    shardReward: 50,
+    xpMult: 3.0,
+    goldMult: 2.0,
+    color: '#6030c0',
+    glowColor: 'rgba(120,60,200,0.4)',
+  },
+  {
+    id: 'vr_collapse',
+    name: 'Reality Collapse',
+    ico: '⚫',
+    desc: 'Enemies have 3× HP. You deal 2× damage. Kill 10 enemies to stabilize.',
+    killTarget: 10,
+    enemyDmgMult: 1.30,
+    playerDmgMult: 2.00,
+    shardReward: 80,
+    xpMult: 4.0,
+    goldMult: 2.5,
+    color: '#200840',
+    glowColor: 'rgba(40,8,80,0.6)',
+    enemyHpMult: 3.0,
+  },
+  {
+    id: 'vr_storm',
+    name: 'Ashen Storm',
+    ico: '🌪',
+    desc: 'Relentless assault — enemies attack 3× faster. Your crits deal 4× damage. Kill 20 to survive.',
+    killTarget: 20,
+    enemyDmgMult: 2.0,
+    playerDmgMult: 1.20,
+    critMult: 4.0,
+    shardReward: 120,
+    xpMult: 5.0,
+    goldMult: 3.0,
+    color: '#601020',
+    glowColor: 'rgba(140,20,40,0.4)',
+  },
+  {
+    id: 'vr_void',
+    name: 'The Void Opens',
+    ico: '🕳',
+    desc: 'A tear in reality. All enemy HP is tripled. All your damage is doubled. 25 kills to seal it.',
+    killTarget: 25,
+    enemyDmgMult: 1.80,
+    playerDmgMult: 2.50,
+    enemyHpMult: 3.0,
+    shardReward: 200,
+    xpMult: 6.0,
+    goldMult: 4.0,
+    color: '#080820',
+    glowColor: 'rgba(20,20,80,0.7)',
+  },
+];
+
+// How often rifts trigger — kill count between rifts
+// Decreases (more frequent) with Rift Sense ascension skill
+function riftTriggerInterval() {
+  const base = 200;
+  const ascSk = id => (G.ascensionSkills && G.ascensionSkills[id]) || 0;
+  const reduction = ascSk('asc_void1') * 0.20;
+  return Math.max(50, Math.round(base * (1 - reduction)));
+}
+
+// Pick a random rift event weighted by AL
+function pickRiftEvent() {
+  const al = G.ascensionLevel;
+  const pool = al >= 5
+    ? VOID_RIFT_EVENTS
+    : al >= 4
+      ? VOID_RIFT_EVENTS.slice(0, 3)
+      : al >= 3
+        ? VOID_RIFT_EVENTS.slice(0, 2)
+        : VOID_RIFT_EVENTS.slice(0, 1);
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+// Check if a rift should trigger on this kill
+function checkVoidRift() {
+  if (!G || G.ascensionLevel < 3) return;
+  if (G.voidRiftActive) return;
+  G.voidRiftKills = (G.voidRiftKills || 0) + 1;
+  if (G.voidRiftKills >= riftTriggerInterval()) {
+    G.voidRiftKills = 0;
+    triggerVoidRift();
+  }
+}
+
+// Active rift state
+let _activeRift = null;
+let _riftKillCount = 0;
+
+function triggerVoidRift() {
+  if (!G || G.ascensionLevel < 3) return;
+  const rift = pickRiftEvent();
+  _activeRift = rift;
+  _riftKillCount = 0;
+  G.voidRiftActive = true;
+  G.voidRiftEnds = Date.now() + 30000; // 30s fallback timer
+
+  SFX.prestige();
+  tone(80, 'sawtooth', 0.3, 0.18);
+  tone(120, 'sawtooth', 0.25, 0.15, 0.1);
+  tone(60, 'sawtooth', 0.4, 0.12, 0.2);
+
+  toast(`${rift.ico} VOID RIFT: ${rift.name}! ${rift.desc}`);
+  setStoryTicker(`${rift.ico} The void tears open — ${rift.name}!`, true);
+
+  // Show rift overlay
+  showRiftOverlay(rift);
+
+  // Fallback: auto-close after 30s
+  setTimeout(() => {
+    if (G.voidRiftActive) closeVoidRift(false);
+  }, 30000);
+}
+
+function closeVoidRift(victory) {
+  if (!G || !_activeRift) return;
+  const rift = _activeRift;
+
+  if (victory) {
+    // Reward
+    let shards = rift.shardReward;
+    if (relicLevel('rel_7') > 0) shards = Math.round(shards * 1.5);
+    G.soulShards = (G.soulShards || 0) + shards;
+    G.shardTotal = (G.shardTotal || 0) + shards;
+
+    const bonusGold = Math.round(G.gold * 0.10);
+    G.gold += bonusGold;
+    G.gtotal += bonusGold;
+
+    tone(440, 'square', 0.08, 0.18);
+    tone(660, 'square', 0.08, 0.16, 0.08);
+    tone(880, 'square', 0.10, 0.14, 0.16);
+    tone(1100, 'square', 0.08, 0.12, 0.24);
+
+    toast(`${rift.ico} RIFT SEALED! +${shards} 💠 Soul Shards! +${fmt(bonusGold)} gold!`);
+    spawnParticles(EA.x, EA.y, '#c090f0', 30);
+    spawnParticles(PA.x + 24, PA.y + 24, '#60d0ff', 20);
+  } else {
+    toast(`${rift.ico} Rift collapsed — survive longer next time.`);
+  }
+
+  G.voidRiftActive = false;
+  G.voidRiftEnds = 0;
+  _activeRift = null;
+  _riftKillCount = 0;
+
+  hideRiftOverlay();
+  updateHUD();
+  saveG();
+}
+
+// Rift overlay — visual indicator over the arena
+function showRiftOverlay(rift) {
+  const ov = document.getElementById('arena-ov');
+  if (!ov) return;
+  // Remove any existing rift overlay
+  const existing = document.getElementById('rift-overlay');
+  if (existing) existing.remove();
+
+  const el = document.createElement('div');
+  el.id = 'rift-overlay';
+  el.style.cssText = `
+    position:absolute;inset:0;pointer-events:none;z-index:15;
+    border:3px solid ${rift.color};
+    box-shadow:inset 0 0 30px ${rift.glowColor}, 0 0 20px ${rift.glowColor};
+    border-radius:2px;
+    animation:riftpulse 1.2s ease-in-out infinite;
+  `;
+
+  // Rift label
+  const lbl = document.createElement('div');
+  lbl.id = 'rift-lbl';
+  lbl.style.cssText = `
+    position:absolute;top:8px;left:50%;transform:translateX(-50%);
+    background:rgba(0,0,0,0.85);border:1.5px solid ${rift.color};border-radius:16px;
+    color:#c090f0;font-family:'Cinzel',serif;font-size:0.6rem;letter-spacing:1px;
+    padding:5px 14px;white-space:nowrap;backdrop-filter:blur(4px);
+    box-shadow:0 0 12px ${rift.glowColor};
+  `;
+  lbl.textContent = `${rift.ico} ${rift.name} — 0 / ${_activeRift ? _activeRift.killTarget : '?'}`;
+
+  ov.appendChild(el);
+  ov.appendChild(lbl);
+
+  // Inject rift pulse keyframe if not already present
+  if (!document.getElementById('rift-style')) {
+    const style = document.createElement('style');
+    style.id = 'rift-style';
+    style.textContent = `
+      @keyframes riftpulse {
+        0%,100% { opacity: 0.7; }
+        50% { opacity: 1.0; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+}
+
+function hideRiftOverlay() {
+  document.getElementById('rift-overlay')?.remove();
+  document.getElementById('rift-lbl')?.remove();
+}
+
+function updateRiftLabel() {
+  const lbl = document.getElementById('rift-lbl');
+  if (lbl && _activeRift) {
+    lbl.textContent = `${_activeRift.ico} ${_activeRift.name} — ${_riftKillCount} / ${_activeRift.killTarget}`;
+  }
+}
+
+/* ===============================================
+   BLOODLINE TRAITS — AL4 permanent bonuses
+   These NEVER reset. Not by prestige.
+   Not by ascension. Not by anything.
+   Purchased with Soul Shards at AL4+.
+   Each trait has a unique permanent effect
+   that layers on top of everything else.
+=============================================== */
+
+const BLOODLINE_TRAITS = [
+  {
+    id: 'bt_iron',
+    ico: '⚒',
+    name: 'Iron Bloodline',
+    desc: 'Permanently +15% ATK and +15% DEF. Stacks every purchase. True forever.',
+    cost: 500,
+    maxLevel: Infinity,
+    rarity: 'rare',
+    eff: 'atk_def',
+    val: 0.15,
+  },
+  {
+    id: 'bt_soul',
+    ico: '🌟',
+    name: 'Soulbound Legacy',
+    desc: 'Permanently +20% XP from all sources. Each level adds another 20%.',
+    cost: 600,
+    maxLevel: Infinity,
+    rarity: 'rare',
+    eff: 'xp',
+    val: 0.20,
+  },
+  {
+    id: 'bt_gold',
+    ico: '💎',
+    name: 'Gilded Ancestry',
+    desc: 'Permanently +20% gold from all sources. Stacks infinitely.',
+    cost: 700,
+    maxLevel: Infinity,
+    rarity: 'rare',
+    eff: 'gold',
+    val: 0.20,
+  },
+  {
+    id: 'bt_void',
+    ico: '🌌',
+    name: 'Void Ancestry',
+    desc: 'Permanently +10% to all stats. No cap. Stacks each purchase.',
+    cost: 1000,
+    maxLevel: Infinity,
+    rarity: 'epic',
+    eff: 'all',
+    val: 0.10,
+  },
+  {
+    id: 'bt_phoenix',
+    ico: '🔥',
+    name: 'Phoenix Blood',
+    desc: 'On death, deal 1000% ATK to the current enemy. Permanent. Every death.',
+    cost: 1500,
+    maxLevel: 1,
+    rarity: 'epic',
+    eff: 'death_nova',
+    val: 10.0,
+  },
+  {
+    id: 'bt_rift',
+    ico: '🌀',
+    name: 'Rift-Born',
+    desc: 'Void Rifts grant +5% all stats permanently per rift sealed. Stacks forever.',
+    cost: 2000,
+    maxLevel: Infinity,
+    rarity: 'legendary',
+    eff: 'rift_stack',
+    val: 0.05,
+  },
+  {
+    id: 'bt_eternal',
+    ico: '♾',
+    name: 'Eternal Flame',
+    desc: '+2% to ALL stats permanently per Ascension Level owned. Multiplies at AL5.',
+    cost: 3000,
+    maxLevel: 1,
+    rarity: 'legendary',
+    eff: 'al_mult',
+    val: 0.02,
+  },
+  {
+    id: 'bt_ashen',
+    ico: '🔱',
+    name: 'The Ashen Bloodline',
+    desc: 'The ultimate lineage. +50% ALL stats. Permanent. Unlocked only at AL5.',
+    cost: 10000,
+    maxLevel: 1,
+    rarity: 'legendary',
+    eff: 'ashen',
+    val: 0.50,
+    alReq: 5,
+  },
+];
+
+function traitLevel(id) {
+  return (G.bloodlineTraits && G.bloodlineTraits[id]) || 0;
+}
+
+function traitCost(t) {
+  const lv = traitLevel(t.id);
+  // Infinite traits scale cost
+  if (t.maxLevel === Infinity) {
+    return Math.round(t.cost * Math.pow(2.0, lv));
+  }
+  return t.cost;
+}
+
+// Apply Bloodline Trait bonuses inside getStats
+function applyBloodlineBonuses(stats) {
+  if (!G || !G.bloodlineTraits || G.ascensionLevel < 4) return stats;
+  let { atk, def, maxHp, spell, spd, crit, life } = stats;
+
+  const t = id => traitLevel(id);
+
+  // Iron Bloodline — +15% ATK/DEF per level
+  if (t('bt_iron') > 0) {
+    atk *= (1 + t('bt_iron') * 0.15);
+    def *= (1 + t('bt_iron') * 0.15);
+  }
+
+  // Void Ancestry — +10% all stats per level
+  if (t('bt_void') > 0) {
+    const m = 1 + t('bt_void') * 0.10;
+    atk *= m; def *= m;
+    maxHp = Math.round(maxHp * m);
+    spell = Math.round(spell * m);
+    spd += t('bt_void') * 0.02;
+  }
+
+  // Eternal Flame — +2% all stats per AL owned
+  if (t('bt_eternal') > 0) {
+    const m = 1 + (G.ascensionLevel * 0.02);
+    atk *= m; def *= m;
+    maxHp = Math.round(maxHp * m);
+    spell = Math.round(spell * m);
+  }
+
+  // Ashen Bloodline — +50% all stats
+  if (t('bt_ashen') > 0) {
+    atk *= 1.50; def *= 1.50;
+    maxHp = Math.round(maxHp * 1.50);
+    spell = Math.round(spell * 1.50);
+    spd += 0.15;
+  }
+
+  // Rift-Born — +5% all stats per rift ever sealed
+  if (t('bt_rift') > 0) {
+    const riftStack = G._riftSealed || 0;
+    const m = 1 + riftStack * 0.05 * t('bt_rift');
+    atk *= m; def *= m;
+    maxHp = Math.round(maxHp * m);
+  }
+
+  return {
+    ...stats,
+    atk: Math.round(atk * 10) / 10,
+    def: Math.round(def * 10) / 10,
+    maxHp, spell,
+    spd: Math.round(Math.max(0.5, spd) * 100) / 100,
+  };
+}
+
+function relicLevel(id) { return (G.relics && G.relics[id]) || 0; }
+function relicCost(r) {
+  const lv = relicLevel(r.id);
+  return Math.round(r.cost * Math.pow(1.8, lv));
+}
+
+// Apply relic bonuses to getStats() — called inside getStats
+function applyRelicBonuses(stats) {
+  if (!G || !G.relics || G.ascensionLevel < 2) return stats;
+  let { atk, def, maxHp, spell, spd, crit, life } = stats;
+
+  const r = id => relicLevel(id);
+
+  // Ashen Idol — +10% all stats per level × AL
+  if (r('rel_1') > 0) {
+    const mult = 1 + (r('rel_1') * 0.10 * G.ascensionLevel);
+    atk *= mult; def *= mult;
+    maxHp = Math.round(maxHp * mult);
+    spell = Math.round(spell * mult);
+  }
+
+  // Thunder Relic — +0.2 spd per level
+  if (r('rel_5') > 0) spd += r('rel_5') * 0.2;
+
+  // Void Heart — gold handled in killEnemy
+  // Soul Prism — shards handled in tickAscensionXP
+  // Infernal Core — proc handled in killEnemy
+  // Starless Abyss — handled in doAttack rift check
+  // Ashen Crown Shard — XP handled in killEnemy
+
+  return { ...stats, atk: Math.round(atk * 10) / 10, def: Math.round(def * 10) / 10, maxHp, spell, spd: Math.round(spd * 100) / 100 };
+}
+
+// Earn Soul Shards on kill
+function earnShards() {
+  if (!G || G.ascensionLevel < 2) return;
+  const ascSk = id => (G.ascensionSkills && G.ascensionSkills[id]) || 0;
+  let shards = 1;
+  // Shard Seeker bonus
+  if (ascSk('asc_shard1') > 0) shards *= (1 + ascSk('asc_shard1') * 0.10);
+  // Soul Prism relic
+  if (relicLevel('rel_2') > 0) shards *= (1 + relicLevel('rel_2') * 0.15);
+  // Eternal Hunger capstone
+  if (ascSk('asc_cap2') >= 1) shards *= 2;
+  shards = Math.max(1, Math.round(shards));
+  G.soulShards = (G.soulShards || 0) + shards;
+  G.shardTotal = (G.shardTotal || 0) + shards;
+
+  // Shard Storm — every 100 shards, burst attack
+  if (ascSk('asc_shard3') >= 1) {
+    const prev = Math.floor((G.shardTotal - shards) / 100);
+    const curr = Math.floor(G.shardTotal / 100);
+    if (curr > prev) {
+      for (let i = 0; i < 5; i++) setTimeout(quickHit, i * 80);
+      showDmg('SHARD STORM!', true, 'special');
+      spawnParticles(EA.x, EA.y, '#60d0ff', 20);
+    }
+  }
+}
+
+// Apply Ascension Skill bonuses inside getStats
+function applyAscSkillBonuses(stats) {
+  if (!G || !G.ascensionSkills || G.ascensionLevel < 1) return stats;
+  let { atk, def, maxHp, spell, spd, crit, life } = stats;
+  const s = id => (G.ascensionSkills[id] || 0);
+
+  atk *= (1 + s('asc_atk') * 0.05);
+  def *= (1 + s('asc_def') * 0.05);
+  maxHp = Math.round(maxHp * (1 + s('asc_hp') * 0.08));
+  spd += s('asc_spd') * 0.1;
+  crit += s('asc_crit') * 4;
+  life += s('asc_blood1') * 3;
+  spell = Math.round(spell * (1 + s('asc_spell') * 0.06));
+
+  // Deaths buff
+  if (s('asc_death1') > 0) {
+    const deathMult = 1 + Math.min(G.deaths * 0.005, 0.25);
+    atk *= deathMult; def *= deathMult;
+  }
+
+  // Crystalline Soul — +0.5% all stats per 10 shards
+  if (s('asc_shard2') >= 1 && G.soulShards > 0) {
+    const shardMult = 1 + Math.floor(G.soulShards / 10) * 0.005;
+    atk *= shardMult; def *= shardMult;
+    maxHp = Math.round(maxHp * shardMult);
+  }
+
+  // Ashen Dominion capstone — all asc bonuses +50%
+  if (s('asc_cap1') >= 1) {
+    atk *= 1.5; def *= 1.5;
+    maxHp = Math.round(maxHp * 1.5);
+    spell = Math.round(spell * 1.5);
+  }
+
+  return {
+    ...stats,
+    atk: Math.round(atk * 10) / 10,
+    def: Math.round(def * 10) / 10,
+    maxHp, spell,
+    spd: Math.round(Math.max(0.5, spd) * 100) / 100,
+    crit: Math.round(crit),
+    life: Math.round(life),
+  };
+}
+
+// How many Ascension SP are granted per kill (scales with zone/age)
+function ascSpPerKill() {
+  if (!G || G.ascensionLevel < 1) return 0;
+  return Math.max(1, Math.floor(G.zone * G.age * 0.08 * G.ascensionLevel));
+}
+
+// Ascension stat multiplier — stacks with prestige
+function getAscMult() {
+  if (!G || G.ascensionLevel < 1) return 1.0;
+  return ASCENSION_LEVELS[G.ascensionLevel - 1].statMult;
+}
+
+// Check if player qualifies to ascend (Age 75+ and not already max AL)
+function canAscend() {
+  if (!G) return false;
+  if (G.ascensionLevel >= 5) return false;
+  // Must reach age 75 before first ascension
+  // Each subsequent ascension requires 75 more ages on top
+  const ageReq = 75 * (G.ascensionLevel + 1);
+  return G.age >= ageReq;
+}
+
+// Show the ascension prompt (called from checkAscension)
+function promptAscension() {
+  const nextAL = G.ascensionLevel + 1;
+  const data = ASCENSION_LEVELS[nextAL - 1];
+  openModal(
+    `${data.ico} ASCENSION — ${data.name}`,
+    `You have lived ${G.age} ages. The realm recognizes something ancient in you.\n\n${data.desc}`,
+    `⚠ Ascension resets your current run (level, gold, zone, skills) but all Ascension progress, Relics, and Bloodline Traits are permanent.`,
+    doAscension,
+    true
+  );
+}
+
+// Execute the ascension
+function doAscension() {
+  const nextAL = G.ascensionLevel + 1;
+  if (nextAL > 5) return;
+
+  const data = ASCENSION_LEVELS[nextAL - 1];
+
+  // Carry forward
+  G.ascensionLevel = nextAL;
+  G.hasAscended = true;
+  G.lastAscensionAge = G.age;
+
+  // Grant Ascension SP on ascension (bonus dump)
+  const bonusSP = 10 * nextAL;
+  G.ascensionSP = (G.ascensionSP || 0) + bonusSP;
+
+  // Reset run (same as prestige but deeper)
+  G.lv = 1; G.xp = 0; G.xpNext = 100; G.sp = 0;
+  G.sk = {}; G.sktotal = 0;
+  G.zone = 1; G.age = 1;
+  G.zoneKills = 0; G.zoneTarget = 10;
+  G.gold = 0; G.chainKills = 0;
+  G.divineReady = true; G._swr = true;
+  G.prestige = 0; G.pbonus = 1.0;
+  G.curses = {}; G.sacrifices = {};
+  G.deathTollDebt = 0;
+  G.skInvest = {}; G.skInvestWasted = 0;
+  G.skInvestWastedAtLastMemory = 0;
+
+  // Reset quests and chapters (but keep ascension progress)
+  G.quests = QUESTS.map(q => ({...q}));
+  G.chapters = STORY_CHAPTERS.map(c => ({...c, objs: c.objs.map(o => ({...o}))}));
+
+  // HP/Mana reset with new multiplier applied
+  const st = getStats();
+  G.hp = st.maxHp; G.mana = CLASSES[G.cls].baseMana;
+
+  // Void rift reset
+  G.voidRiftActive = false; G.voidRiftEnds = 0; G.voidRiftKills = 0;
+
+  closeModal();
+  spawnEnemy();
+  updateHUD();
+  renderTab();
+  saveG();
+
+  SFX.prestige();
+  // Ascension fanfare — layered tones
+  [200, 280, 380, 520, 680, 880, 1100].forEach((f, i) =>
+    tone(f, 'square', 0.14, 0.22, i * 0.1)
+  );
+
+  toast(`${data.ico} ASCENDED — ${data.name}! +${bonusSP} Ascension SP granted.`);
+  setStoryTicker(`${data.ico} The realm trembles. ${data.name} walks the Ashen Fields.`, true);
+}
+
+// Called every kill and zone advance — checks if ascension is available
+function checkAscension() {
+  if (!G) return;
+  if (!canAscend()) return;
+  // Debounce — only prompt once per session, not every kill
+  if (G._ascPrompted) return;
+  G._ascPrompted = true;
+  // Small delay so it doesn't clash with kill animations
+  setTimeout(promptAscension, 1200);
+}
+
+// Tick ascension XP on kill (called from killEnemy)
+function tickAscensionXP() {
+  if (!G || G.ascensionLevel < 1) return;
+  const gain = ascSpPerKill();
+  G.ascensionSP = (G.ascensionSP || 0) + gain;
+  // Also tick ascension level XP
+  G.ascensionXp = (G.ascensionXp || 0) + gain;
+  while (G.ascensionXp >= G.ascensionXpNext && G.ascensionLevel < 5) {
+    // Ascension XP overflow doesn't level AL — AL is age-gated
+    // Instead, bonus Ascension SP burst
+    G.ascensionXp -= G.ascensionXpNext;
+    G.ascensionXpNext = Math.round(G.ascensionXpNext * 2.2);
+    G.ascensionSP += 5 * G.ascensionLevel;
+    toast(`💠 Ascension XP threshold! +${5 * G.ascensionLevel} bonus Ascension SP`);
+  }
+}
+
+/* ===============================================
+   TRUE ENDGAME — AL5 Infinite Scaling Mode
+   Unlocked at Ascension Level 5.
+   Enemies scale infinitely beyond normal zones.
+   Depth Score tracks how far you push.
+   Depth resets on death but best is saved.
+   Milestones grant permanent Bloodline bonuses.
+=============================================== */
+
+const DEPTH_MILESTONES = [
+  {
+    depth: 10,
+    ico: '🌅',
+    name: 'First Light',
+    desc: 'The void acknowledges you.',
+    reward: 'bt_void',
+    rewardAmt: 1,
+    shards: 500,
+  },
+  {
+    depth: 25,
+    ico: '🌀',
+    name: 'Rift Dancer',
+    desc: 'You move between tears in reality with ease.',
+    reward: 'bt_iron',
+    rewardAmt: 2,
+    shards: 1500,
+  },
+  {
+    depth: 50,
+    ico: '💠',
+    name: 'Shard Sovereign',
+    desc: 'The dead bend to your will.',
+    reward: 'bt_soul',
+    rewardAmt: 2,
+    shards: 4000,
+  },
+  {
+    depth: 100,
+    ico: '♾',
+    name: 'The Eternal',
+    desc: 'You have outlasted everything the realm could throw.',
+    reward: 'bt_void',
+    rewardAmt: 3,
+    shards: 10000,
+  },
+  {
+    depth: 200,
+    ico: '🔱',
+    name: 'Ashen Sovereign',
+    desc: 'The realm bows. The void weeps.',
+    reward: 'bt_eternal',
+    rewardAmt: 1,
+    shards: 25000,
+  },
+  {
+    depth: 500,
+    ico: '👁',
+    name: 'The Watcher',
+    desc: 'You have seen the other side and returned. Twice.',
+    reward: 'bt_void',
+    rewardAmt: 5,
+    shards: 75000,
+  },
+  {
+    depth: 1000,
+    ico: '🌑',
+    name: 'Lord of Ash',
+    desc: 'The Ashen Throne is yours. It always was.',
+    reward: 'bt_ashen',
+    rewardAmt: 1,
+    shards: 250000,
+  },
+];
+
+// Depth score enemy scaling — exponential but with soft cap zones
+// Every 10 depth = roughly one extra zone worth of power
+function getDepthEnemyMult() {
+  if (!G || G.ascensionLevel < 5 || !G.depthScore) return 1.0;
+  const d = G.depthScore;
+  // Soft zones: fast ramp early, slows at high depth
+  if (d <= 50)   return 1 + d * 0.18;
+  if (d <= 150)  return 1 + 50 * 0.18 + (d - 50) * 0.12;
+  if (d <= 400)  return 1 + 50 * 0.18 + 100 * 0.12 + (d - 150) * 0.07;
+  return          1 + 50 * 0.18 + 100 * 0.12 + 250 * 0.07 + (d - 400) * 0.04;
+}
+
+// Depth score reward scaling
+function getDepthRewardMult() {
+  if (!G || !G.depthScore) return 1.0;
+  return 1 + G.depthScore * 0.25;
+}
+
+// Called every kill in AL5 mode — increments depth
+function tickDepthScore() {
+  if (!G || G.ascensionLevel < 5) return;
+  G.depthScore = (G.depthScore || 0) + 1;
+
+  // Best depth tracking
+  if (!G.bestDepth || G.depthScore > G.bestDepth) {
+    G.bestDepth = G.depthScore;
+  }
+
+  // Check milestones
+  DEPTH_MILESTONES.forEach(m => {
+    if (G.depthScore === m.depth) {
+      reachDepthMilestone(m);
+    }
+  });
+
+  // Update depth HUD every 10 kills
+  if (G.depthScore % 10 === 0) {
+    updateDepthHUD();
+    toast(`🔱 Depth ${G.depthScore} — enemy power ×${getDepthEnemyMult().toFixed(2)}`);
+  }
+}
+
+function reachDepthMilestone(m) {
+  // Grant bloodline trait levels
+  if (!G.bloodlineTraits) G.bloodlineTraits = {};
+  G.bloodlineTraits[m.reward] = (G.bloodlineTraits[m.reward] || 0) + m.rewardAmt;
+
+  // Grant shards
+  G.soulShards = (G.soulShards || 0) + m.shards;
+  G.shardTotal = (G.shardTotal || 0) + m.shards;
+
+  // Fanfare
+  [220, 330, 440, 550, 660, 880, 1100].forEach((f, i) =>
+    tone(f, 'square', 0.12, 0.22, i * 0.09)
+  );
+
+  toast(`${m.ico} DEPTH ${m.depth}: ${m.name}! +${m.shards} 💠 & bloodline upgrade!`);
+  showDepthMilestonePop(m);
+  setStoryTicker(`${m.ico} ${m.name} — "${m.desc}"`, true);
+  spawnParticles(PA.x + 24, PA.y + 24, '#c090f0', 40);
+  spawnParticles(EA.x, EA.y, '#ffd020', 30);
+
+  // Track claimed milestones
+  if (!G._depthMilestones) G._depthMilestones = {};
+  G._depthMilestones[m.depth] = true;
+
+  saveG();
+}
+
+// On death in AL5 mode — depth resets but best is kept
+function resetDepthScore() {
+  if (!G || G.ascensionLevel < 5) return;
+  if ((G.depthScore || 0) > 0) {
+    toast(`🔱 Depth run ended at ${G.depthScore}. Best: ${G.bestDepth || 0}`);
+  }
+  G.depthScore = 0;
+  updateDepthHUD();
+}
+
+// Depth HUD element update
+function updateDepthHUD() {
+  const el = document.getElementById('depth-hud');
+  if (!el || !G || G.ascensionLevel < 5) return;
+  const mult = getDepthEnemyMult();
+  el.textContent = `🔱 Depth ${G.depthScore || 0} · ×${mult.toFixed(2)} · Best: ${G.bestDepth || 0}`;
+  el.style.display = G.ascensionLevel >= 5 ? 'inline-block' : 'none';
+}
+
+/* ===============================================
+   ASCENSION HUD PANEL
+   Persistent top-of-screen status strip
+   showing AL, Shards, Depth at a glance.
+   Injected into the arena-wrap overlay.
+=============================================== */
+
+function injectAscensionHUD() {
+  // Only inject once
+  if (document.getElementById('asc-hud-strip')) return;
+
+  const ov = document.getElementById('arena-ov');
+  if (!ov) return;
+
+  const strip = document.createElement('div');
+  strip.id = 'asc-hud-strip';
+  strip.style.cssText = `
+    position:absolute;
+    bottom:48px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:18;
+    display:none;
+    flex-direction:row;
+    align-items:center;
+    gap:8px;
+    background:rgba(8,4,14,0.88);
+    border:1.5px solid #5a3a90;
+    border-radius:20px;
+    padding:4px 14px;
+    backdrop-filter:blur(6px);
+    box-shadow:0 0 16px rgba(120,60,200,0.3);
+    pointer-events:none;
+    white-space:nowrap;
+    font-family:'Cinzel',serif;
+    font-size:0.56rem;
+    letter-spacing:1px;
+    color:#a070d0;
+  `;
+
+  strip.innerHTML = `
+    <span id="asc-hud-al" style="color:#c090f0"></span>
+    <span style="color:#3a2a5a">|</span>
+    <span id="asc-hud-shards" style="color:#8060c0"></span>
+    <span style="color:#3a2a5a">|</span>
+    <span id="asc-hud-sp" style="color:#7050a0"></span>
+    <span id="asc-hud-depth-sep" style="color:#3a2a5a;display:none">|</span>
+    <span id="depth-hud" style="color:#c090f0;display:none"></span>
+  `;
+
+  ov.appendChild(strip);
+}
+
+function updateAscHUDStrip() {
+  if (!G || G.ascensionLevel < 1) return;
+
+  const strip = document.getElementById('asc-hud-strip');
+  if (!strip) { injectAscensionHUD(); return; }
+
+  strip.style.display = 'flex';
+
+  const alData = ASCENSION_LEVELS[G.ascensionLevel - 1];
+
+  const alEl = document.getElementById('asc-hud-al');
+  if (alEl) alEl.textContent = `${alData.ico} AL${G.ascensionLevel} ${alData.name}`;
+
+  const shardEl = document.getElementById('asc-hud-shards');
+  if (shardEl) shardEl.textContent = `💠 ${fmt(G.soulShards || 0)}`;
+
+  const spEl = document.getElementById('asc-hud-sp');
+  if (spEl) spEl.textContent = `ASC-SP: ${G.ascensionSP || 0}`;
+
+  if (G.ascensionLevel >= 5) {
+    const depthSep = document.getElementById('asc-hud-depth-sep');
+    const depthEl = document.getElementById('depth-hud');
+    if (depthSep) depthSep.style.display = 'inline';
+    if (depthEl) {
+      depthEl.style.display = 'inline';
+      depthEl.textContent = `🔱 ${G.depthScore || 0} · Best ${G.bestDepth || 0}`;
+    }
+  }
+}
+
+/* ===============================================
+   FINAL ASCENSION STATS INTEGRATION
+   Depth mult applied inside spawnEnemy.
+   Depth rewards applied inside killEnemy.
+   Depth reset applied inside die.
+=============================================== */
+
+// CSS for depth milestone flash
+function injectDepthStyles() {
+  if (document.getElementById('depth-style')) return;
+  const s = document.createElement('style');
+  s.id = 'depth-style';
+  s.textContent = `
+    @keyframes depthflash {
+      0%   { opacity:1; transform:translateX(-50%) scale(1.0); }
+      20%  { opacity:1; transform:translateX(-50%) scale(1.18); }
+      60%  { opacity:1; transform:translateX(-50%) scale(1.0); }
+      100% { opacity:0; transform:translateX(-50%) scale(0.85); }
+    }
+    #depth-milestone-pop {
+      position:fixed;
+      top:22%;
+      left:50%;
+      transform:translateX(-50%);
+      z-index:600;
+      font-family:'Cinzel Decorative',serif;
+      font-size:1.3rem;
+      font-weight:700;
+      color:#c090f0;
+      text-shadow:0 0 30px rgba(180,100,255,0.9),0 0 60px rgba(140,60,220,0.6),0 4px 8px #000;
+      pointer-events:none;
+      animation:depthflash 2.4s ease-out forwards;
+      text-align:center;
+      white-space:nowrap;
+    }
+    #depth-milestone-sub {
+      font-size:0.7rem;
+      color:#8060b0;
+      letter-spacing:3px;
+      margin-top:6px;
+    }
+  `;
+  document.head.appendChild(s);
+}
+
+function showDepthMilestonePop(m) {
+  injectDepthStyles();
+  const existing = document.getElementById('depth-milestone-pop');
+  if (existing) existing.remove();
+
+  const el = document.createElement('div');
+  el.id = 'depth-milestone-pop';
+  el.innerHTML = `${m.ico} DEPTH ${m.depth}<div id="depth-milestone-sub">${m.name.toUpperCase()}</div>`;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2500);
+}
+
 function boonLevel(id){ return G.boons[id] || 0; }
 function boonUpgradeCost(b){ const lv = boonLevel(b.id); return Math.round(b.cost * Math.pow(1.5, lv)); }
 
@@ -1747,7 +3071,7 @@ function applyOfflineProgress(savedState){
         const bankMinutes = Math.floor(offlineSeconds/60);
 
         if(bankMinutes > 0){
-            const bankInterestPerMinute = s.bankDeposit * 0.0075; // 0.75% per minute
+            const bankInterestPerMinute = s.bankDeposit * 0.15; // 15% per minute
             const totalInterest = Math.floor(bankInterestPerMinute * bankMinutes);
             G.gold += totalInterest;
             G.gtotal += totalInterest;
@@ -1788,9 +3112,30 @@ function tickBankInterest(){
 =============================================== */
 const SAVE='ashen_v7';
 let G=null;
-function mkState(){return{cls:'warrior',selCls:null,lv:1,xp:0,xpNext:100,hp:160,maxHp:160,mana:30,maxMana:30,gold:0,gtotal:0,kills:0,deaths:0,zone:1,age:1,zoneKills:0,zoneTarget:10,sp:0,prestige:0,pbonus:1.0,sk:{},quests:QUESTS.map(q=>({...q})),boons:{},boonCount:0,idle:false,lastSave:Date.now(),bankLastTick:Date.now(),sktotal:0,chapters:STORY_CHAPTERS.map(c=>({...c,objs:c.objs.map(o=>({...o}))})),chainKills:0,divineReady:true,deathBargain:true,
+function mkState(){return{cls:'warrior',selCls:null,lv:1,xp:0,xpNext:100,hp:160,maxHp:160,mana:30,maxMana:30,gold:0,gtotal:0,kills:0,deaths:0,zone:1,age:1,zoneKills:0,zoneTarget:10,sp:0,prestige:0,pbonus:1.0,sk:{},quests:QUESTS.map(q=>({...q})),boons:{},boonCount:0,idle:false,lastSave:Date.now(),sktotal:0,chapters:STORY_CHAPTERS.map(c=>({...c,objs:c.objs.map(o=>({...o}))})),chainKills:0,divineReady:true,deathBargain:true,
 curses:{},sacrifices:{},deathTollDebt:0,deathTollKills:0,
-skInvest:{},skInvestWasted:0,skInvestWastedAtLastMemory:0,ashenMemoryLevel:0,spSpentTotal:0,everReachedLv100:false,bankDeposit:0,bankLastTick:0,activeBoost:null, boostEnds:0,};}
+skInvest:{},skInvestWasted:0,skInvestWastedAtLastMemory:0,ashenMemoryLevel:0,spSpentTotal:0,everReachedLv100:false,bankDeposit:0,// === ASCENSION (New Game+) ===
+ascensionLevel: 0,          // AL 0–5
+ascensionXp: 0,             // progress toward next AL
+ascensionXpNext: 1000,      // threshold (scales per AL)
+soulShards: 0,              // AL2 currency
+shardTotal: 0,              // lifetime shards
+relics: {},                 // AL2 relic purchases
+bloodlineTraits: {},        // AL4 permanent cross-ascension bonuses
+voidRiftKills: 0,           // AL3 rift progress
+voidRiftActive: false,      // AL3 rift event flag
+voidRiftEnds: 0,            // AL3 rift timer
+depthScore: 0,              // AL5 infinite depth score
+depthAge: 0,                // AL5 what age depth started
+ascensionSkills: {},        // AL1 ascension skill tree ranks
+ascensionSPSpent: 0,        // AL1 ascension SP spent
+ascensionSP: 0,             // AL1 ascension skill points
+hasAscended: false,         // ever triggered ascension
+lastAscensionAge: 0,        // age at last ascension
+bestDepth: 0,
+_depthMilestones: {},
+_riftSealed: 0,
+bankLastTick:0,activeBoost:null, boostEnds:0,};}
 function saveG(){try{localStorage.setItem(SAVE,JSON.stringify({...G,idle:false,lastSave:Date.now()}));}catch(e){}}
 function loadG() {
     try {
@@ -1805,7 +3150,10 @@ function loadG() {
             'cls','selCls','lv','xp','xpNext','hp','maxHp','mana','maxMana','gold','gtotal','kills','deaths',
             'zone','age','zoneKills','zoneTarget','sp','prestige','pbonus','sk','boons','boonCount','sktotal',
             'curses','sacrifices','deathTollDebt','deathTollKills','skInvest','skInvestWasted',
-            'skInvestWastedAtLastMemory','ashenMemoryLevel','spSpentTotal','everReachedLv100','bankDeposit','bankLastTick'
+            'skInvestWastedAtLastMemory','ashenMemoryLevel','spSpentTotal','everReachedLv100','bankDeposit','bankLastTick','ascensionLevel','ascensionXp','ascensionXpNext','soulShards','shardTotal',
+            'relics','bloodlineTraits','voidRiftKills','voidRiftActive','voidRiftEnds',
+            'depthScore','depthAge','ascensionSkills','ascensionSPSpent','ascensionSP',
+            'hasAscended','lastAscensionAge','bestDepth','_depthMilestones','_riftSealed',
         ].forEach(k => { if (s[k] !== undefined) G[k] = s[k]; });
 
         // --- Restore quests ---
@@ -1995,8 +3343,18 @@ function getStats(){
       if(rew.hpPct)maxHp=Math.round(maxHp*(1+rew.hpPct/100));
     });
   }
-  atk*=G.pbonus;def*=G.pbonus;maxHp=Math.round(maxHp*G.pbonus);
-  return{atk:Math.round(atk*10)/10,def:Math.round(def*10)/10,spd:Math.round(Math.max(.5,spd)*100)/100,crit:Math.round(crit),life:Math.round(life),spell:Math.round(spell),maxHp:Math.round(maxHp),maxMana:Math.round(maxMana),dodge:Math.round(dodge),block:Math.round(block)};
+  const ascMult = getAscMult();
+   atk = Math.round(atk * G.pbonus * ascMult * 10) / 10;
+   def = Math.round(def * G.pbonus * ascMult * 10) / 10;
+   maxHp = Math.round(maxHp * G.pbonus * ascMult);
+   spell = Math.round(spell * ascMult);
+   
+   // Apply Ascension Skill bonuses (AL1+)
+   let finalStats = { atk, def, spd, crit, life, spell, maxHp, maxMana, dodge, block };
+   finalStats = applyAscSkillBonuses(finalStats);
+   finalStats = applyRelicBonuses(finalStats);
+   finalStats = applyBloodlineBonuses(finalStats);
+   return finalStats;
 }
 
 function xpFor(lv){return Math.floor(100*Math.pow(1.28,lv-1));}
@@ -2445,11 +3803,31 @@ function spawnEnemy(){
   const zoneMult=Math.pow(1.48,G.zone-1);
   
   eMaxHP=Math.round(22*zoneMult*ageMult*(1+(boonLevel('b9')*0.3)));
-  eHP=eMaxHP;
+  // Depth Score scaling (AL5+)
+  if (G.ascensionLevel >= 5 && G.depthScore > 0) {
+    eMaxHP = Math.round(eMaxHP * getDepthEnemyMult());
+  }
+
+  // Void Rift enemy HP multiplier
+  if (G.voidRiftActive && _activeRift && _activeRift.enemyHpMult) {
+    eMaxHP = Math.round(eMaxHP * _activeRift.enemyHpMult);
+  }
+  eHP = eMaxHP;
+
+
   
   // Enemy damage — DEF now scales better against it
   // Stored so doAttack can reference it cleanly
-  G._eDmgBase=Math.round((3+G.zone*1.8)*Math.pow(1.14,G.zone-1)*(1+((Math.pow(1.25,G.age-1)-1)*0.7)));
+  const depthDmgMult = (G.ascensionLevel >= 5 && G.depthScore > 0)
+    ? getDepthEnemyMult()
+    : 1.0;
+  G._eDmgBase = Math.round(
+    (3 + G.zone * 1.8)
+    * Math.pow(1.14, G.zone - 1)
+    * (1 + ((Math.pow(1.25, G.age - 1) - 1) * 0.7))
+    * depthDmgMult
+  );
+
   
   const nl=ENAMES[key];
   curEnemy={key,name:nl[Math.floor(Math.random()*nl.length)]};
@@ -2463,7 +3841,20 @@ function doAttack(){
   const bl=id=>(G.boons[id]||0);
 
   let dmg=st.atk*(0.82+Math.random()*.36);
+
+  // Void Rift player damage bonus (AL3+)
+  if (G.voidRiftActive && _activeRift) {
+    dmg *= _activeRift.playerDmgMult;
+    // Starless Abyss relic (AL3+)
+    if (relicLevel('rel_7') > 0) dmg *= 1.50;
+    // Void Touched ascension skill bonus
+    const ascSk = id => (G.ascensionSkills && G.ascensionSkills[id]) || 0;
+    if (ascSk('asc_void3') > 0) dmg *= (1 + ascSk('asc_void3') * 0.15);
+  }
+
   const isCrit=Math.random()*100<st.crit;
+  G._lastHitWasCrit = isCrit;
+
   if(isCrit)dmg*=2.2; // was 2x, now 2.2x
 
   // Berserk — below 30% HP, +100% ATK (was +70%)
@@ -2518,8 +3909,14 @@ function doAttack(){
 
   if(eHP<=0){killEnemy();return;}
 
-    // Enemy counterattack — DEF now percentage-based reduction, not flat subtraction
+  // Enemy counterattack — DEF now percentage-based reduction, not flat subtraction
   const eDmgRaw=G._eDmgBase||Math.max(1,(3+G.zone*1.8)*Math.pow(1.14,G.zone-1));
+
+  // Void Rift enemy damage bonus
+  if (G.voidRiftActive && _activeRift) {
+    G._eDmgBase = Math.round((G._eDmgBase || eDmgRaw) * _activeRift.enemyDmgMult);
+  }
+
   if(G.curses&&G.curses.ca1)eHP=Math.min(eMaxHP,eHP+Math.round(eMaxHP*0.02));
 
   const st2=getStats();
@@ -2578,6 +3975,68 @@ function quickHit(){
 
 function killEnemy(){
   G.kills++;G.zoneKills++;EA.dead=true;EA.deathT=0;SFX.kill();
+  tickAscensionXP();
+  checkAscension();
+
+  // Depth Score tick (AL5+)
+  tickDepthScore();
+
+    // Void Rift kill tracking (AL3+)
+  checkVoidRift();
+
+  // Soul Shards (AL2+)
+  earnShards();
+
+  // Relic: Infernal Core — 3% chain explosion per level
+  if (G.ascensionLevel >= 2 && relicLevel('rel_6') > 0) {
+    const procChance = relicLevel('rel_6') * 0.03;
+    if (Math.random() < procChance) {
+      const st2 = getStats();
+      const chainDmg = Math.round(st2.atk * 10);
+      eHP = Math.max(0, eHP - chainDmg);
+      showDmg('🔥RELIC ×10 ' + chainDmg, true, 'special');
+      spawnParticles(EA.x, EA.y, '#ff6010', 28);
+      SFX.crit();
+    }
+  }
+
+  // Relic: Ashen Crown Shard — +25% XP per level (applied after base xpg calculated)
+  if (G.ascensionLevel >= 2 && relicLevel('rel_4') > 0) {
+    xpg = Math.round(xpg * (1 + relicLevel('rel_4') * 0.25));
+  }
+
+  // Relic: Void Heart — +20% gold per level
+  if (G.ascensionLevel >= 2 && relicLevel('rel_3') > 0) {
+    gold = Math.round(gold * (1 + relicLevel('rel_3') * 0.20));
+  }
+
+  // Bloodline: Gilded Ancestry — +20% gold per level (AL4+)
+  if (G.ascensionLevel >= 4 && traitLevel('bt_gold') > 0) {
+    gold = Math.round(gold * (1 + traitLevel('bt_gold') * 0.20));
+  }
+
+  // Bloodline: Soulbound Legacy — +20% XP per level (AL4+)
+  if (G.ascensionLevel >= 4 && traitLevel('bt_soul') > 0) {
+    xpg = Math.round(xpg * (1 + traitLevel('bt_soul') * 0.20));
+  }
+
+  // Watching Eye relic passive — tracked separately in tickVault
+  // Infernal Core relic — proc already applied above
+
+  // Ascension Skill: Bleed (asc_blood2) — crit triggers bleed ticks
+  if (G.ascensionSkills && G.ascensionSkills.asc_blood2 && G._lastHitWasCrit) {
+    const st2 = getStats();
+    const bleedDmg = Math.round(st2.atk * 0.30);
+    [400, 800, 1200].forEach(delay => {
+      setTimeout(() => {
+        if (!curEnemy || EA.dead) return;
+        eHP = Math.max(0, eHP - bleedDmg);
+        showDmg('🔴' + bleedDmg, false, 'spell');
+        spawnParticles(EA.x, EA.y, '#c02020', 4);
+        if (eHP <= 0) killEnemy();
+      }, delay);
+    });
+  }
   spawnParticles(EA.x,EA.y,'#d4a020',22);
   const bl=id=>(G.boons[id]||0);
 
@@ -2612,7 +4071,37 @@ function killEnemy(){
   if(G.curses&&G.curses.af3)gold=Math.round(gold*1.60);
   if(G.curses&&G.curses.af1)gold=Math.round(gold*1.20);
   if(G.skInvest){const pts=G.skInvest.si_gold||0;if(pts>0)gold=Math.round(gold*(1+pts/100));}
+  // Depth reward scaling (AL5+)
+  if (G.ascensionLevel >= 5 && G.depthScore > 0) {
+    const drm = getDepthRewardMult();
+    gold = Math.round(gold * drm);
+    xpg  = Math.round(xpg  * drm);
+  }
   G.gold+=gold;G.gtotal+=gold;SFX.gold();
+
+  if (G.voidRiftActive && _activeRift) {
+    gold = Math.round(gold * _activeRift.goldMult);
+    xpg = Math.round(xpg * _activeRift.xpMult);
+    G.gold += Math.round(gold * (_activeRift.goldMult - 1));
+    G.gtotal += Math.round(gold * (_activeRift.goldMult - 1));
+
+    _riftKillCount++;
+    updateRiftLabel();
+
+    if (G.ascensionLevel >= 3) {
+      const riftShards = Math.round(3 * G.ascensionLevel);
+      G.soulShards = (G.soulShards || 0) + riftShards;
+      G.shardTotal = (G.shardTotal || 0) + riftShards;
+    }
+
+    if (_riftKillCount >= _activeRift.killTarget) {
+      G._riftSealed = (G._riftSealed || 0) + 1;
+      if (traitLevel('bt_rift') > 0) {
+        toast(`🌀 Rift sealed! Rift-Born stack ${G._riftSealed} → +${(G._riftSealed * 0.05 * traitLevel('bt_rift') * 100).toFixed(0)}% all stats`);
+      }
+      closeVoidRift(true);
+    }
+  }
 
   // XP calculation
   let xpg=Math.round(13*Math.pow(1.45,G.zone-1)*Math.pow(1.2,G.age-1));
@@ -2645,7 +4134,7 @@ function killEnemy(){
     if(G.lv>=100){G.everReachedLv100=true;saveG();}
   }
 
-    // Zone advance — slower target growth, scales with age not just zone
+  // Zone advance — slower target growth, scales with age not just zone
   if(G.zoneKills>=G.zoneTarget){
     G.zoneKills=0;
     // Slower target growth — was 1.22, now tapers off at high zones
@@ -2677,7 +4166,19 @@ function killEnemy(){
 function die(){
   G.deaths++;SFX.die();spawnParticles(PA.x+PX*4,PA.y+PX*5,'#d02020',24);
   if(G.boons.b13&&G.deathBargain){const st=getStats();G.hp=Math.round(st.maxHp*.4);G.deathBargain=false;showDmg('REBORN!',true,'special');setTimeout(()=>{G.deathBargain=true;},60000);spawnEnemy();updateHUD();return;}
-  if(G.sk.secondwind&&G._swr!==false){const st=getStats();G.hp=Math.round(st.maxHp*.4);G._swr=false;showDmg('2ND WIND!',true,'dodge');spawnEnemy();updateHUD();return;}
+  if(G.sk.secondwind&&G._swr===true){const st=getStats();G.hp=Math.round(st.maxHp*.4);G._swr=false;showDmg('2ND WIND!',true,'dodge');spawnEnemy();updateHUD();return;}
+  // Phoenix Blood — deal 1000% ATK to enemy on death (AL4+)
+  if (G.ascensionLevel >= 4 && traitLevel('bt_phoenix') > 0 && curEnemy && !EA.dead) {
+    const st0 = getStats();
+    const novaDmg = Math.round(st0.atk * 10);
+    eHP = Math.max(0, eHP - novaDmg);
+    showDmg('🔥PHOENIX ' + novaDmg, true, 'special');
+    spawnParticles(EA.x, EA.y, '#ff6010', 35);
+    spawnParticles(EA.x, EA.y, '#ffd020', 20);
+    SFX.crit();
+    if (eHP <= 0) { killEnemy(); return; }
+  }
+  resetDepthScore();
   const st=getStats();G.hp=Math.round(st.maxHp*.5);
   // Curse of Ages: Death's Toll — each death permanently reduces max HP
   if(G.curses&&G.curses.ca3){
@@ -2740,9 +4241,26 @@ function tickVault(){
   if(G.activeBoost && Date.now() < G.boostEnds) gps *= G.activeBoost;
   if(G.skInvest){const pts=G.skInvest.si_gold||0;if(pts>0)gps*=(1+pts*3/100);}
   gps=Math.round(gps*10)/10;
-  if(gps<=0)return;
-  G.gold+=gps;G.gtotal+=gps;
+  if (gps > 0) {
+    G.gold += gps;
+    G.gtotal += gps;
+  }
+
+  // Watching Eye relic — every 60s, gold = 10% of lifetime kills × AL
+  if (G.ascensionLevel >= 2 && relicLevel('rel_8') > 0) {
+    G._eyeTick = (G._eyeTick || 0) + 1;
+    if (G._eyeTick >= 60) {
+      G._eyeTick = 0;
+      const eyeGold = Math.round(G.kills * 0.10 * G.ascensionLevel * relicLevel('rel_8'));
+      G.gold += eyeGold;
+      G.gtotal += eyeGold;
+      showDmg('👁 +' + fmt(eyeGold), false, 'spell');
+      toast(`👁 Watching Eye: +${fmt(eyeGold)} gold`);
+    }
+  }
+
   updateHUD();
+
 }
 function tickBank(){
   if(!G || !G.bankDeposit || G.bankDeposit <= 0) return;
@@ -2815,6 +4333,33 @@ function updateHUD(){
   document.getElementById('hud-gold-val').textContent=fmt(G.gold);const gpsEl=document.getElementById('hud-gps');if(gpsEl){const ageMult=Math.pow(1.15,(G.age||1)-1);let gps=(G.boons.b20||0)*250000+(G.boons.b21||0)*800000+(G.boons.b22||0)*2500000+(G.boons.b23||0)*15000000*ageMult;gps=Math.round(gps*G.pbonus*10)/10;gpsEl.textContent=gps>0?'+'+fmt(Math.round(gps))+'/s':'';}
   document.getElementById('hud-lv-val').textContent=G.lv;document.getElementById('hud-cls-name').textContent=CLASSES[G.cls].name.split(' ')[0];document.getElementById('hud-zone-val').textContent=G.zone;const ageEl=document.getElementById('hud-age-val');if(ageEl)ageEl.textContent=G.age;
   updateZoneBar();const sp=document.getElementById('sp-badge');if(sp)sp.textContent='SP: '+G.sp;
+  const alEl = document.getElementById('hud-al');
+  if (alEl) {
+    if (G.ascensionLevel > 0) {
+      const alData = ASCENSION_LEVELS[G.ascensionLevel - 1];
+      alEl.textContent = `· ${alData.ico} AL${G.ascensionLevel}`;
+      alEl.style.display = 'inline';
+    } else if (canAscend()) {
+      alEl.textContent = '· 🌅 ASCEND READY';
+      alEl.style.cssText = 'display:inline;color:#f0c030;animation:cresthover 1.5s ease-in-out infinite';
+    } else {
+      alEl.style.display = 'none';
+    }
+  }
+  // Show/hide Ascension tab
+  const ascTab = document.getElementById('tb-ascend');
+  if (ascTab) ascTab.style.display = G.ascensionLevel >= 1 ? '' : 'none';
+ 
+  // Ascension HUD strip (AL1+)
+  if (G.ascensionLevel >= 1) {
+    injectAscensionHUD();
+    updateAscHUDStrip();
+  }
+  // Depth HUD (AL5)
+  if (G.ascensionLevel >= 5) {
+    updateDepthHUD();
+  }
+
 }
 function updateZoneBar(){const pct=G?Math.min(100,(G.zoneKills/G.zoneTarget)*100):0;const el=document.getElementById('zone-prog-fill');if(el)el.style.width=pct+'%';}
 
@@ -2845,6 +4390,7 @@ function renderTab(){
   else if(curTab==='boons')el.innerHTML=buildBoons();
   else if(curTab==='curses')el.innerHTML=buildCurses();
   else if(curTab==='stats')el.innerHTML=buildStats();
+  else if(curTab==='ascend')el.innerHTML=buildAscendTab();
 }
 function notifyTab(t){if(curTab===t)return;const tb=document.getElementById('tb-'+t);if(!tb||tb.querySelector('.tab-dot'))return;const dot=document.createElement('div');dot.className='tab-dot';tb.appendChild(dot);}
 
@@ -3404,6 +4950,18 @@ function buildStats(){
         ${sr('⚗ Boons',G.boonCount||0)}${sr('📈 Stat Bonus','+'+Math.round((G.pbonus-1)*100)+'%')}
         ${sr('📜 Quests',G.quests.filter(q=>q.done).length+'/'+G.quests.length)}
         ${sr('📖 Chapters',G.chapters.filter(c=>c.done).length+'/'+G.chapters.length)}
+        ${G.ascensionLevel>0?sr(`${ASCENSION_LEVELS[G.ascensionLevel-1].ico} Ascension`,`AL${G.ascensionLevel} — ${ASCENSION_LEVELS[G.ascensionLevel-1].name}`):''}
+        ${G.ascensionLevel>0?sr('💠 Soul Shards',fmt(G.soulShards||0)+' ('+fmt(G.shardTotal||0)+' total)'):''}
+        ${G.ascensionLevel>0?sr('🌅 Ascension SP',G.ascensionSP||0):''}
+        ${G.ascensionLevel>=3?sr('🌀 Rifts Sealed',G._riftSealed||0):''}
+        ${G.ascensionLevel>=3?sr('🌀 Next Rift In','~'+(riftTriggerInterval()-(G.voidRiftKills||0))+' kills'):''}
+        ${G.ascensionLevel>=4?sr('♾ Bloodline Traits',BLOODLINE_TRAITS.filter(t=>traitLevel(t.id)>0).length+' active'):''}
+        ${G.ascensionLevel>=4&&(G._riftSealed||0)>0?sr('🌀 Rift-Born Stacks',(G._riftSealed||0)+' × 5% all stats'):''}
+        ${G.ascensionLevel>=5?sr('🔱 Current Depth',G.depthScore||0):''}
+        ${G.ascensionLevel>=5?sr('🏆 Best Depth',G.bestDepth||0):''}
+        ${G.ascensionLevel>=5?sr('⚡ Enemy Power Mult','×'+getDepthEnemyMult().toFixed(2)):''}
+        ${G.ascensionLevel>=5?sr('💎 Reward Mult','×'+getDepthRewardMult().toFixed(2)):''}
+        ${G.ascensionLevel>=5?sr('🎯 Milestones',Object.keys(G._depthMilestones||{}).length+' / '+DEPTH_MILESTONES.length):''}
         ${(()=>{
           const ac=[...AFFLICTIONS,...CURSES_OF_AGES].filter(c=>G.curses&&G.curses[c.id]).length;
           const sc=SACRIFICES.filter(s=>G.sacrifices&&G.sacrifices[s.id]).length;
@@ -3421,15 +4979,730 @@ function buildStats(){
 }
 
 /* ===============================================
+   ASCENSION TAB — Skill Tree + Soul Shards/Relics
+=============================================== */
+function buildAscendTab() {
+  if (!G || G.ascensionLevel < 1) {
+    return `<div class="sec"><div class="sec-hdr" style="color:#c090f0">ASCENSION</div>
+      <div style="font-family:'Crimson Text',serif;font-style:italic;color:#7a5aaa;padding:var(--sp-lg);text-align:center">
+        Reach Age 75 to unlock Ascension.
+      </div></div>`;
+  }
+
+  const al = G.ascensionLevel;
+  const alData = ASCENSION_LEVELS[al - 1];
+  const nextAge = canAscend() ? 0 : (75 * (al + 1));
+  const ascSP = G.ascensionSP || 0;
+
+  // Header
+  let h = `<div class="sec">
+    <div class="sec-hdr" style="color:#c090f0;border-bottom-color:#5a3a90;text-shadow:0 0 10px rgba(180,100,255,0.5)">
+      ${alData.ico} ASCENSION — ${alData.name}
+      <span class="sp-badge" style="border-color:#7a4ab0;background:linear-gradient(135deg,#1a0c2a,#2a1040);color:#c090f0;box-shadow:0 0 8px rgba(160,80,240,0.3)" id="asc-sp-badge">
+        ASC-SP: ${ascSP}
+      </span>
+    </div>`;
+
+  // AL progress bar
+  h += `<div style="background:linear-gradient(135deg,#100c18,#1a1428);border:2px solid #5a3a90;border-radius:10px;padding:var(--sp-md);margin-bottom:var(--sp-lg);position:relative;overflow:hidden">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,#9060d0,transparent)"></div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+      <span style="font-size:1.8rem;filter:drop-shadow(0 0 10px rgba(180,100,255,0.8))">${alData.ico}</span>
+      <div>
+        <div style="font-size:var(--fs-md);color:#c090f0;font-weight:700">${alData.name}</div>
+        <div style="font-size:var(--fs-xs);color:#8060b0;letter-spacing:2px">ASCENSION LEVEL ${al} / 5</div>
+      </div>
+    </div>
+    <div style="font-family:'Crimson Text',serif;font-style:italic;font-size:var(--fs-sm);color:#9070c0;line-height:1.7;margin-bottom:10px">${alData.flavor}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      ${ASCENSION_LEVELS.map((a, i) => `
+        <div style="flex:1;min-width:40px;text-align:center;padding:6px 4px;border-radius:6px;
+          background:${i < al ? 'linear-gradient(135deg,#2a1050,#3a1870)' : i === al ? 'rgba(120,60,200,0.15)' : 'rgba(0,0,0,0.3)'};
+          border:1.5px solid ${i < al ? '#9060d0' : i === al ? '#5a3a70' : '#2a1a3a'};
+          opacity:${i < al ? '1' : i === al ? '0.9' : '0.35'}">
+          <div style="font-size:1.1rem">${a.ico}</div>
+          <div style="font-size:0.48rem;color:${i < al ? '#c090f0' : '#604880'};letter-spacing:0.5px">AL${i + 1}</div>
+        </div>`).join('')}
+    </div>
+    ${al < 5 ? `
+    <div style="font-size:var(--fs-xs);color:#7a5aaa;margin-bottom:6px">Next Ascension: Age ${75 * (al + 1)} ${G.age >= 75 * (al + 1) ? '— <span style="color:#c090f0">READY!</span>' : `(Age ${G.age} / ${75 * (al + 1)})`}</div>
+    <div style="height:5px;background:rgba(0,0,0,0.5);border-radius:3px;overflow:hidden">
+      <div style="height:100%;background:linear-gradient(90deg,#6030a0,#c090f0);width:${Math.min(100,(G.age/(75*(al+1)))*100).toFixed(1)}%;transition:width .5s;box-shadow:0 0 6px rgba(160,80,240,0.5)"></div>
+    </div>` : `<div style="color:#c090f0;font-size:var(--fs-sm);text-align:center;padding:4px">🔱 Maximum Ascension Level Reached</div>`}
+  </div>`;
+
+  // Sub-tabs: Tree vs Relics
+  const subTabs = [
+    'tree',
+    ...(al >= 2 ? ['relics'] : []),
+    ...(al >= 3 ? ['rifts'] : []),
+    ...(al >= 4 ? ['bloodline'] : []),
+    ...(al >= 5 ? ['endgame'] : []),
+  ];
+
+
+  if (!window._ascSub) window._ascSub = 'tree';
+  h += `<div style="display:flex;gap:6px;margin-bottom:var(--sp-lg)">
+    ${subTabs.map(t => `<button onclick="window._ascSub='${t}';renderTab()"
+      style="flex:1;padding:8px;font-family:'Cinzel',serif;font-size:var(--fs-xs);letter-spacing:1px;border-radius:6px;cursor:pointer;min-height:36px;transition:all .18s;
+      background:${window._ascSub===t?'linear-gradient(135deg,#2a1050,#3a1870)':'rgba(0,0,0,0.4)'};
+      border:1.5px solid ${window._ascSub===t?'#9060d0':'#3a2a5a'};
+      color:${window._ascSub===t?'#c090f0':'#7a5aaa'}">
+      ${t === 'tree' ? '🌅 Skill Tree' : '💠 Relics'}
+    </button>`).join('')}
+  </div>`;
+
+    if (window._ascSub === 'tree') {
+    h += buildAscTree();
+  } else if (window._ascSub === 'relics') {
+    h += buildRelicShop();
+  } else if (window._ascSub === 'rifts') {
+    h += buildRiftPanel();
+  } else if (window._ascSub === 'bloodline') {
+    h += buildBloodlinePanel();
+  } else if (window._ascSub === 'endgame') {
+    h += buildEndgamePanel();
+  }
+
+
+  return h + '</div>';
+}
+
+/* -----------------------------------------------
+   Ascension Skill Tree renderer
+----------------------------------------------- */
+function buildAscTree() {
+  const treeKeys = Object.keys(ASC_TREE);
+  if (!window._ascTreeSub) window._ascTreeSub = 'core';
+
+  let h = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-bottom:var(--sp-lg)">
+    ${treeKeys.map(k => {
+      const t = ASC_TREE[k];
+      return `<div onclick="window._ascTreeSub='${k}';renderTab()"
+        style="padding:7px 2px;text-align:center;border-radius:7px;cursor:pointer;min-height:44px;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+        background:${window._ascTreeSub===k?'linear-gradient(180deg,#2a1050,#1e0c3a)':'linear-gradient(180deg,#160c24,#100818)'};
+        border:1.5px solid ${window._ascTreeSub===k?'#9060d0':'#3a2050'};
+        color:${window._ascTreeSub===k?'#c090f0':'#7a5aaa'};
+        box-shadow:${window._ascTreeSub===k?'0 0 12px rgba(160,80,240,0.3)':'none'}">
+        <span style="font-size:1.0rem">${t.ico}</span>
+        <span style="font-size:0.5rem;letter-spacing:.5px">${t.label}</span>
+      </div>`;
+    }).join('')}
+  </div>`;
+
+  const tree = ASC_TREE[window._ascTreeSub];
+  const ascSk = id => (G.ascensionSkills && G.ascensionSkills[id]) || 0;
+  const ascSP = G.ascensionSP || 0;
+
+  h += `<div style="display:flex;flex-direction:column;gap:0">`;
+
+  tree.tiers.forEach((tier, ti) => {
+    if (ti > 0) {
+      h += `<div style="height:16px;position:relative;margin:0 8px">
+        <div style="position:absolute;top:0;left:50%;width:1px;height:100%;background:#5a3a90"></div>
+      </div>`;
+    }
+    h += `<div style="display:grid;gap:8px;grid-template-columns:${tier.length === 1 ? 'minmax(0,1fr)' : '1fr 1fr'};${tier.length === 1 ? 'max-width:180px;margin:0 auto;width:100%' : ''}>`;
+
+    tier.forEach(sk => {
+      const cur = ascSk(sk.id);
+      const maxed = cur >= sk.max;
+      const locked = sk.req && ascSk(sk.req) < 1;
+      const canBuy = !locked && !maxed && ascSP > 0;
+
+      const borderCol = maxed ? '#c090f0' : cur > 0 ? '#7a4ab0' : locked ? '#2a1a3a' : '#4a2a70';
+      const bgCol = maxed ? 'linear-gradient(180deg,#200c40,#180830)' : cur > 0 ? 'linear-gradient(180deg,#1a0c30,#140828)' : 'linear-gradient(180deg,#120a20,#0e0818)';
+
+      const pips = Array.from({ length: Math.min(sk.max, 10) }, (_, i) =>
+        `<div style="width:8px;height:3px;border-radius:2px;background:${i < cur ? (maxed ? '#c090f0' : '#8050c0') : '#0e0818'};${i < cur && maxed ? 'box-shadow:0 0 4px rgba(192,144,240,0.6)' : ''};border:1px solid rgba(255,255,255,0.04)"></div>`
+      ).join('');
+
+      h += `<div onclick="${canBuy ? `buyAscSkill('${sk.id}')` : ''}"
+        style="background:${bgCol};border:2px solid ${borderCol};border-radius:8px;padding:10px 8px;
+        cursor:${canBuy ? 'pointer' : 'default'};display:flex;flex-direction:column;align-items:center;gap:4px;
+        text-align:center;min-height:110px;position:relative;
+        box-shadow:${maxed ? '0 0 16px rgba(192,144,240,0.3)' : '0 2px 10px rgba(0,0,0,0.5)'};
+        opacity:${locked ? '.28' : '1'};transition:all .18s">
+        ${sk.cap ? `<div style="position:absolute;top:2px;right:4px;font-size:.42rem;color:#9060c0;letter-spacing:.4px">CAPSTONE</div>` : ''}
+        <div style="width:44px;height:44px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#2a1050,#180828);
+          border:2px solid ${maxed ? '#c090f0' : cur > 0 ? '#7a4ab0' : '#3a2060'};
+          display:flex;align-items:center;justify-content:center;font-size:1.25rem;
+          box-shadow:${maxed ? '0 0 14px rgba(192,144,240,0.4)' : 'inset 0 2px 6px rgba(0,0,0,0.6)'}">
+          ${sk.ico}
+        </div>
+        <div style="font-size:var(--fs-xs);color:#d0a8f0;font-weight:700;line-height:1.2">${sk.name}</div>
+        <div style="font-size:0.58rem;color:#8060a0;font-style:italic;line-height:1.35">${sk.desc}</div>
+        ${sk.req && locked ? `<div style="font-size:0.54rem;color:var(--red)">Req: ${sk.req}</div>` : ''}
+        <div style="display:flex;gap:2.5px;flex-wrap:wrap;justify-content:center;margin-top:2px">${pips}</div>
+        <div style="font-size:var(--fs-xs);color:#c090f0">${cur}/${sk.max}</div>
+      </div>`;
+    });
+
+    h += `</div>`;
+  });
+
+  return h + `</div>`;
+}
+
+/* -----------------------------------------------
+   Soul Shard Relic Shop renderer
+----------------------------------------------- */
+function buildRelicShop() {
+  if (!G || G.ascensionLevel < 2) {
+    return `<div style="font-family:'Crimson Text',serif;font-style:italic;color:#7a5aaa;padding:var(--sp-lg);text-align:center">
+      Unlock Ascension Level 2 to access the Relic Shop.
+    </div>`;
+  }
+
+  const shards = G.soulShards || 0;
+
+  let h = `<div style="background:linear-gradient(135deg,#0c0818,#140c24);border:2px solid #3a2a5a;border-radius:8px;
+    padding:var(--sp-sm) var(--sp-md);margin-bottom:var(--sp-md);display:flex;align-items:center;justify-content:space-between">
+    <span style="color:#8060b0;font-size:var(--fs-xs);letter-spacing:2px">💠 SOUL SHARDS</span>
+    <span style="color:#c090f0;font-size:var(--fs-md);font-weight:700">${fmt(shards)}</span>
+  </div>
+  <div style="font-family:'Crimson Text',serif;font-style:italic;font-size:var(--fs-xs);color:#7a5aaa;margin-bottom:var(--sp-md)">
+    "Shards of souls that did not survive the crossing. They remember power, and they share it."
+  </div>
+  <div style="display:flex;flex-direction:column;gap:var(--sp-md)">`;
+
+  const rarityOrder = { common: 0, rare: 1, epic: 2, legendary: 3 };
+  const sorted = [...RELICS].sort((a, b) => rarityOrder[a.rarity] - rarityOrder[b.rarity]);
+
+  sorted.forEach(r => {
+    const lv = relicLevel(r.id);
+    const cost = relicCost(r);
+    const maxed = lv >= r.maxLevel;
+    const cant = shards < cost || maxed;
+
+    const rarityColors = {
+      common: { border: '#3a5a3a', bg: 'rgba(40,100,40,0.08)', text: '#70c070', label: 'common' },
+      rare: { border: '#1e3c6a', bg: 'rgba(20,60,180,0.08)', text: '#6090e0', label: 'rare' },
+      epic: { border: '#5a1880', bg: 'rgba(90,20,160,0.08)', text: '#a060e0', label: 'epic' },
+      legendary: { border: '#8a5010', bg: 'rgba(180,100,10,0.08)', text: '#e0a030', label: 'legendary' },
+    };
+    const rc = rarityColors[r.rarity];
+
+    h += `<div style="background:linear-gradient(135deg,#100c1a,#180e28);border:2px solid ${maxed ? '#7a4ab0' : rc.border};
+      border-radius:10px;padding:var(--sp-md);display:flex;gap:var(--sp-md);align-items:center;
+      opacity:${cant && !maxed ? '0.5' : '1'};
+      box-shadow:${maxed ? '0 0 12px rgba(160,80,240,0.2)' : '0 2px 12px rgba(0,0,0,0.5)'}">
+      <div style="width:48px;height:48px;border-radius:9px;flex-shrink:0;
+        background:radial-gradient(circle at 40% 35%,#1a0c2a,#0e0818);
+        border:2px solid ${rc.border};display:flex;align-items:center;justify-content:center;
+        font-size:1.3rem;box-shadow:inset 0 2px 8px rgba(0,0,0,0.7)">${r.ico}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:var(--fs-sm);color:#d0a8f0;font-weight:700;margin-bottom:2px">${r.name}</div>
+        <div style="font-size:0.48rem;letter-spacing:.5px;text-transform:uppercase;color:${rc.text};margin-bottom:4px">${rc.label}</div>
+        <div style="font-family:'Crimson Text',serif;font-style:italic;font-size:var(--fs-xs);color:#9070b0;line-height:1.4;margin-bottom:5px">${r.desc}</div>
+        <div style="font-size:var(--fs-xs);color:#c090f0">Level ${lv} / ${r.maxLevel}</div>
+        ${maxed ? `<div style="font-size:var(--fs-xs);color:var(--green2);margin-top:2px">★ MAXED</div>` : ''}
+      </div>
+      <button onclick="${maxed ? '' : `buyRelic('${r.id}')`}"
+        style="flex-shrink:0;padding:9px 12px;font-family:'Cinzel',serif;font-size:var(--fs-xs);
+        font-weight:700;letter-spacing:1px;border:none;border-radius:5px;cursor:${maxed || cant ? 'default' : 'pointer'};
+        min-height:40px;min-width:55px;transition:all .12s;
+        background:${maxed ? 'rgba(0,0,0,0.4)' : 'linear-gradient(180deg,#8050c0,#5030a0,#30186080)'};
+        color:${maxed ? '#604880' : '#e0d0ff'};
+        box-shadow:${maxed ? 'none' : '0 3px 0 #20106080,0 0 10px rgba(160,80,240,0.2)'};
+        opacity:${cant && !maxed ? '0.4' : '1'}"
+        ${cant ? 'disabled' : ''}>
+        ${maxed ? 'MAX' : `💠 ${fmt(cost)}`}
+      </button>
+    </div>`;
+  });
+
+  return h + `</div>`;
+}
+
+/* -----------------------------------------------
+   Buy Ascension Skill
+----------------------------------------------- */
+function buyAscSkill(id) {
+  initAudio();
+  if (G.ascensionLevel < 1) { toast('Ascend first!'); return; }
+  if ((G.ascensionSP || 0) <= 0) { toast('No Ascension SP — earn more from kills!'); return; }
+
+  const allAscSk = Object.values(ASC_TREE).flatMap(t => t.tiers.flat());
+  const sk = allAscSk.find(s => s.id === id);
+  if (!sk) return;
+
+  const cur = (G.ascensionSkills && G.ascensionSkills[id]) || 0;
+  if (cur >= sk.max) { toast('Already maxed!'); return; }
+  if (sk.req && !((G.ascensionSkills && G.ascensionSkills[sk.req]) >= 1)) {
+    toast('Unlock prerequisite first!'); return;
+  }
+
+  G.ascensionSP--;
+  if (!G.ascensionSkills) G.ascensionSkills = {};
+  G.ascensionSkills[id] = cur + 1;
+  G.ascensionSPSpent = (G.ascensionSPSpent || 0) + 1;
+
+  SFX.skill();
+  tone(620, 'triangle', 0.055, 0.15);
+  tone(930, 'triangle', 0.075, 0.12, 0.05);
+  tone(1200, 'triangle', 0.06, 0.10, 0.10);
+
+  renderTab(); updateHUD(); saveG();
+}
+
+/* -----------------------------------------------
+   Buy Relic
+----------------------------------------------- */
+function buyRelic(id) {
+  initAudio();
+  if (G.ascensionLevel < 2) { toast('Reach Ascension Level 2 first!'); return; }
+
+  const r = RELICS.find(x => x.id === id);
+  if (!r) return;
+
+  const lv = relicLevel(r.id);
+  if (lv >= r.maxLevel) { toast('Already maxed!'); return; }
+
+  const cost = relicCost(r);
+  if ((G.soulShards || 0) < cost) { toast('Not enough Soul Shards!'); return; }
+
+  G.soulShards -= cost;
+  if (!G.relics) G.relics = {};
+  G.relics[id] = lv + 1;
+
+  SFX.boon();
+  tone(500, 'triangle', 0.08, 0.16);
+  tone(750, 'triangle', 0.10, 0.14, 0.07);
+  tone(1000, 'triangle', 0.08, 0.12, 0.14);
+
+  toast(`${r.ico} ${r.name} → Level ${lv + 1}!`);
+  renderTab(); updateHUD(); saveG();
+}
+
+/* -----------------------------------------------
+   Rift Info Panel
+----------------------------------------------- */
+function buildRiftPanel() {
+  if (!G || G.ascensionLevel < 3) {
+    return `<div style="font-family:'Crimson Text',serif;font-style:italic;color:#7a5aaa;padding:var(--sp-lg);text-align:center">
+      Reach Ascension Level 3 to awaken the Void Rifts.
+    </div>`;
+  }
+
+  const sealed = G._riftSealed || 0;
+  const nextIn = riftTriggerInterval() - (G.voidRiftKills || 0);
+
+  let h = `<div style="background:linear-gradient(135deg,#0c0818,#140c24);border:2px solid #3a2a5a;border-radius:8px;
+    padding:var(--sp-sm) var(--sp-md);margin-bottom:var(--sp-md);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
+    <div>
+      <div style="color:#8060b0;font-size:var(--fs-xs);letter-spacing:2px">VOID RIFTS</div>
+      <div style="color:#c090f0;font-size:var(--fs-xs);margin-top:2px">${G.voidRiftActive ? `🌀 RIFT ACTIVE — ${_riftKillCount} / ${_activeRift ? _activeRift.killTarget : '?'} kills` : `Next rift in ~${nextIn} kills`}</div>
+    </div>
+    <div style="text-align:right">
+      <div style="color:#8060b0;font-size:var(--fs-xs)">Rifts Sealed</div>
+      <div style="color:#c090f0;font-size:var(--fs-md);font-weight:700">${sealed}</div>
+    </div>
+  </div>`;
+
+  h += `<div style="font-family:'Crimson Text',serif;font-style:italic;font-size:var(--fs-xs);color:#7a5aaa;margin-bottom:var(--sp-md)">
+    "The void does not knock. It tears through."
+  </div>`;
+
+  h += `<div style="display:flex;flex-direction:column;gap:var(--sp-md)">`;
+
+  VOID_RIFT_EVENTS.forEach((vr, i) => {
+    const alNeeded = i === 0 ? 3 : i === 1 ? 3 : i === 2 ? 4 : 5;
+    const locked = G.ascensionLevel < alNeeded;
+    h += `<div style="background:linear-gradient(135deg,#0e0818,#160c24);border:2px solid ${locked ? '#2a1a3a' : vr.color};
+      border-radius:10px;padding:var(--sp-md);opacity:${locked ? '0.35' : '1'};
+      box-shadow:${locked ? 'none' : `0 0 12px ${vr.glowColor}`}">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="font-size:1.4rem;filter:${locked ? 'grayscale(1)' : `drop-shadow(0 0 8px ${vr.color})`}">${vr.ico}</span>
+        <div>
+          <div style="font-size:var(--fs-sm);color:#c090f0;font-weight:700">${vr.name}</div>
+          <div style="font-size:var(--fs-xs);color:#7a5aaa;letter-spacing:1px">AL${alNeeded} · ${vr.killTarget} kills to seal</div>
+        </div>
+        ${locked ? `<div style="margin-left:auto;font-size:var(--fs-xs);color:#604880">🔒 AL${alNeeded}</div>` : ''}
+      </div>
+      <div style="font-family:'Crimson Text',serif;font-style:italic;font-size:var(--fs-xs);color:#9070b0;line-height:1.5;margin-bottom:8px">${vr.desc}</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <span style="font-size:var(--fs-xs);padding:2px 8px;background:rgba(200,40,40,0.12);border:1px solid rgba(200,40,40,0.25);border-radius:3px;color:#e07070">⚠ Enemies ×${vr.enemyDmgMult} dmg${vr.enemyHpMult ? ` ×${vr.enemyHpMult} HP` : ''}</span>
+        <span style="font-size:var(--fs-xs);padding:2px 8px;background:rgba(60,180,60,0.12);border:1px solid rgba(60,180,60,0.25);border-radius:3px;color:#70e070">✦ You ×${vr.playerDmgMult} dmg</span>
+        <span style="font-size:var(--fs-xs);padding:2px 8px;background:rgba(100,60,200,0.12);border:1px solid rgba(100,60,200,0.25);border-radius:3px;color:#c090f0">💠 +${vr.shardReward} shards</span>
+        <span style="font-size:var(--fs-xs);padding:2px 8px;background:rgba(240,192,48,0.08);border:1px solid rgba(240,192,48,0.2);border-radius:3px;color:var(--gold)">×${vr.xpMult} XP · ×${vr.goldMult} gold</span>
+      </div>
+    </div>`;
+  });
+
+  return h + `</div>`;
+}
+
+/* -----------------------------------------------
+   Bloodline Traits Panel
+----------------------------------------------- */
+function buildBloodlinePanel() {
+  if (!G || G.ascensionLevel < 4) {
+    return `<div style="font-family:'Crimson Text',serif;font-style:italic;color:#7a5aaa;padding:var(--sp-lg);text-align:center">
+      Reach Ascension Level 4 to unlock Bloodline Traits.
+    </div>`;
+  }
+
+  const shards = G.soulShards || 0;
+  const sealed = G._riftSealed || 0;
+
+  let h = `<div style="background:linear-gradient(135deg,#0e0810,#180c18);border:2px solid #6a2a5a;border-radius:8px;
+    padding:var(--sp-sm) var(--sp-md);margin-bottom:var(--sp-md);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px">
+    <div>
+      <div style="color:#c060a0;font-size:var(--fs-xs);letter-spacing:2px">♾ BLOODLINE TRAITS</div>
+      <div style="font-family:'Crimson Text',serif;font-style:italic;font-size:var(--fs-xs);color:#8060a0;margin-top:2px">These bonuses are eternal. Nothing can remove them.</div>
+    </div>
+    <div style="text-align:right">
+      <div style="color:#8060b0;font-size:var(--fs-xs)">💠 Soul Shards</div>
+      <div style="color:#c090f0;font-size:var(--fs-md);font-weight:700">${fmt(shards)}</div>
+    </div>
+  </div>`;
+
+  h += `<div style="font-family:'Crimson Text',serif;font-style:italic;font-size:var(--fs-xs);color:#8060a0;margin-bottom:var(--sp-md);padding:var(--sp-sm) var(--sp-md);background:rgba(100,20,80,0.08);border:1px solid #4a1a40;border-radius:6px">
+    "What is written into the blood cannot be unwritten. Not by death. Not by the void. Not by anything that came before."
+  </div>`;
+
+  h += `<div style="display:flex;flex-direction:column;gap:var(--sp-md)">`;
+
+  const rarityOrder = { rare: 0, epic: 1, legendary: 2 };
+  const sorted = [...BLOODLINE_TRAITS].sort((a, b) =>
+    rarityOrder[a.rarity] - rarityOrder[b.rarity]
+  );
+
+  sorted.forEach(t => {
+    const lv = traitLevel(t.id);
+    const cost = traitCost(t);
+    const maxed = lv >= t.maxLevel;
+    const alLocked = t.alReq && G.ascensionLevel < t.alReq;
+    const cant = shards < cost || maxed || alLocked;
+
+    const rarityColors = {
+      rare: { border: '#1e3c6a', text: '#6090e0', bg: 'rgba(20,60,180,0.06)' },
+      epic: { border: '#5a1880', text: '#a060e0', bg: 'rgba(90,20,160,0.06)' },
+      legendary: { border: '#8a3010', text: '#e08030', bg: 'rgba(180,80,10,0.06)' },
+    };
+    const rc = rarityColors[t.rarity];
+
+    // Build effect preview
+    let effectLine = '';
+    if (lv > 0) {
+      if (t.id === 'bt_iron') effectLine = `+${lv * 15}% ATK & DEF`;
+      else if (t.id === 'bt_soul') effectLine = `+${lv * 20}% XP`;
+      else if (t.id === 'bt_gold') effectLine = `+${lv * 20}% gold`;
+      else if (t.id === 'bt_void') effectLine = `+${lv * 10}% ALL stats · +${(lv * 0.02).toFixed(2)} spd`;
+      else if (t.id === 'bt_phoenix') effectLine = `On death: 1000% ATK nova`;
+      else if (t.id === 'bt_rift') effectLine = `${sealed} rifts sealed → +${(sealed * 5 * lv).toFixed(0)}% all stats`;
+      else if (t.id === 'bt_eternal') effectLine = `AL${G.ascensionLevel} → +${(G.ascensionLevel * 2).toFixed(0)}% all stats`;
+      else if (t.id === 'bt_ashen') effectLine = `+50% ALL stats · +0.15 spd`;
+    }
+
+    h += `<div style="background:linear-gradient(135deg,#120818,#1a0c20);border:2px solid ${alLocked ? '#2a1a2a' : maxed ? '#9060b0' : rc.border};
+      border-radius:10px;padding:var(--sp-md);display:flex;gap:var(--sp-md);align-items:center;
+      opacity:${cant && !maxed ? '0.5' : '1'};
+      box-shadow:${maxed ? '0 0 14px rgba(160,80,200,0.25)' : '0 2px 12px rgba(0,0,0,0.5)'}">
+      <div style="width:48px;height:48px;border-radius:9px;flex-shrink:0;
+        background:radial-gradient(circle at 40% 35%,#1e0828,#0e0418);
+        border:2px solid ${alLocked ? '#2a1a2a' : rc.border};
+        display:flex;align-items:center;justify-content:center;
+        font-size:1.3rem;box-shadow:inset 0 2px 8px rgba(0,0,0,0.7)">${t.ico}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+          <span style="font-size:var(--fs-sm);color:#d0a8f0;font-weight:700">${t.name}</span>
+          ${alLocked ? `<span style="font-size:0.48rem;padding:1px 5px;background:rgba(60,20,60,0.4);border:1px solid #4a1a4a;border-radius:3px;color:#8060a0">AL${t.alReq} REQ</span>` : ''}
+        </div>
+        <div style="font-size:0.48rem;letter-spacing:.5px;text-transform:uppercase;color:${rc.text};margin-bottom:4px">${t.rarity}${t.maxLevel === Infinity ? ' · INFINITE' : ''}</div>
+        <div style="font-family:'Crimson Text',serif;font-style:italic;font-size:var(--fs-xs);color:#9070b0;line-height:1.4;margin-bottom:5px">${t.desc}</div>
+        ${lv > 0 ? `<div style="padding:3px 8px;background:rgba(160,80,200,0.1);border:1px solid rgba(160,80,200,0.2);border-radius:4px;font-size:var(--fs-xs);color:#c090f0;margin-bottom:4px">${effectLine}</div>` : ''}
+        <div style="font-size:var(--fs-xs);color:#7a5aaa">${maxed ? '★ ETERNAL — Maximum reached' : `Level ${lv}${t.maxLevel !== Infinity ? ` / ${t.maxLevel}` : ' (∞)'}`}</div>
+      </div>
+      <button onclick="${maxed || alLocked ? '' : `buyBloodlineTrait('${t.id}')`}"
+        style="flex-shrink:0;padding:9px 12px;font-family:'Cinzel',serif;font-size:var(--fs-xs);
+        font-weight:700;letter-spacing:1px;border:none;border-radius:5px;
+        cursor:${maxed || cant ? 'default' : 'pointer'};
+        min-height:40px;min-width:55px;transition:all .12s;
+        background:${maxed ? 'rgba(0,0,0,0.4)' : alLocked ? 'rgba(0,0,0,0.3)' : 'linear-gradient(180deg,#a060d0,#6030a0,#38186080)'};
+        color:${maxed ? '#604880' : alLocked ? '#604060' : '#f0e0ff'};
+        box-shadow:${maxed || alLocked ? 'none' : '0 3px 0 #20086080,0 0 10px rgba(160,80,240,0.2)'};
+        opacity:${cant && !maxed ? '0.4' : '1'}"
+        ${cant ? 'disabled' : ''}>
+        ${maxed ? '♾' : alLocked ? '🔒' : `💠 ${fmt(cost)}`}
+      </button>
+    </div>`;
+  });
+
+  return h + `</div>`;
+}
+
+/* -----------------------------------------------
+   Buy Bloodline Trait
+----------------------------------------------- */
+function buyBloodlineTrait(id) {
+  initAudio();
+  if (G.ascensionLevel < 4) { toast('Reach Ascension Level 4 first!'); return; }
+
+  const t = BLOODLINE_TRAITS.find(x => x.id === id);
+  if (!t) return;
+  if (t.alReq && G.ascensionLevel < t.alReq) {
+    toast(`Requires Ascension Level ${t.alReq}!`); return;
+  }
+
+  const lv = traitLevel(t.id);
+  if (lv >= t.maxLevel) { toast('Already at maximum!'); return; }
+
+  const cost = traitCost(t);
+  if ((G.soulShards || 0) < cost) { toast('Not enough Soul Shards!'); return; }
+
+  G.soulShards -= cost;
+  if (!G.bloodlineTraits) G.bloodlineTraits = {};
+  G.bloodlineTraits[id] = lv + 1;
+
+  // Special fanfare for bloodline purchases
+  tone(200, 'square', 0.1, 0.20);
+  tone(300, 'square', 0.1, 0.18, 0.08);
+  tone(400, 'square', 0.1, 0.16, 0.16);
+  tone(500, 'square', 0.1, 0.14, 0.24);
+  tone(600, 'square', 0.12, 0.18, 0.32);
+
+  toast(`${t.ico} ${t.name} inscribed into your bloodline! Level ${lv + 1}. Forever.`);
+  setStoryTicker(`♾ ${t.name} — written into the blood.`, true);
+
+  renderTab(); updateHUD(); saveG();
+}
+
+/* -----------------------------------------------
+   True Endgame Panel — AL5
+----------------------------------------------- */
+function buildEndgamePanel() {
+  if (!G || G.ascensionLevel < 5) {
+    return `<div style="font-family:'Crimson Text',serif;font-style:italic;color:#7a5aaa;
+      padding:var(--sp-lg);text-align:center">
+      Reach Ascension Level 5 — The Ashen One — to enter True Endgame.
+    </div>`;
+  }
+
+  const depth     = G.depthScore   || 0;
+  const best      = G.bestDepth    || 0;
+  const shards    = G.soulShards   || 0;
+  const enemyMult = getDepthEnemyMult();
+  const rewMult   = getDepthRewardMult();
+
+  // Next milestone
+  const nextM = DEPTH_MILESTONES.find(m => depth < m.depth);
+  const prevM = [...DEPTH_MILESTONES].reverse().find(m => depth >= m.depth);
+
+  let h = `
+  <!-- Header -->
+  <div style="background:linear-gradient(135deg,#080410,#120828);
+    border:2px solid #6030a0;border-radius:12px;
+    padding:var(--sp-lg);margin-bottom:var(--sp-lg);
+    position:relative;overflow:hidden;
+    box-shadow:0 0 30px rgba(120,60,200,0.3),0 4px 20px rgba(0,0,0,0.7)">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;
+      background:linear-gradient(90deg,transparent,#c090f0,transparent)"></div>
+
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+      <span style="font-size:2.2rem;
+        filter:drop-shadow(0 0 16px rgba(200,100,255,0.9))">🔱</span>
+      <div>
+        <div style="font-size:var(--fs-lg);color:#c090f0;font-weight:700;
+          text-shadow:0 0 14px rgba(180,100,255,0.6)">TRUE ENDGAME</div>
+        <div style="font-size:var(--fs-xs);color:#7050a0;letter-spacing:3px;margin-top:2px">
+          INFINITE DEPTH · NO CEILING · NO MERCY
+        </div>
+      </div>
+    </div>
+
+    <div style="font-family:'Crimson Text',serif;font-style:italic;
+      font-size:var(--fs-sm);color:#9070c0;line-height:1.7;margin-bottom:14px">
+      "There is no Ashen King left to defeat. There is only the void, and how deep into it
+       you are willing to descend. Every kill pushes you further. Every death sends you back.
+       Your best run is all that endures."
+    </div>
+
+    <!-- Depth stats row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
+      ${[
+        ['🔱 Current Depth', depth],
+        ['🏆 Best Depth',    best],
+        ['💠 Soul Shards',   fmt(shards)],
+      ].map(([lbl, val]) => `
+        <div style="background:rgba(0,0,0,0.4);border:1px solid #3a1a60;border-radius:8px;
+          padding:8px 6px;text-align:center">
+          <div style="font-size:var(--fs-xs);color:#7050a0;margin-bottom:4px">${lbl}</div>
+          <div style="font-size:var(--fs-md);color:#c090f0;font-weight:700">${val}</div>
+        </div>`).join('')}
+    </div>
+
+    <!-- Scaling display -->
+    <div style="background:rgba(0,0,0,0.35);border:1px solid #3a1a60;border-radius:8px;
+      padding:10px 12px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:var(--fs-xs);color:#8060b0">Enemy Power</span>
+        <span style="font-size:var(--fs-sm);color:#e07070;font-weight:700">
+          ×${enemyMult.toFixed(2)}
+        </span>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <span style="font-size:var(--fs-xs);color:#8060b0">Reward Multiplier</span>
+        <span style="font-size:var(--fs-sm);color:#70e070;font-weight:700">
+          ×${rewMult.toFixed(2)}
+        </span>
+      </div>
+      <div style="display:flex;justify-content:space-between">
+        <span style="font-size:var(--fs-xs);color:#8060b0">Depth / Best</span>
+        <span style="font-size:var(--fs-sm);color:#c090f0;font-weight:700">
+          ${depth} / ${best}
+        </span>
+      </div>
+    </div>
+
+    <!-- Progress to next milestone -->
+    ${nextM ? `
+    <div style="margin-bottom:4px;display:flex;justify-content:space-between;
+      align-items:center">
+      <span style="font-size:var(--fs-xs);color:#8060b0">
+        Next Milestone: ${nextM.ico} ${nextM.name} (Depth ${nextM.depth})
+      </span>
+      <span style="font-size:var(--fs-xs);color:#c090f0">
+        ${depth} / ${nextM.depth}
+      </span>
+    </div>
+    <div style="height:5px;background:rgba(0,0,0,0.5);border-radius:3px;overflow:hidden">
+      <div style="height:100%;border-radius:3px;transition:width .5s;
+        background:linear-gradient(90deg,#6030a0,#c090f0);
+        box-shadow:0 0 6px rgba(160,80,240,0.5);
+        width:${Math.min(100, (depth / nextM.depth) * 100).toFixed(1)}%">
+      </div>
+    </div>` : `
+    <div style="text-align:center;color:#c090f0;font-size:var(--fs-sm);padding:4px">
+      🔱 All milestones claimed. Push further for legacy.
+    </div>`}
+  </div>
+
+  <!-- Milestone list -->
+  <div style="font-size:var(--fs-xs);color:#7050a0;letter-spacing:3px;
+    text-transform:uppercase;margin-bottom:var(--sp-md);
+    padding-bottom:8px;border-bottom:1px solid #3a1a60;
+    text-shadow:0 0 8px rgba(140,60,220,0.3)">
+    🔱 DEPTH MILESTONES
+  </div>
+  <div style="display:flex;flex-direction:column;gap:var(--sp-sm)">`;
+
+  DEPTH_MILESTONES.forEach(m => {
+    const claimed  = G._depthMilestones && G._depthMilestones[m.depth];
+    const current  = depth >= m.depth;
+    const progress = Math.min(100, (depth / m.depth) * 100);
+    const trait    = BLOODLINE_TRAITS.find(t => t.id === m.reward);
+
+    h += `
+    <div style="background:linear-gradient(135deg,
+        ${claimed ? '#0e0a1a' : current ? '#120828' : '#0c0818'},
+        ${claimed ? '#160e24' : current ? '#1a0e38' : '#14102a'});
+      border:2px solid ${claimed ? '#7a4ab0' : current ? '#5a3090' : '#2a1a4a'};
+      border-radius:10px;padding:var(--sp-md);
+      box-shadow:${claimed ? '0 0 10px rgba(160,80,240,0.2)' : 'none'};
+      opacity:${claimed ? '0.9' : '1'}">
+
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">
+        <span style="font-size:1.3rem;
+          filter:${claimed
+            ? 'drop-shadow(0 0 8px rgba(180,100,255,0.7))'
+            : current
+              ? 'drop-shadow(0 0 5px rgba(120,60,200,0.5))'
+              : 'grayscale(0.7) opacity(0.5)'}">
+          ${m.ico}
+        </span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:var(--fs-sm);color:${claimed ? '#c090f0' : '#9070c0'};
+            font-weight:700">${m.name}</div>
+          <div style="font-size:var(--fs-xs);color:#6040a0;letter-spacing:1px">
+            Depth ${m.depth}
+          </div>
+        </div>
+        ${claimed
+          ? `<span style="font-size:var(--fs-xs);color:var(--green2);
+               padding:2px 8px;background:rgba(30,120,30,0.15);
+               border:1px solid #1a6020;border-radius:10px">✦ CLAIMED</span>`
+          : `<span style="font-size:var(--fs-xs);color:#6040a0">
+               ${depth}/${m.depth}</span>`}
+      </div>
+
+      <div style="font-family:'Crimson Text',serif;font-style:italic;
+        font-size:var(--fs-xs);color:#8060a0;line-height:1.5;margin-bottom:8px">
+        "${m.desc}"
+      </div>
+
+      <!-- Progress bar -->
+      ${!claimed ? `
+      <div style="height:4px;background:rgba(0,0,0,0.5);border-radius:3px;
+        overflow:hidden;margin-bottom:8px">
+        <div style="height:100%;border-radius:3px;
+          background:linear-gradient(90deg,#5030a0,#c090f0);
+          box-shadow:0 0 4px rgba(160,80,240,0.4);
+          transition:width .5s;
+          width:${progress.toFixed(1)}%">
+        </div>
+      </div>` : ''}
+
+      <!-- Rewards -->
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <span style="font-size:var(--fs-xs);padding:2px 8px;
+          background:rgba(100,60,200,0.12);
+          border:1px solid rgba(100,60,200,0.25);
+          border-radius:3px;color:#c090f0">
+          ${trait ? `${trait.ico} ${trait.name} ×${m.rewardAmt}` : m.reward}
+        </span>
+        <span style="font-size:var(--fs-xs);padding:2px 8px;
+          background:rgba(240,192,48,0.08);
+          border:1px solid rgba(240,192,48,0.2);
+          border-radius:3px;color:var(--gold)">
+          💠 +${m.shards.toLocaleString()} shards
+        </span>
+      </div>
+    </div>`;
+  });
+
+  h += `</div>
+
+  <!-- Flavor footer -->
+  <div style="margin-top:var(--sp-lg);text-align:center;
+    font-family:'Crimson Text',serif;font-style:italic;
+    font-size:var(--fs-xs);color:#50306080;line-height:1.8;padding:var(--sp-md)">
+    "The Ashen Throne was never meant to be claimed.<br>
+     You claimed it anyway.<br>
+     Now there is only deeper ash, and the question<br>
+     of how long you can keep burning."
+  </div>`;
+
+  return h;
+}
+
+/* ===============================================
    PRESTIGE
 =============================================== */
-function openPrestige(){const gain=Math.max(1,Math.floor(G.lv/5));openModal('✨ Prestige Ascension',`Gain ${gain} prestige point${gain>1?'s':''}, permanently increasing all stats by ${gain*5}%.`,'⚠ Your level, gold, skills, and zone will reset. Boons and 50% of current SP persist.',doPrestige,true);}
+function openPrestige(){
+  const gain=Math.max(1,Math.floor(G.lv/5));
+  const depthNote = G.ascensionLevel>=5
+    ? ` Depth score will reset. Best depth (${G.bestDepth||0}) is permanent.`
+    : '';
+  openModal(
+    '✨ Prestige Ascension',
+    `Gain ${gain} prestige point${gain>1?'s':''}, permanently increasing all stats by ${gain*5}%.`,
+    `⚠ Your level, gold, skills, and zone will reset. Boons and 50% of current SP persist.${depthNote}`,
+    doPrestige,
+    true
+  );
+}
+
 function doPrestige(){
   const gain=Math.max(1,Math.floor(G.lv/5));G.prestige+=gain;G.pbonus=1+G.prestige*.05;
   const carryoverSP=Math.floor(G.sp*0.5);
   // SP that didn't carry over counts as wasted
   G.skInvestWasted=(G.skInvestWasted||0)+Math.ceil(G.sp*0.5);
   G.lv=1;G.xp=0;G.xpNext=100;G.sp=carryoverSP;G.sk={};
+  // Depth resets on prestige but best depth is kept
+  G.depthScore = 0;
   G.zone=1;G.zoneKills=0;G.zoneTarget=10;G.gold=0;G.sktotal=0;G.chainKills=0;G.divineReady=true;G._swr=true;
   const st=getStats();G.hp=st.maxHp;G.mana=CLASSES[G.cls].baseMana;
   spawnEnemy();closeModal();checkQuests();checkChapters();SFX.prestige();
@@ -3508,8 +5781,15 @@ function confirmClass(){
      else if(!raf){loop();}
   });
   spawnEnemy();updateHUD();openTab('story');renderTab();
-  setStoryTicker('Your legend begins in the Ashen Fields.',true);startBGM();if(G.idle)startIdle();setInterval(saveG,30000);if(!manaTimer)manaTimer=setInterval(tickMana,1000);if(!vaultTimer)vaultTimer=setInterval(tickVault,1000);
+  setStoryTicker('Your legend begins in the Ashen Fields.',true);startTicker();startBGM();if(G.idle)startIdle();setInterval(saveG,30000);if(!manaTimer)manaTimer=setInterval(tickMana,1000);if(!vaultTimer)vaultTimer=setInterval(tickVault,1000);
   setInterval(tickBank, 60000);
+
+    // Inject ascension HUD if returning player already ascended
+  if (G.ascensionLevel >= 1) {
+    injectAscensionHUD();
+    injectDepthStyles();
+    updateAscHUDStrip();
+  }
 }
 
 /* ===============================================
@@ -3533,6 +5813,13 @@ function gotoClassSelect(){
     document.getElementById('hud-av').textContent=CLASSES[G.cls].icon;
     showScr('s2');initCanvas();spawnEnemy();updateHUD();openTab('story');renderTab();
     setStoryTicker(ZONES[Math.min(G.zone-1,ZONES.length-1)].story);startBGM();if(G.idle)startIdle();setInterval(saveG,30000);if(!manaTimer)manaTimer=setInterval(tickMana,1000);if(!vaultTimer)vaultTimer=setInterval(tickVault,1000);if(!bankTimer)bankTimer=setInterval(tickBank, 60000);
+    // First-time ascension system announcement
+    if (G.age >= 70 && !G.hasAscended && !G._ascNotified) {
+      G._ascNotified = true;
+      setTimeout(() => {
+        toast('🌅 Approaching Age 75 — ASCENSION will unlock! Check the Realm.');
+      }, 2000);
+    }
     if(G._offlineRecap){
        const r = G._offlineRecap;
        delete G._offlineRecap;
