@@ -4348,7 +4348,7 @@ function updateHUD(){
   }
   // Show/hide Ascension tab
   const ascTab = document.getElementById('tb-ascend');
-  if (ascTab) ascTab.style.display = G.ascensionLevel >= 1 ? '' : 'none';
+  if (ascTab) ascTab.style.display = (G.ascensionLevel >= 1 || canAscend()) ? '' : 'none';
  
   // Ascension HUD strip (AL1+)
   if (G.ascensionLevel >= 1) {
@@ -5048,7 +5048,7 @@ function buildAscendTab() {
       background:${window._ascSub===t?'linear-gradient(135deg,#2a1050,#3a1870)':'rgba(0,0,0,0.4)'};
       border:1.5px solid ${window._ascSub===t?'#9060d0':'#3a2a5a'};
       color:${window._ascSub===t?'#c090f0':'#7a5aaa'}">
-      ${t === 'tree' ? '🌅 Skill Tree' : '💠 Relics'}
+      ${{ tree: '🌅 Skill Tree', relics: '💠 Relics', rifts: '🌀 Rifts', bloodline: '♾ Bloodline', endgame: '🔱 Endgame' }[t] || t}
     </button>`).join('')}
   </div>`;
 
