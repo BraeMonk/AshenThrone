@@ -5496,7 +5496,6 @@ function buildEndgamePanel() {
   const prevM = [...DEPTH_MILESTONES].reverse().find(m => depth >= m.depth);
 
   let h = `
-  <!-- Header -->
   <div style="background:linear-gradient(135deg,#080410,#120828);
     border:2px solid #6030a0;border-radius:12px;
     padding:var(--sp-lg);margin-bottom:var(--sp-lg);
@@ -5524,7 +5523,6 @@ function buildEndgamePanel() {
        Your best run is all that endures."
     </div>
 
-    <!-- Depth stats row -->
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
       ${[
         ['🔱 Current Depth', depth],
@@ -5538,7 +5536,6 @@ function buildEndgamePanel() {
         </div>`).join('')}
     </div>
 
-    <!-- Scaling display -->
     <div style="background:rgba(0,0,0,0.35);border:1px solid #3a1a60;border-radius:8px;
       padding:10px 12px;margin-bottom:12px">
       <div style="display:flex;justify-content:space-between;margin-bottom:6px">
@@ -5561,7 +5558,6 @@ function buildEndgamePanel() {
       </div>
     </div>
 
-    <!-- Progress to next milestone -->
     ${nextM ? `
     <div style="margin-bottom:4px;display:flex;justify-content:space-between;
       align-items:center">
@@ -5584,7 +5580,6 @@ function buildEndgamePanel() {
     </div>`}
   </div>
 
-  <!-- Milestone list -->
   <div style="font-size:var(--fs-xs);color:#7050a0;letter-spacing:3px;
     text-transform:uppercase;margin-bottom:var(--sp-md);
     padding-bottom:8px;border-bottom:1px solid #3a1a60;
@@ -5637,7 +5632,6 @@ function buildEndgamePanel() {
         "${m.desc}"
       </div>
 
-      <!-- Progress bar -->
       ${!claimed ? `
       <div style="height:4px;background:rgba(0,0,0,0.5);border-radius:3px;
         overflow:hidden;margin-bottom:8px">
@@ -5649,7 +5643,6 @@ function buildEndgamePanel() {
         </div>
       </div>` : ''}
 
-      <!-- Rewards -->
       <div style="display:flex;gap:6px;flex-wrap:wrap">
         <span style="font-size:var(--fs-xs);padding:2px 8px;
           background:rgba(100,60,200,0.12);
@@ -5669,7 +5662,6 @@ function buildEndgamePanel() {
 
   h += `</div>
 
-  <!-- Flavor footer -->
   <div style="margin-top:var(--sp-lg);text-align:center;
     font-family:'Crimson Text',serif;font-style:italic;
     font-size:var(--fs-xs);color:#50306080;line-height:1.8;padding:var(--sp-md)">
