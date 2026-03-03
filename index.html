@@ -4982,7 +4982,7 @@ function buildStats(){
    ASCENSION TAB — Skill Tree + Soul Shards/Relics
 =============================================== */
 function buildAscendTab() {
-  if (!G || G.ascensionLevel < 1) {
+  if (!G || (G.ascensionLevel < 1 && !canAscend())) {
     return `<div class="sec"><div class="sec-hdr" style="color:#c090f0">ASCENSION</div>
       <div style="font-family:'Crimson Text',serif;font-style:italic;color:#7a5aaa;padding:var(--sp-lg);text-align:center">
         Reach Age 75 to unlock Ascension.
