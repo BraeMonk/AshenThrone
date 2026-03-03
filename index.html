@@ -913,6 +913,10 @@ CURSES TAB
       <button class="t-btn-sec" onclick="clearSavePrompt()">↺ New Game</button>
     </div>
     <div class="t-hint">Progress saves automatically</div>
+    <div style="display:flex;gap:10px;margin-top:4px;">
+      <button class="t-btn-sec" id="btn-mute-sfx" onclick="toggleSFX()">🔊 SFX</button>
+      <button class="t-btn-sec" id="btn-mute-bgm" onclick="toggleBGM()">🎵 Music</button>
+    </div>
   </div>
 </div>
 
@@ -993,10 +997,11 @@ CURSES TAB
    AUDIO
 =============================================== */
 const _=null;
-let AC=null,audioOn=false;
+let AC=null,audioOn=false,sfxOn=true,bgmOn=true;
 function initAudio(){if(AC)return;try{AC=new(window.AudioContext||window.webkitAudioContext)();audioOn=true;}catch(e){}}
-function tone(f,t,d,v,dl=0){if(!AC||!audioOn)return;const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);o.type=t;o.frequency.value=f;const ts=AC.currentTime+dl;g.gain.setValueAtTime(v,ts);g.gain.exponentialRampToValueAtTime(.001,ts+d);o.start(ts);o.stop(ts+d+.01);}
-function noise(d,v,dl=0){if(!AC||!audioOn)return;const b=AC.createBuffer(1,AC.sampleRate*d,AC.sampleRate);const da=b.getChannelData(0);for(let i=0;i<da.length;i++)da[i]=Math.random()*2-1;const s=AC.createBufferSource(),g=AC.createGain();s.buffer=b;s.connect(g);g.connect(AC.destination);const ts=AC.currentTime+dl;g.gain.setValueAtTime(v,ts);g.gain.exponentialRampToValueAtTime(.001,ts+d);s.start(ts);}
+function tone(f,t,d,v,dl=0){if(!AC||!audioOn||!sfxOn)return;const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);o.type=t;o.frequency.value=f;const ts=AC.currentTime+dl;g.gain.setValueAtTime(v,ts);g.gain.exponentialRampToValueAtTime(.001,ts+d);o.start(ts);o.stop(ts+d+.01);}
+function noise(d,v,dl=0){if(!AC||!audioOn||!sfxOn)return;
+const b=AC.createBuffer(1,AC.sampleRate*d,AC.sampleRate);const da=b.getChannelData(0);for(let i=0;i<da.length;i++)da[i]=Math.random()*2-1;const s=AC.createBufferSource(),g=AC.createGain();s.buffer=b;s.connect(g);g.connect(AC.destination);const ts=AC.currentTime+dl;g.gain.setValueAtTime(v,ts);g.gain.exponentialRampToValueAtTime(.001,ts+d);s.start(ts);}
 const SFX={
   hit(){noise(.042,.16);tone(155,'square',.042,.07,.018)},
   crit(){tone(340,'square',.036,.16);tone(680,'square',.036,.13,.036);tone(1020,'square',.036,.1,.072)},
@@ -1014,9 +1019,18 @@ const SFX={
 function startBGM(){
   if(!AC)return;
   const mel=[220,261,330,196,220,246,220,196];let i=0;
-  (function n(){if(audioOn){const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);o.type='triangle';o.frequency.value=mel[i%mel.length];g.gain.setValueAtTime(.024,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.38);o.start();o.stop(AC.currentTime+.38);}i++;setTimeout(n,i%4===0?950:480);})();
+  (function n(){if(audioOn&&bgmOn){const o=AC.createOscillator(),g=AC.createGain();o.connect(g);g.connect(AC.destination);o.type='triangle';o.frequency.value=mel[i%mel.length];g.gain.setValueAtTime(.024,AC.currentTime);g.gain.exponentialRampToValueAtTime(.001,AC.currentTime+.38);o.start();o.stop(AC.currentTime+.38);}i++;setTimeout(n,i%4===0?950:480);})();
 }
-
+function toggleSFX(){
+  initAudio();sfxOn=!sfxOn;
+  const b=document.getElementById('btn-mute-sfx');
+  if(b){b.textContent=sfxOn?'🔊 SFX':'🔇 SFX';b.style.opacity=sfxOn?'1':'0.45';}
+}
+function toggleBGM(){
+  initAudio();bgmOn=!bgmOn;
+  const b=document.getElementById('btn-mute-bgm');
+  if(b){b.textContent=bgmOn?'🎵 Music':'🔕 Music';b.style.opacity=bgmOn?'1':'0.45';}
+}
 /* ===============================================
    32-BIT SPRITES — More color depth, shading, highlights
 =============================================== */
