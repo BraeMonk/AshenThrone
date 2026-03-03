@@ -4381,7 +4381,9 @@ function openTab(t){
   curTab=t;document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('on'));
   const tb=document.getElementById('tb-'+t);if(tb){tb.classList.add('on');const dot=tb.querySelector('.tab-dot');if(dot)dot.remove();}
   renderTab();
+  const body=document.getElementById('tab-body');if(body)body.scrollTop=0;
 }
+
 function renderTab(){
   const el=document.getElementById('tab-body');if(!el)return;
   if(curTab==='story')el.innerHTML=buildStory();
