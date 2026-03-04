@@ -3355,6 +3355,7 @@ function getStats(){
    spell = Math.round(spell * ascMult);
    
    // Apply Ascension Skill bonuses (AL1+)
+   spd = Math.round(spd * 100) / 100;
    let finalStats = { atk, def, spd, crit, life, spell, maxHp, maxMana, dodge, block };
    finalStats = applyAscSkillBonuses(finalStats);
    finalStats = applyRelicBonuses(finalStats);
