@@ -1546,35 +1546,35 @@ const SK_INVEST=[
    desc:'Each point grants +1% base ATK. No limit.',
    maxPts:Infinity,
    reward(pts){
-     return{label:`+${pts}% ATK`,atkPct:pts};
+     return{label:`+${fmt(pts)}% ATK`,atkPct:pts};
    }
   },
   {id:'si_def',ico:'🛡',name:'Fortress Mind',
    desc:'Each point grants +1% base DEF. No limit.',
    maxPts:Infinity,
    reward(pts){
-     return{label:`+${pts}% DEF`,defPct:pts};
+     return{label:`+${fmt(pts)}% DEF`,defPct:pts};
    }
   },
   {id:'si_hp',ico:'❤',name:'Vital Endurance',
    desc:'Each point grants +1% Max HP. No limit.',
    maxPts:Infinity,
    reward(pts){
-     return{label:`+${pts}% Max HP`,hpPct:pts};
+     return{label:`+${fmt(pts)}% Max HP`,hpPct:pts};
    }
   },
   {id:'si_gold',ico:'💰',name:'Hoarder\'s Instinct',
    desc:'Each point grants +1% gold from kills. No limit.',
    maxPts:Infinity,
    reward(pts){
-     return{label:`+${pts}% gold`,goldPct:pts};
+     return{label:`+${fmt(pts)}% gold`,goldPct:pts};
    }
   },
   {id:'si_xp',ico:'⭐',name:'Soulward Study',
    desc:'Each point grants +1% XP from kills. No limit.',
    maxPts:Infinity,
    reward(pts){
-     return{label:`+${pts}% XP`,xpPct:pts};
+     return{label:`+${fmt(pts)}% XP`,xpPct:pts};
    }
   },
 ];
