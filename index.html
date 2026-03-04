@@ -2959,7 +2959,7 @@ function updateAscHUDStrip() {
   if (shardEl) shardEl.textContent = `💠 ${fmt(G.soulShards || 0)}`;
 
   const spEl = document.getElementById('asc-hud-sp');
-  if (spEl) spEl.textContent = `ASC-SP: ${G.ascensionSP || 0}`;
+  if (spEl) spEl.textContent = `ASC-SP: ${fmt(G.ascensionSP || 0)}`;
 
   if (G.ascensionLevel >= 5) {
     const depthSep = document.getElementById('asc-hud-depth-sep');
@@ -4306,6 +4306,16 @@ function activateBoost(id){
    HUD
 =============================================== */
 function fmt(n){
+  if(n>=1e63)return(n/1e63).toFixed(2)+'Vg';
+  if(n>=1e60)return(n/1e60).toFixed(2)+'Sg';
+  if(n>=1e57)return(n/1e57).toFixed(2)+'Qig';
+  if(n>=1e54)return(n/1e54).toFixed(2)+'Qag';
+  if(n>=1e51)return(n/1e51).toFixed(2)+'Tg';
+  if(n>=1e48)return(n/1e48).toFixed(2)+'Dg';
+  if(n>=1e45)return(n/1e45).toFixed(2)+'Ug';
+  if(n>=1e42)return(n/1e42).toFixed(2)+'Td';
+  if(n>=1e39)return(n/1e39).toFixed(2)+'Qid';
+  if(n>=1e36)return(n/1e36).toFixed(2)+'Qad';
   if(n>=1e33)return(n/1e33).toFixed(2)+'Dc';
   if(n>=1e30)return(n/1e30).toFixed(2)+'No';
   if(n>=1e27)return(n/1e27).toFixed(2)+'Oc';
@@ -5001,7 +5011,7 @@ function buildAscendTab() {
     <div class="sec-hdr" style="color:#c090f0;border-bottom-color:#5a3a90;text-shadow:0 0 10px rgba(180,100,255,0.5)">
       ${alData.ico} ASCENSION — ${alData.name}
       <span class="sp-badge" style="border-color:#7a4ab0;background:linear-gradient(135deg,#1a0c2a,#2a1040);color:#c090f0;box-shadow:0 0 8px rgba(160,80,240,0.3)" id="asc-sp-badge">
-        ASC-SP: ${ascSP}
+        ASC-SP: ${fmt(ascSP)}
       </span>
     </div>`;
 
