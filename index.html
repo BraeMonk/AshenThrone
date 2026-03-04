@@ -3317,8 +3317,9 @@ function getStats(){
   if(bl('b6')){spell=Math.round(spell*(1+0.40*bl('b6')));crit+=8*bl('b6');}
   if(bl('b7'))life+=5*bl('b7');
   if(bl('b8'))crit+=12*bl('b8');
-  // Dragonfire Pact ATK: 1.45× per level — enemies scale 1.75×, so there's real tension
-  if(bl('b9')) atk *= Math.pow(1.45, bl('b9'));
+  // Dragonfire Pact: flat +35% ATK per level — enemies get longer fights, not HP walls
+  // The tension comes from enemy damage pressure (Chunk 4), not ATK racing HP
+  if(bl('b9')) atk *= (1 + 0.35 * bl('b9'));
   if(bl('b10')){const zb=G.zone*10*bl('b10');atk+=zb;def+=zb;spell+=zb;maxHp+=zb*5;}
   if(bl('b14')){const m=1+0.28*bl('b14');atk*=m;def*=m;maxHp=Math.round(maxHp*m);spell=Math.round(spell*m);spd+=0.05*bl('b14');}
   if(bl('b17')&&G.chainKills>0)atk*=1+Math.min(G.chainKills,30)*0.05*bl('b17');
@@ -3792,6 +3793,33 @@ function spawnParticles(x,y,col,n=10){
    COMBAT
 =============================================== */
 let curEnemy=null,eHP=0,eMaxHP=0,atkTimer=null,curseTimer=null,manaTimer=null,vaultTimer=null,atkCount=0;
+
+function getPlayerPowerIndex() {
+  const st = getStats();
+  // Log scale of ATK × speed × crit factor — captures all multiplier stacking
+  const rawPower = st.atk * st.spd * (1 + st.crit / 100);
+  return Math.log10(Math.max(1, rawPower));
+}
+
+function getAvgHitDmg() {
+  const st = getStats();
+  // Weighted average accounting for crit rate and spell contribution
+  const critFactor = 1 + (st.crit / 100) * 1.2;
+  const spellBonus = st.mana > 0 ? st.spell * 0.6 : st.spell * 0.3;
+  return Math.max(1, (st.atk * critFactor) + spellBonus);
+}
+
+function getTargetFightDuration() {
+  // How many hits should it take to kill an enemy at this point in the game
+  // Zone and age both increase fight length — age more aggressively
+  // Dragonfire Pact adds extra hits because enemies are supposed to be tankier
+  const baseDuration = 6;
+  const zoneBonus    = G.zone * 2.2;
+  const ageBonus     = G.age  * 5.0;
+  const dfBonus      = boonLevel('b9') * 8;
+  return baseDuration + zoneBonus + ageBonus + dfBonus;
+}
+   
 function spawnEnemy(){
   const zi=Math.min(G.zone-1,ZONES.length-1);
   const pool=ZONES[zi].enemies;
@@ -3802,9 +3830,12 @@ function spawnEnemy(){
   // Zone: tighter per-zone jump so progress feels earned
   const zoneMult = Math.pow(1.55, G.zone - 1);
   
-  const _dfLv = boonLevel('b9');
-  const _dfMult = _dfLv > 0 ? Math.pow(1.75, _dfLv) : 1;
-  eMaxHP = Math.round(28 * zoneMult * ageMult * _dfMult);
+  // Option B: Fight duration targeting — HP is relative to actual player damage
+  // Enemies always survive ~targetHits hits, so fights stay meaningful at any power level
+  const _targetHits  = getTargetFightDuration();
+  const _avgHit      = getAvgHitDmg();
+  const _variance    = 0.85 + Math.random() * 0.30;
+  eMaxHP = Math.round(_avgHit * _targetHits * _variance);
 
   // Depth Score scaling (AL5+)
   if (G.ascensionLevel >= 5 && G.depthScore > 0) {
@@ -3815,21 +3846,28 @@ function spawnEnemy(){
   if (G.voidRiftActive && _activeRift && _activeRift.enemyHpMult) {
     eMaxHP = Math.round(eMaxHP * _activeRift.enemyHpMult);
   }
+  // Option A: Dynamic power scalar — enemies grow with player multiplier stacking
+  // powerIndex ~3 at early game, ~6-8 at mid, ~10+ at late
+  // scalar kicks in meaningfully above index 4, grows at 1.22x per index point
+  const _pIdx = getPlayerPowerIndex();
+  const _pScalar = Math.pow(1.22, Math.max(0, _pIdx - 4));
+  eMaxHP = Math.round(eMaxHP * _pScalar);
   eHP = eMaxHP;
-
-
   
   // Enemy damage — DEF now scales better against it
   // Stored so doAttack can reference it cleanly
   const depthDmgMult = (G.ascensionLevel >= 5 && G.depthScore > 0)
     ? getDepthEnemyMult()
     : 1.0;
-  G._eDmgBase = Math.round(
-    (4 + G.zone * 2.4)
-    * Math.pow(1.22, G.zone - 1)
-    * Math.pow(1.22, G.age - 1)
-    * depthDmgMult
-  );
+  // Option B enemy damage: scales off player max HP so incoming hits always sting
+  // Target: each enemy hit deals ~8-14% of player max HP before DEF mitigation
+  // Zone and age increase the percentage — late game enemies are genuinely threatening
+  const st0        = getStats();
+  const _hpBasis   = st0.maxHp;
+  const _dmgPct    = 0.08 + (G.zone * 0.008) + (G.age * 0.012);
+  const _dfDmgBonus = boonLevel('b9') * 0.04; // Dragonfire: enemies also hit harder
+  const _clampedPct = Math.min(_dmgPct + _dfDmgBonus, 0.55); // hard cap at 55% per hit
+  G._eDmgBase = Math.round(_hpBasis * _clampedPct * depthDmgMult);
   
   const nl=ENAMES[key];
   curEnemy={key,name:nl[Math.floor(Math.random()*nl.length)]};
