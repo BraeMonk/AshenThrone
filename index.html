@@ -4511,7 +4511,7 @@ function buildInvest(){
         <div class="sk-invest-name">${si.name}</div>
         <div class="sk-invest-desc">${si.desc}</div>
         <div class="sk-invest-bar-wrap"><div class="sk-invest-bar" style="width:${pct}%"></div></div>
-        <div class="sk-invest-prog">${pts} points invested</div>
+        <div class="sk-invest-prog">${fmt(pts)} points invested</div>
         <div class="sk-invest-rew">Current: ${rew.label}</div>
         ${nextRew&&!maxed?`<div class="sk-invest-diminish">Next point → ${nextRew.label}</div>`:''}
         ${maxed?`<div class="sk-invest-rew" style="color:var(--gold)">★ MAXED</div>`:''}
