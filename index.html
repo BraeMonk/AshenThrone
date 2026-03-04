@@ -1610,7 +1610,7 @@ const BOONS=[
   {id:'b1',ico:'💪',name:'Iron Discipline',desc:'+10% base ATK per level.',cost:500,rarity:'common',cat:'combat'},
   {id:'b2',ico:'🌑',name:'Shadow Harvest',desc:'+15% gold per level.',cost:300,rarity:'common',cat:'wealth'},
   {id:'b3',ico:'📚',name:'Ancient Wisdom',desc:'+25% XP per level.',cost:600,rarity:'common',cat:'growth'},
-  {id:'b4',ico:'🩸',name:'Blood Pact',desc:'Restore HP to full on every kill.',cost:800,rarity:'common',cat:'survival'},
+  {id:'b4',ico:'🩸',name:'Blood Pact',desc:'Restore HP to full on every kill.',cost:800,rarity:'common',cat:'survival',maxLevel:1},
   {id:'b5',ico:'🌬',name:'Ethereal Gale',desc:'+0.3 attack speed per level.',cost:1200,rarity:'rare',cat:'combat'},
   {id:'b6',ico:'🔮',name:'Soul Crystal',desc:'+28% spell damage per level.',cost:1000,rarity:'rare',cat:'combat'},
   {id:'b7',ico:'🌿',name:'Life Root',desc:'+3% lifesteal per level.',cost:900,rarity:'rare',cat:'survival'},
@@ -1619,7 +1619,7 @@ const BOONS=[
   {id:'b10',ico:'👑',name:'Sovereign Mark',desc:'+6 to ALL stats per zone level, per level.',cost:2200,rarity:'epic',cat:'growth'},
   {id:'b11',ico:'⚗',name:"Alchemist's Greed",desc:'Each prestige grants +12% gold, per level.',cost:2500,rarity:'epic',cat:'wealth'},
   {id:'b12',ico:'🌌',name:'Void Conduit',desc:'20% chance per attack: free spell.',cost:3200,rarity:'epic',cat:'combat'},
-  {id:'b13',ico:'💀',name:"Death's Bargain",desc:'Once per minute: revive at 40% HP upon death.',cost:5000,rarity:'legendary',cat:'survival'},
+  {id:'b13',ico:'💀',name:"Death's Bargain",desc:'Once per minute: revive at 40% HP upon death.',cost:5000,rarity:'legendary',cat:'survival',maxLevel:1},
   {id:'b14',ico:'🌟',name:"Fate's Chosen",desc:'+22% ALL stats per level.',cost:5500,rarity:'legendary',cat:'growth'},
   {id:'b15',ico:'🔥',name:'Pyre Ascendant',desc:'Every 10th kill: chain explosion 6× ATK.',cost:8000,rarity:'legendary',cat:'combat'},
   {id:'b16',ico:'🕯',name:'Soul Lantern',desc:'+50% XP in zones 4+ per level.',cost:1400,rarity:'rare',cat:'growth'},
@@ -4769,7 +4769,7 @@ function buildBoons(){
         <div class="boon-desc">${b.desc}</div>
         ${lv>0?`<div style="margin-top:5px;padding:4px 8px;background:rgba(240,192,48,0.08);border:1px solid rgba(240,192,48,0.2);border-radius:4px;font-size:var(--fs-xs);color:var(--gold2)">${effectLine}</div>`:''}
         <div style="margin-top:5px;display:flex;align-items:center;justify-content:space-between">
-          <span style="color:var(--txt3);font-size:var(--fs-xs)">${lv>0?`Level ${lv} → ${lv+1}`:'Not acquired'}</span>
+          <span style="color:var(--txt3);font-size:var(--fs-xs)">${lv>0?`Level ${lv} / ${getMaxBoonLevel()} → ${lv+1}`:'Not acquired'}</span>
           <div class="boon-cost">${isActive?`⏱ ${secsLeft}s remaining`:`💰 ${fmt(upgCost)}`}</div>
         </div>
       </div>
@@ -4779,11 +4779,23 @@ function buildBoons(){
 }
 
 function setBoonCat(c){boonCat=c;renderTab();}
+   
+function getMaxBoonLevel(){
+  const al = G.ascensionLevel || 0;
+  if(al >= 5) return 1000;
+  if(al >= 4) return 950;
+  if(al >= 3) return 800;
+  if(al >= 2) return 400;
+  if(al >= 1) return 200;
+  return 100;
+}
+
 function buyBoon(id){
   initAudio();
   const b = BOONS.find(x=>x.id===id);
   if(!b) return;
   const lv = boonLevel(id);
+  if(lv >= getMaxBoonLevel()){ toast(`Boon cap is ${getMaxBoonLevel()} until next Ascension.`); return; }
   const cost = boonUpgradeCost(b);
   if(G.gold < cost){ toast('Not enough gold!'); return; }
   G.gold -= cost;
