@@ -4782,12 +4782,12 @@ function setBoonCat(c){boonCat=c;renderTab();}
    
 function getMaxBoonLevel(){
   const al = G.ascensionLevel || 0;
-  if(al >= 5) return 1000;
-  if(al >= 4) return 950;
-  if(al >= 3) return 800;
-  if(al >= 2) return 400;
-  if(al >= 1) return 200;
-  return 100;
+  if(al >= 5) return 500;
+  if(al >= 4) return 400;
+  if(al >= 3) return 300;
+  if(al >= 2) return 200;
+  if(al >= 1) return 100;
+  return 50;
 }
 
 function buyBoon(id){
