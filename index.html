@@ -4342,7 +4342,7 @@ function updateHUD(){
   document.getElementById('v-xp').textContent=fmt(G.xp)+'/'+fmt(G.xpNext);
   document.getElementById('hud-gold-val').textContent=fmt(G.gold);const gpsEl=document.getElementById('hud-gps');if(gpsEl){const ageMult=Math.pow(1.15,(G.age||1)-1);let gps=(G.boons.b20||0)*250000+(G.boons.b21||0)*800000+(G.boons.b22||0)*2500000+(G.boons.b23||0)*15000000*ageMult;gps=Math.round(gps*G.pbonus*10)/10;gpsEl.textContent=gps>0?'+'+fmt(Math.round(gps))+'/s':'';}
   document.getElementById('hud-lv-val').textContent=G.lv;document.getElementById('hud-cls-name').textContent=CLASSES[G.cls].name.split(' ')[0];document.getElementById('hud-zone-val').textContent=G.zone;const ageEl=document.getElementById('hud-age-val');if(ageEl)ageEl.textContent=G.age;
-  updateZoneBar();const sp=document.getElementById('sp-badge');if(sp)sp.textContent='SP: '+G.sp;
+  updateZoneBar();const sp=document.getElementById('sp-badge');if(sp)sp.textContent='SP: '+fmt(G.sp);
   const alEl = document.getElementById('hud-al');
   if (alEl) {
     if (G.ascensionLevel > 0) {
@@ -4460,7 +4460,7 @@ function buildSkills(){
     const t=SKTREES[k];return`<div class="sk-tree-tab${skSub===k?' on':''}" onclick="setSkSub('${k}')"><span>${t.ico}</span>${t.label}</div>`;
   }).join('');
 
-  let h=`<div class="sec"><div class="sec-hdr">SKILL TREES <span class="sp-badge" id="sp-badge">SP: ${G.sp}</span></div>
+  let h=`<div class="sec"><div class="sec-hdr">SKILL TREES <span class="sp-badge" id="sp-badge">SP: ${fmt(G.sp)}</span></div>
     <div class="sk-tree-tabs" style="grid-template-columns:repeat(${allTabs.length},1fr)">${tabs}</div>`;
 
   if(skSub==='invest'){
@@ -4495,7 +4495,7 @@ function buildInvest(){
   const totalPts=Object.values(G.skInvest||{}).reduce((a,b)=>a+b,0);
   let h=`<div class="sk-invest-intro">
     "Some who have mastered combat choose not to spend their points on new techniques, but to drill endlessly — perfecting what they already know. The returns diminish, but they never stop."<br><br>
-    <strong style="color:var(--gold)">SP available: ${G.sp}</strong> &nbsp;·&nbsp; Points invested: ${totalPts}
+    <strong style="color:var(--gold)">SP available: ${fmt(G.sp)}</strong> &nbsp;·&nbsp; Points invested: ${fmt(totalPts)}
   </div><div class="sk-invest-list">`;
 
   SK_INVEST.forEach(si=>{
@@ -4550,14 +4550,14 @@ function buildInvest(){
         </div>
         <div class="ashen-memory-desc">"The ashes remember every point you poured into the earth and lost. Once in a while, some of it finds its way back."</div>
         <div class="ashen-memory-effect">
-          ${memLv===0
-            ? `First unlock returns <strong style="color:#c090f0">50%</strong> of all SP ever spent on skills.<br>That's <strong style="color:#c090f0">${wouldReturn}</strong> SP right now.`
-            : `Upgrade returns <strong style="color:#c090f0">50%</strong> of SP spent since last upgrade.<br>That's <strong style="color:#c090f0">${wouldReturn}</strong> SP right now.`
-          }
+        ${memLv===0
+          ? `First unlock returns <strong style="color:#c090f0">50%</strong> of all SP ever spent on skills.<br>That's <strong style="color:#c090f0">${fmt(wouldReturn)}</strong> SP right now.`
+          : `Upgrade returns <strong style="color:#c090f0">50%</strong> of SP spent since last upgrade.<br>That's <strong style="color:#c090f0">${fmt(wouldReturn)}</strong> SP right now.`
+        }
         </div>
         ${upgCost>0?`<div class="ashen-memory-cost">Cost: 💰${fmt(upgCost)}</div>`:'<div class="ashen-memory-cost">Cost: Free (first unlock)</div>'}
         <button class="btn-ashen-memory" onclick="buyAshenMemory()" ${canAfford?'':'disabled'}>
-          ${memLv===0?'🌒 UNLOCK ASHEN MEMORY':`🌒 UPGRADE — Reclaim ${wouldReturn} SP`}
+        ${memLv===0?'🌒 UNLOCK ASHEN MEMORY':`🌒 UPGRADE — Reclaim ${fmt(wouldReturn)} SP`}
         </button>
       </div>
     </div>`;
@@ -4618,7 +4618,7 @@ function dumpInvest(id){
   G.skInvestWasted=(G.skInvestWasted||0)+spent;
   G.sp=0;
   SFX.skill();
-  toast(`📈 Dumped ${spent} SP into ${si.name}!`);
+  toast(`📈 Dumped ${fmt(spent)} SP into ${si.name}!`);
   renderTab();updateHUD();saveG();
 }
 
