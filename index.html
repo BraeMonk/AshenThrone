@@ -3824,11 +3824,11 @@ function getAvgHitDmg() {
 }
 
 function getTargetFightDuration() {
-  if (!G) return 6;
-  const baseDuration = 6;
-  const zoneBonus    = G.zone * 2.2;
-  const ageBonus     = G.age  * 5.0;
-  const dfBonus      = boonLevel('b9') * 8;
+  if (!G) return 3;
+  const baseDuration = 3;
+  const zoneBonus    = G.zone * 1.2;
+  const ageBonus     = Math.max(0, G.age - 1) * 4.0; // age 1 contributes nothing
+  const dfBonus      = boonLevel('b9') * 6;
   return baseDuration + zoneBonus + ageBonus + dfBonus;
 }
 
@@ -3874,7 +3874,7 @@ function spawnEnemy(){
   // Use cached maxHp instead of calling getStats() again — already computed at spawn
   G._eDmgBase = Math.round(
     G.maxHp
-    * Math.min(0.08 + (G.zone * 0.008) + (G.age * 0.012) + (boonLevel('b9') * 0.04), 0.55)
+    * Math.min(0.04 + (G.zone * 0.006) + (Math.max(0, G.age - 1) * 0.010) + (boonLevel('b9') * 0.03), 0.55)
     * depthDmgMult
   );
   
