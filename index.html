@@ -3909,11 +3909,11 @@ function doAttack(){
   if(eHP<=0){killEnemy();return;}
 
   // Enemy counterattack — DEF now percentage-based reduction, not flat subtraction
-  const eDmgRaw=G._eDmgBase||Math.max(1,(3+G.zone*1.8)*Math.pow(1.14,G.zone-1));
+  let eDmgRaw=G._eDmgBase||Math.max(1,(3+G.zone*1.8)*Math.pow(1.14,G.zone-1));
 
-  // Void Rift enemy damage bonus
+  // Void Rift enemy damage bonus — apply temporarily, never overwrite base
   if (G.voidRiftActive && _activeRift) {
-    G._eDmgBase = Math.round((G._eDmgBase || eDmgRaw) * _activeRift.enemyDmgMult);
+    eDmgRaw = Math.round(eDmgRaw * _activeRift.enemyDmgMult);
   }
 
   if(G.curses&&G.curses.ca1)eHP=Math.min(eMaxHP,eHP+Math.round(eMaxHP*0.02));
