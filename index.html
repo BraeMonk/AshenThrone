@@ -4989,6 +4989,98 @@ function buildStats(){
   </div>`;
 }
 
+function buildSPExchange() {
+  const ascSP = G.ascensionSP || 0;
+  const shards = G.soulShards || 0;
+  const gold = G.gold || 0;
+
+  const canAsc = ascSP >= 100;
+  const canShard = shards >= 10;
+  const canGold = gold >= 10000;
+
+  return `<div style="background:linear-gradient(135deg,#0e0a18,#180e28);border:2px solid #3a2a5a;
+    border-radius:10px;padding:var(--sp-md);margin-top:var(--sp-lg)">
+    <div style="font-size:var(--fs-xs);color:#7050a0;letter-spacing:3px;text-transform:uppercase;
+      margin-bottom:var(--sp-md);padding-bottom:8px;border-bottom:1px solid #2a1a4a">
+      ⚗ SP EXCHANGE
+    </div>
+    <div style="font-family:'Crimson Text',serif;font-style:italic;font-size:var(--fs-xs);
+      color:#7a5aaa;margin-bottom:var(--sp-md)">Convert surplus resources into Skill Points.</div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="display:flex;align-items:center;justify-content:space-between;
+        background:rgba(0,0,0,0.3);border:1px solid #2a1a4a;border-radius:8px;padding:10px 12px">
+        <div>
+          <div style="font-size:var(--fs-xs);color:#c090f0;font-weight:700">ASC-SP Exchange</div>
+          <div style="font-size:0.54rem;color:#7a5aaa;margin-top:2px">100 ASC-SP → 1 SP</div>
+          <div style="font-size:0.54rem;color:${canAsc?'#9070c0':'var(--red)'};margin-top:1px">You have: ${fmt(ascSP)} ASC-SP</div>
+        </div>
+        <button onclick="exchangeSP('asc')"
+          style="padding:9px 14px;font-family:'Cinzel',serif;font-size:var(--fs-xs);font-weight:700;
+          letter-spacing:1px;border:none;border-radius:5px;min-height:40px;min-width:55px;
+          cursor:${canAsc?'pointer':'default'};transition:all .12s;
+          background:${canAsc?'linear-gradient(180deg,#8050c0,#5030a0)':'rgba(0,0,0,0.4)'};
+          color:${canAsc?'#e0d0ff':'#604880'};
+          box-shadow:${canAsc?'0 3px 0 #20106080':'none'};
+          opacity:${canAsc?'1':'0.4'}"
+          ${canAsc?'':'disabled'}>+1 SP</button>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;
+        background:rgba(0,0,0,0.3);border:1px solid #2a1a4a;border-radius:8px;padding:10px 12px">
+        <div>
+          <div style="font-size:var(--fs-xs);color:#c090f0;font-weight:700">Soul Shard Exchange</div>
+          <div style="font-size:0.54rem;color:#7a5aaa;margin-top:2px">10 Soul Shards → 1 SP</div>
+          <div style="font-size:0.54rem;color:${canShard?'#9070c0':'var(--red)'};margin-top:1px">You have: ${fmt(shards)} Shards</div>
+        </div>
+        <button onclick="exchangeSP('shard')"
+          style="padding:9px 14px;font-family:'Cinzel',serif;font-size:var(--fs-xs);font-weight:700;
+          letter-spacing:1px;border:none;border-radius:5px;min-height:40px;min-width:55px;
+          cursor:${canShard?'pointer':'default'};transition:all .12s;
+          background:${canShard?'linear-gradient(180deg,#8050c0,#5030a0)':'rgba(0,0,0,0.4)'};
+          color:${canShard?'#e0d0ff':'#604880'};
+          box-shadow:${canShard?'0 3px 0 #20106080':'none'};
+          opacity:${canShard?'1':'0.4'}"
+          ${canShard?'':'disabled'}>+1 SP</button>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;
+        background:rgba(0,0,0,0.3);border:1px solid #2a1a4a;border-radius:8px;padding:10px 12px">
+        <div>
+          <div style="font-size:var(--fs-xs);color:#c090f0;font-weight:700">Gold Exchange</div>
+          <div style="font-size:0.54rem;color:#7a5aaa;margin-top:2px">10,000 Gold → 1 SP</div>
+          <div style="font-size:0.54rem;color:${canGold?'#9070c0':'var(--red)'};margin-top:1px">You have: ${fmt(gold)} Gold</div>
+        </div>
+        <button onclick="exchangeSP('gold')"
+          style="padding:9px 14px;font-family:'Cinzel',serif;font-size:var(--fs-xs);font-weight:700;
+          letter-spacing:1px;border:none;border-radius:5px;min-height:40px;min-width:55px;
+          cursor:${canGold?'pointer':'default'};transition:all .12s;
+          background:${canGold?'linear-gradient(180deg,#8050c0,#5030a0)':'rgba(0,0,0,0.4)'};
+          color:${canGold?'#e0d0ff':'#604880'};
+          box-shadow:${canGold?'0 3px 0 #20106080':'none'};
+          opacity:${canGold?'1':'0.4'}"
+          ${canGold?'':'disabled'}>+1 SP</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function exchangeSP(type) {
+  initAudio();
+  if (type === 'asc') {
+    if ((G.ascensionSP || 0) < 100) { toast('Need 100 ASC-SP!'); return; }
+    G.ascensionSP -= 100;
+  } else if (type === 'shard') {
+    if ((G.soulShards || 0) < 10) { toast('Need 10 Soul Shards!'); return; }
+    G.soulShards -= 10;
+  } else if (type === 'gold') {
+    if ((G.gold || 0) < 10000) { toast('Need 10,000 Gold!'); return; }
+    G.gold -= 10000;
+  }
+  G.sp = (G.sp || 0) + 1;
+  tone(520, 'triangle', 0.06, 0.14);
+  tone(780, 'triangle', 0.08, 0.12, 0.06);
+  toast('⚗ Exchanged for +1 SP!');
+  renderTab(); updateHUD(); saveG();
+}
+
 /* ===============================================
    ASCENSION TAB — Skill Tree + Soul Shards/Relics
 =============================================== */
@@ -5077,8 +5169,8 @@ function buildAscendTab() {
     h += buildEndgamePanel();
   }
 
+  return h + buildSPExchange() + '</div>';
 
-  return h + '</div>';
 }
 
 /* -----------------------------------------------
