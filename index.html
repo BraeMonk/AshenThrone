@@ -4984,30 +4984,57 @@ function buildStats(){
   </div>`;
 }
 
+function spExchangeCosts() {
+  // Gold rate scales with lifetime gold earned — always feels like a real cost
+  const goldPerSP = Math.max(10000, Math.round(G.gtotal * 0.0005));
+  // Shard rate scales with AL so it stays meaningful
+  const shardsPerSP = 10 * Math.max(1, G.ascensionLevel);
+  // ASC-SP rate scales with AL
+  const ascPerSP = 100 * Math.max(1, G.ascensionLevel);
+  return { goldPerSP, shardsPerSP, ascPerSP };
+}
+
+// Cap: max SP purchasable per session (resets on save/load)
+const SP_EXCHANGE_CAP = 50000;
+
 function buildSPExchange() {
+  const { goldPerSP, shardsPerSP, ascPerSP } = spExchangeCosts();
   const ascSP = G.ascensionSP || 0;
   const shards = G.soulShards || 0;
   const gold = G.gold || 0;
 
-  const canAsc = ascSP >= 100;
-  const canShard = shards >= 10;
-  const canGold = gold >= 10000;
+  const canAsc   = ascSP >= ascPerSP;
+  const canShard = shards >= shardsPerSP;
+  const canGold  = gold >= goldPerSP;
+
+  const sessionBought = G._spExchangeSession || 0;
+  const capHit = sessionBought >= SP_EXCHANGE_CAP;
 
   return `<div style="background:linear-gradient(135deg,#0e0a18,#180e28);border:2px solid #3a2a5a;
     border-radius:10px;padding:var(--sp-md);margin-top:var(--sp-lg)">
     <div style="font-size:var(--fs-xs);color:#7050a0;letter-spacing:3px;text-transform:uppercase;
-      margin-bottom:var(--sp-md);padding-bottom:8px;border-bottom:1px solid #2a1a4a">
-      ⚗ SP EXCHANGE
+      margin-bottom:var(--sp-md);padding-bottom:8px;border-bottom:1px solid #2a1a4a;
+      display:flex;align-items:center;justify-content:space-between">
+      <span>⚗ SP EXCHANGE</span>
+      <span style="color:${capHit?'var(--red)':'#604880'};font-size:0.54rem;letter-spacing:1px">
+        ${sessionBought}/${SP_EXCHANGE_CAP} this session
+      </span>
     </div>
     <div style="font-family:'Crimson Text',serif;font-style:italic;font-size:var(--fs-xs);
-      color:#7a5aaa;margin-bottom:var(--sp-md)">Convert surplus resources into Skill Points.</div>
+      color:#7a5aaa;margin-bottom:var(--sp-md)">
+      Convert surplus resources into Skill Points. Capped at ${SP_EXCHANGE_CAP}/session to preserve balance.
+    </div>
+    ${capHit ? `<div style="text-align:center;padding:var(--sp-md);color:var(--red);font-size:var(--fs-xs);
+      border:1px solid rgba(200,30,30,0.3);border-radius:6px;background:rgba(200,30,30,0.06)">
+      ⚠ Session cap reached. Progress further or reload to exchange more.
+    </div>` : `
     <div style="display:flex;flex-direction:column;gap:8px">
 
       <div style="display:flex;align-items:center;justify-content:space-between;
         background:rgba(0,0,0,0.3);border:1px solid #2a1a4a;border-radius:8px;padding:10px 12px">
         <div>
           <div style="font-size:var(--fs-xs);color:#c090f0;font-weight:700">ASC-SP Exchange</div>
-          <div style="font-size:0.54rem;color:#7a5aaa;margin-top:2px">100 ASC-SP → 1 SP</div>
+          <div style="font-size:0.54rem;color:#7a5aaa;margin-top:2px">${fmt(ascPerSP)} ASC-SP → 1 SP</div>
           <div style="font-size:0.54rem;color:${canAsc?'#9070c0':'var(--red)'};margin-top:1px">You have: ${fmt(ascSP)} ASC-SP</div>
         </div>
         <div style="display:flex;gap:6px">
@@ -5036,7 +5063,7 @@ function buildSPExchange() {
         background:rgba(0,0,0,0.3);border:1px solid #2a1a4a;border-radius:8px;padding:10px 12px">
         <div>
           <div style="font-size:var(--fs-xs);color:#c090f0;font-weight:700">Soul Shard Exchange</div>
-          <div style="font-size:0.54rem;color:#7a5aaa;margin-top:2px">10 Soul Shards → 1 SP</div>
+          <div style="font-size:0.54rem;color:#7a5aaa;margin-top:2px">${fmt(shardsPerSP)} Shards → 1 SP</div>
           <div style="font-size:0.54rem;color:${canShard?'#9070c0':'var(--red)'};margin-top:1px">You have: ${fmt(shards)} Shards</div>
         </div>
         <div style="display:flex;gap:6px">
@@ -5065,7 +5092,7 @@ function buildSPExchange() {
         background:rgba(0,0,0,0.3);border:1px solid #2a1a4a;border-radius:8px;padding:10px 12px">
         <div>
           <div style="font-size:var(--fs-xs);color:#c090f0;font-weight:700">Gold Exchange</div>
-          <div style="font-size:0.54rem;color:#7a5aaa;margin-top:2px">10,000 Gold → 1 SP</div>
+          <div style="font-size:0.54rem;color:#7a5aaa;margin-top:2px">${fmt(goldPerSP)} Gold → 1 SP</div>
           <div style="font-size:0.54rem;color:${canGold?'#9070c0':'var(--red)'};margin-top:1px">You have: ${fmt(gold)} Gold</div>
         </div>
         <div style="display:flex;gap:6px">
@@ -5090,23 +5117,28 @@ function buildSPExchange() {
         </div>
       </div>
 
-    </div>
+    </div>`}
   </div>`;
 }
 
 function exchangeSP(type) {
   initAudio();
+  const { goldPerSP, shardsPerSP, ascPerSP } = spExchangeCosts();
+  const sessionBought = G._spExchangeSession || 0;
+  if (sessionBought >= SP_EXCHANGE_CAP) { toast('Session cap reached — keep progressing!'); return; }
+
   if (type === 'asc') {
-    if ((G.ascensionSP || 0) < 100) { toast('Need 100 ASC-SP!'); return; }
-    G.ascensionSP = Math.max(0, G.ascensionSP - 100);
+    if ((G.ascensionSP || 0) < ascPerSP) { toast(`Need ${fmt(ascPerSP)} ASC-SP!`); return; }
+    G.ascensionSP = Math.max(0, G.ascensionSP - ascPerSP);
   } else if (type === 'shard') {
-    if ((G.soulShards || 0) < 10) { toast('Need 10 Soul Shards!'); return; }
-    G.soulShards = Math.max(0, G.soulShards - 10);
+    if ((G.soulShards || 0) < shardsPerSP) { toast(`Need ${fmt(shardsPerSP)} Shards!`); return; }
+    G.soulShards = Math.max(0, G.soulShards - shardsPerSP);
   } else if (type === 'gold') {
-    if ((G.gold || 0) < 10000) { toast('Need 10,000 Gold!'); return; }
-    G.gold = Math.max(0, G.gold - 10000);
+    if ((G.gold || 0) < goldPerSP) { toast(`Need ${fmt(goldPerSP)} Gold!`); return; }
+    G.gold = Math.max(0, G.gold - goldPerSP);
   }
   G.sp = (G.sp || 0) + 1;
+  G._spExchangeSession = sessionBought + 1;
   tone(520, 'triangle', 0.06, 0.14);
   tone(780, 'triangle', 0.08, 0.12, 0.06);
   toast('⚗ Exchanged for +1 SP!');
@@ -5115,21 +5147,27 @@ function exchangeSP(type) {
 
 function exchangeSPMax(type) {
   initAudio();
+  const { goldPerSP, shardsPerSP, ascPerSP } = spExchangeCosts();
+  const sessionBought = G._spExchangeSession || 0;
+  const remaining = SP_EXCHANGE_CAP - sessionBought;
+  if (remaining <= 0) { toast('Session cap reached — keep progressing!'); return; }
+
   let amount = 0;
   if (type === 'asc') {
-    amount = Math.floor((G.ascensionSP || 0) / 100);
-    if (amount < 1) { toast('Need at least 100 ASC-SP!'); return; }
-    G.ascensionSP = Math.max(0, G.ascensionSP - amount * 100);
+    amount = Math.min(remaining, Math.floor((G.ascensionSP || 0) / ascPerSP));
+    if (amount < 1) { toast(`Need at least ${fmt(ascPerSP)} ASC-SP!`); return; }
+    G.ascensionSP = Math.max(0, G.ascensionSP - amount * ascPerSP);
   } else if (type === 'shard') {
-    amount = Math.floor((G.soulShards || 0) / 10);
-    if (amount < 1) { toast('Need at least 10 Soul Shards!'); return; }
-    G.soulShards = Math.max(0, G.soulShards - amount * 10);
+    amount = Math.min(remaining, Math.floor((G.soulShards || 0) / shardsPerSP));
+    if (amount < 1) { toast(`Need at least ${fmt(shardsPerSP)} Shards!`); return; }
+    G.soulShards = Math.max(0, G.soulShards - amount * shardsPerSP);
   } else if (type === 'gold') {
-    amount = Math.floor((G.gold || 0) / 10000);
-    if (amount < 1) { toast('Need at least 10,000 Gold!'); return; }
-    G.gold = Math.max(0, G.gold - amount * 10000);
+    amount = Math.min(remaining, Math.floor((G.gold || 0) / goldPerSP));
+    if (amount < 1) { toast(`Need at least ${fmt(goldPerSP)} Gold!`); return; }
+    G.gold = Math.max(0, G.gold - amount * goldPerSP);
   }
   G.sp = (G.sp || 0) + amount;
+  G._spExchangeSession = sessionBought + amount;
   tone(520, 'triangle', 0.06, 0.14);
   tone(780, 'triangle', 0.08, 0.12, 0.06);
   tone(1040, 'triangle', 0.10, 0.12, 0.12);
