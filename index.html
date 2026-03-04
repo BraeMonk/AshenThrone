@@ -5104,13 +5104,13 @@ function exchangeSP(type) {
   initAudio();
   if (type === 'asc') {
     if ((G.ascensionSP || 0) < 100) { toast('Need 100 ASC-SP!'); return; }
-    G.ascensionSP -= 100;
+    G.ascensionSP = Math.max(0, G.ascensionSP - 100);
   } else if (type === 'shard') {
     if ((G.soulShards || 0) < 10) { toast('Need 10 Soul Shards!'); return; }
-    G.soulShards -= 10;
+    G.soulShards = Math.max(0, G.soulShards - 10);
   } else if (type === 'gold') {
     if ((G.gold || 0) < 10000) { toast('Need 10,000 Gold!'); return; }
-    G.gold -= 10000;
+    G.gold = Math.max(0, G.gold - 10000);
   }
   G.sp = (G.sp || 0) + 1;
   tone(520, 'triangle', 0.06, 0.14);
@@ -5125,15 +5125,15 @@ function exchangeSPMax(type) {
   if (type === 'asc') {
     amount = Math.floor((G.ascensionSP || 0) / 100);
     if (amount < 1) { toast('Need at least 100 ASC-SP!'); return; }
-    G.ascensionSP -= amount * 100;
+    G.ascensionSP = Math.max(0, G.ascensionSP - amount * 100);
   } else if (type === 'shard') {
     amount = Math.floor((G.soulShards || 0) / 10);
     if (amount < 1) { toast('Need at least 10 Soul Shards!'); return; }
-    G.soulShards -= amount * 10;
+    G.soulShards = Math.max(0, G.soulShards - amount * 10);
   } else if (type === 'gold') {
     amount = Math.floor((G.gold || 0) / 10000);
     if (amount < 1) { toast('Need at least 10,000 Gold!'); return; }
-    G.gold -= amount * 10000;
+    G.gold = Math.max(0, G.gold - amount * 10000);
   }
   G.sp = (G.sp || 0) + amount;
   tone(520, 'triangle', 0.06, 0.14);
