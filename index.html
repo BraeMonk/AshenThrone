@@ -3887,6 +3887,8 @@ function spawnEnemy(){
 function doAttack(){
   if(!G||G.hp<=0)return;initAudio();
   const st=getStats();atkCount++;PA.aflash=1;
+  // Store for reuse — avoid second getStats() call later in this function
+  G._lastSt = st;
   const bl=id=>(G.boons[id]||0);
 
   let dmg=st.atk*(0.82+Math.random()*.36);
@@ -3968,7 +3970,7 @@ function doAttack(){
 
   if(G.curses&&G.curses.ca1)eHP=Math.min(eMaxHP,eHP+Math.round(eMaxHP*0.02));
 
-  const st2=getStats();
+  const st2=G._lastSt;
   
   // DEF reduces damage logarithmically — effective but never trivial
   // Formula: reduction = DEF / (DEF + 300). Asymptotes at ~75% max.
@@ -4376,13 +4378,16 @@ function fmt(n){
 }
 
 function updateHUD(){
-  if(!G)return;const st=getStats();
-  const hp=Math.max(0,Math.min(100,G.hp/st.maxHp*100));
-  const mp=Math.max(0,Math.min(100,G.mana/st.maxMana*100));
+  if(!G)return;
+  // Use cached values for HUD bars — avoid getStats() on every tick
+  const _maxHp   = G.maxHp   || 1;
+  const _maxMana = G.maxMana || 1;
+  const hp=Math.max(0,Math.min(100,G.hp/_maxHp*100));
+  const mp=Math.max(0,Math.min(100,G.mana/_maxMana*100));
   const xp=Math.max(0,Math.min(100,G.xp/G.xpNext*100));
   document.getElementById('b-hp').style.width=hp+'%';document.getElementById('b-mp').style.width=mp+'%';document.getElementById('b-xp').style.width=xp+'%';
-  document.getElementById('v-hp').textContent=fmt(Math.round(G.hp))+'/'+fmt(st.maxHp);
-  document.getElementById('v-mp').textContent=fmt(Math.round(G.mana))+'/'+fmt(st.maxMana);
+  document.getElementById('v-hp').textContent=fmt(Math.round(G.hp))+'/'+fmt(_maxHp);
+  document.getElementById('v-mp').textContent=fmt(Math.round(G.mana))+'/'+fmt(_maxMana);
   document.getElementById('v-xp').textContent=fmt(G.xp)+'/'+fmt(G.xpNext);
   document.getElementById('hud-gold-val').textContent=fmt(G.gold);const gpsEl=document.getElementById('hud-gps');if(gpsEl){const ageMult=Math.pow(1.15,(G.age||1)-1);let gps=(G.boons.b20||0)*250000+(G.boons.b21||0)*800000+(G.boons.b22||0)*2500000+(G.boons.b23||0)*15000000*ageMult;gps=Math.round(gps*G.pbonus*10)/10;gpsEl.textContent=gps>0?'+'+fmt(Math.round(gps))+'/s':'';}
   document.getElementById('hud-lv-val').textContent=G.lv;document.getElementById('hud-cls-name').textContent=CLASSES[G.cls].name.split(' ')[0];document.getElementById('hud-zone-val').textContent=G.zone;const ageEl=document.getElementById('hud-age-val');if(ageEl)ageEl.textContent=G.age;
