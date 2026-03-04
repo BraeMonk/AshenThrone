@@ -5007,6 +5007,7 @@ function buildSPExchange() {
     <div style="font-family:'Crimson Text',serif;font-style:italic;font-size:var(--fs-xs);
       color:#7a5aaa;margin-bottom:var(--sp-md)">Convert surplus resources into Skill Points.</div>
     <div style="display:flex;flex-direction:column;gap:8px">
+
       <div style="display:flex;align-items:center;justify-content:space-between;
         background:rgba(0,0,0,0.3);border:1px solid #2a1a4a;border-radius:8px;padding:10px 12px">
         <div>
@@ -5014,16 +5015,28 @@ function buildSPExchange() {
           <div style="font-size:0.54rem;color:#7a5aaa;margin-top:2px">100 ASC-SP → 1 SP</div>
           <div style="font-size:0.54rem;color:${canAsc?'#9070c0':'var(--red)'};margin-top:1px">You have: ${fmt(ascSP)} ASC-SP</div>
         </div>
-        <button onclick="exchangeSP('asc')"
-          style="padding:9px 14px;font-family:'Cinzel',serif;font-size:var(--fs-xs);font-weight:700;
-          letter-spacing:1px;border:none;border-radius:5px;min-height:40px;min-width:55px;
-          cursor:${canAsc?'pointer':'default'};transition:all .12s;
-          background:${canAsc?'linear-gradient(180deg,#8050c0,#5030a0)':'rgba(0,0,0,0.4)'};
-          color:${canAsc?'#e0d0ff':'#604880'};
-          box-shadow:${canAsc?'0 3px 0 #20106080':'none'};
-          opacity:${canAsc?'1':'0.4'}"
-          ${canAsc?'':'disabled'}>+1 SP</button>
+        <div style="display:flex;gap:6px">
+          <button onclick="exchangeSP('asc')"
+            style="padding:9px 14px;font-family:'Cinzel',serif;font-size:var(--fs-xs);font-weight:700;
+            letter-spacing:1px;border:none;border-radius:5px;min-height:40px;min-width:55px;
+            cursor:${canAsc?'pointer':'default'};transition:all .12s;
+            background:${canAsc?'linear-gradient(180deg,#8050c0,#5030a0)':'rgba(0,0,0,0.4)'};
+            color:${canAsc?'#e0d0ff':'#604880'};
+            box-shadow:${canAsc?'0 3px 0 #20106080':'none'};
+            opacity:${canAsc?'1':'0.4'}"
+            ${canAsc?'':'disabled'}>+1 SP</button>
+          <button onclick="exchangeSPMax('asc')"
+            style="padding:9px 14px;font-family:'Cinzel',serif;font-size:var(--fs-xs);font-weight:700;
+            letter-spacing:1px;border:none;border-radius:5px;min-height:40px;min-width:55px;
+            cursor:${canAsc?'pointer':'default'};transition:all .12s;
+            background:${canAsc?'linear-gradient(180deg,#6030a0,#3a1870)':'rgba(0,0,0,0.4)'};
+            color:${canAsc?'#c0a0f0':'#604880'};
+            box-shadow:${canAsc?'0 3px 0 #10083080':'none'};
+            opacity:${canAsc?'1':'0.4'}"
+            ${canAsc?'':'disabled'}>Max</button>
+        </div>
       </div>
+
       <div style="display:flex;align-items:center;justify-content:space-between;
         background:rgba(0,0,0,0.3);border:1px solid #2a1a4a;border-radius:8px;padding:10px 12px">
         <div>
@@ -5031,16 +5044,28 @@ function buildSPExchange() {
           <div style="font-size:0.54rem;color:#7a5aaa;margin-top:2px">10 Soul Shards → 1 SP</div>
           <div style="font-size:0.54rem;color:${canShard?'#9070c0':'var(--red)'};margin-top:1px">You have: ${fmt(shards)} Shards</div>
         </div>
-        <button onclick="exchangeSP('shard')"
-          style="padding:9px 14px;font-family:'Cinzel',serif;font-size:var(--fs-xs);font-weight:700;
-          letter-spacing:1px;border:none;border-radius:5px;min-height:40px;min-width:55px;
-          cursor:${canShard?'pointer':'default'};transition:all .12s;
-          background:${canShard?'linear-gradient(180deg,#8050c0,#5030a0)':'rgba(0,0,0,0.4)'};
-          color:${canShard?'#e0d0ff':'#604880'};
-          box-shadow:${canShard?'0 3px 0 #20106080':'none'};
-          opacity:${canShard?'1':'0.4'}"
-          ${canShard?'':'disabled'}>+1 SP</button>
+        <div style="display:flex;gap:6px">
+          <button onclick="exchangeSP('shard')"
+            style="padding:9px 14px;font-family:'Cinzel',serif;font-size:var(--fs-xs);font-weight:700;
+            letter-spacing:1px;border:none;border-radius:5px;min-height:40px;min-width:55px;
+            cursor:${canShard?'pointer':'default'};transition:all .12s;
+            background:${canShard?'linear-gradient(180deg,#8050c0,#5030a0)':'rgba(0,0,0,0.4)'};
+            color:${canShard?'#e0d0ff':'#604880'};
+            box-shadow:${canShard?'0 3px 0 #20106080':'none'};
+            opacity:${canShard?'1':'0.4'}"
+            ${canShard?'':'disabled'}>+1 SP</button>
+          <button onclick="exchangeSPMax('shard')"
+            style="padding:9px 14px;font-family:'Cinzel',serif;font-size:var(--fs-xs);font-weight:700;
+            letter-spacing:1px;border:none;border-radius:5px;min-height:40px;min-width:55px;
+            cursor:${canShard?'pointer':'default'};transition:all .12s;
+            background:${canShard?'linear-gradient(180deg,#6030a0,#3a1870)':'rgba(0,0,0,0.4)'};
+            color:${canShard?'#c0a0f0':'#604880'};
+            box-shadow:${canShard?'0 3px 0 #10083080':'none'};
+            opacity:${canShard?'1':'0.4'}"
+            ${canShard?'':'disabled'}>Max</button>
+        </div>
       </div>
+
       <div style="display:flex;align-items:center;justify-content:space-between;
         background:rgba(0,0,0,0.3);border:1px solid #2a1a4a;border-radius:8px;padding:10px 12px">
         <div>
@@ -5048,16 +5073,28 @@ function buildSPExchange() {
           <div style="font-size:0.54rem;color:#7a5aaa;margin-top:2px">10,000 Gold → 1 SP</div>
           <div style="font-size:0.54rem;color:${canGold?'#9070c0':'var(--red)'};margin-top:1px">You have: ${fmt(gold)} Gold</div>
         </div>
-        <button onclick="exchangeSP('gold')"
-          style="padding:9px 14px;font-family:'Cinzel',serif;font-size:var(--fs-xs);font-weight:700;
-          letter-spacing:1px;border:none;border-radius:5px;min-height:40px;min-width:55px;
-          cursor:${canGold?'pointer':'default'};transition:all .12s;
-          background:${canGold?'linear-gradient(180deg,#8050c0,#5030a0)':'rgba(0,0,0,0.4)'};
-          color:${canGold?'#e0d0ff':'#604880'};
-          box-shadow:${canGold?'0 3px 0 #20106080':'none'};
-          opacity:${canGold?'1':'0.4'}"
-          ${canGold?'':'disabled'}>+1 SP</button>
+        <div style="display:flex;gap:6px">
+          <button onclick="exchangeSP('gold')"
+            style="padding:9px 14px;font-family:'Cinzel',serif;font-size:var(--fs-xs);font-weight:700;
+            letter-spacing:1px;border:none;border-radius:5px;min-height:40px;min-width:55px;
+            cursor:${canGold?'pointer':'default'};transition:all .12s;
+            background:${canGold?'linear-gradient(180deg,#8050c0,#5030a0)':'rgba(0,0,0,0.4)'};
+            color:${canGold?'#e0d0ff':'#604880'};
+            box-shadow:${canGold?'0 3px 0 #20106080':'none'};
+            opacity:${canGold?'1':'0.4'}"
+            ${canGold?'':'disabled'}>+1 SP</button>
+          <button onclick="exchangeSPMax('gold')"
+            style="padding:9px 14px;font-family:'Cinzel',serif;font-size:var(--fs-xs);font-weight:700;
+            letter-spacing:1px;border:none;border-radius:5px;min-height:40px;min-width:55px;
+            cursor:${canGold?'pointer':'default'};transition:all .12s;
+            background:${canGold?'linear-gradient(180deg,#6030a0,#3a1870)':'rgba(0,0,0,0.4)'};
+            color:${canGold?'#c0a0f0':'#604880'};
+            box-shadow:${canGold?'0 3px 0 #10083080':'none'};
+            opacity:${canGold?'1':'0.4'}"
+            ${canGold?'':'disabled'}>Max</button>
+        </div>
       </div>
+
     </div>
   </div>`;
 }
@@ -5078,6 +5115,30 @@ function exchangeSP(type) {
   tone(520, 'triangle', 0.06, 0.14);
   tone(780, 'triangle', 0.08, 0.12, 0.06);
   toast('⚗ Exchanged for +1 SP!');
+  renderTab(); updateHUD(); saveG();
+}
+
+function exchangeSPMax(type) {
+  initAudio();
+  let amount = 0;
+  if (type === 'asc') {
+    amount = Math.floor((G.ascensionSP || 0) / 100);
+    if (amount < 1) { toast('Need at least 100 ASC-SP!'); return; }
+    G.ascensionSP -= amount * 100;
+  } else if (type === 'shard') {
+    amount = Math.floor((G.soulShards || 0) / 10);
+    if (amount < 1) { toast('Need at least 10 Soul Shards!'); return; }
+    G.soulShards -= amount * 10;
+  } else if (type === 'gold') {
+    amount = Math.floor((G.gold || 0) / 10000);
+    if (amount < 1) { toast('Need at least 10,000 Gold!'); return; }
+    G.gold -= amount * 10000;
+  }
+  G.sp = (G.sp || 0) + amount;
+  tone(520, 'triangle', 0.06, 0.14);
+  tone(780, 'triangle', 0.08, 0.12, 0.06);
+  tone(1040, 'triangle', 0.10, 0.12, 0.12);
+  toast(`⚗ Exchanged for +${fmt(amount)} SP!`);
   renderTab(); updateHUD(); saveG();
 }
 
