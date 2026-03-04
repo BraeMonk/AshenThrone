@@ -3986,7 +3986,7 @@ function killEnemy(){
   // Soul Shards (AL2+)
   earnShards();
 
-  // Relic: Infernal Core — 3% chain explosion per level
+    // Relic: Infernal Core — 3% chain explosion per level
   if (G.ascensionLevel >= 2 && relicLevel('rel_6') > 0) {
     const procChance = relicLevel('rel_6') * 0.03;
     if (Math.random() < procChance) {
@@ -3997,26 +3997,6 @@ function killEnemy(){
       spawnParticles(EA.x, EA.y, '#ff6010', 28);
       SFX.crit();
     }
-  }
-
-  // Relic: Ashen Crown Shard — +25% XP per level (applied after base xpg calculated)
-  if (G.ascensionLevel >= 2 && relicLevel('rel_4') > 0) {
-    xpg = Math.round(xpg * (1 + relicLevel('rel_4') * 0.25));
-  }
-
-  // Relic: Void Heart — +20% gold per level
-  if (G.ascensionLevel >= 2 && relicLevel('rel_3') > 0) {
-    gold = Math.round(gold * (1 + relicLevel('rel_3') * 0.20));
-  }
-
-  // Bloodline: Gilded Ancestry — +20% gold per level (AL4+)
-  if (G.ascensionLevel >= 4 && traitLevel('bt_gold') > 0) {
-    gold = Math.round(gold * (1 + traitLevel('bt_gold') * 0.20));
-  }
-
-  // Bloodline: Soulbound Legacy — +20% XP per level (AL4+)
-  if (G.ascensionLevel >= 4 && traitLevel('bt_soul') > 0) {
-    xpg = Math.round(xpg * (1 + traitLevel('bt_soul') * 0.20));
   }
 
   // Watching Eye relic passive — tracked separately in tickVault
@@ -4070,13 +4050,14 @@ function killEnemy(){
   if(G.curses&&G.curses.af3)gold=Math.round(gold*1.60);
   if(G.curses&&G.curses.af1)gold=Math.round(gold*1.20);
   if(G.skInvest){const pts=G.skInvest.si_gold||0;if(pts>0)gold=Math.round(gold*(1+pts/100));}
-  // Depth reward scaling (AL5+)
-  if (G.ascensionLevel >= 5 && G.depthScore > 0) {
-    const drm = getDepthRewardMult();
-    gold = Math.round(gold * drm);
-    xpg  = Math.round(xpg  * drm);
+  // Relic: Void Heart — +20% gold per level
+  if (G.ascensionLevel >= 2 && relicLevel('rel_3') > 0) {
+    gold = Math.round(gold * (1 + relicLevel('rel_3') * 0.20));
   }
-  G.gold+=gold;G.gtotal+=gold;SFX.gold();
+  // Bloodline: Gilded Ancestry — +20% gold per level (AL4+)
+  if (G.ascensionLevel >= 4 && traitLevel('bt_gold') > 0) {
+    gold = Math.round(gold * (1 + traitLevel('bt_gold') * 0.20));
+  }
 
   // XP calculation
   let xpg=Math.round(13*Math.pow(1.45,G.zone-1)*Math.pow(1.2,G.age-1));
@@ -4093,12 +4074,25 @@ function killEnemy(){
     }
   }
   if(G.skInvest){const pts=G.skInvest.si_xp||0;if(pts>0)xpg=Math.round(xpg*(1+pts/100));}
+  // Relic: Ashen Crown Shard — +25% XP per level
+  if (G.ascensionLevel >= 2 && relicLevel('rel_4') > 0) {
+    xpg = Math.round(xpg * (1 + relicLevel('rel_4') * 0.25));
+  }
+  // Bloodline: Soulbound Legacy — +20% XP per level (AL4+)
+  if (G.ascensionLevel >= 4 && traitLevel('bt_soul') > 0) {
+    xpg = Math.round(xpg * (1 + traitLevel('bt_soul') * 0.20));
+  }
+  // Depth reward scaling (AL5+)
+  if (G.ascensionLevel >= 5 && G.depthScore > 0) {
+    const drm = getDepthRewardMult();
+    gold = Math.round(gold * drm);
+    xpg  = Math.round(xpg  * drm);
+  }
+  G.gold+=gold;G.gtotal+=gold;SFX.gold();
 
-  if (G.voidRiftActive && _activeRift) {
+    if (G.voidRiftActive && _activeRift) {
     gold = Math.round(gold * _activeRift.goldMult);
     xpg = Math.round(xpg * _activeRift.xpMult);
-    G.gold += Math.round(gold * (_activeRift.goldMult - 1));
-    G.gtotal += Math.round(gold * (_activeRift.goldMult - 1));
 
     _riftKillCount++;
     updateRiftLabel();
