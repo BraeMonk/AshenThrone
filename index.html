@@ -3317,7 +3317,8 @@ function getStats(){
   if(bl('b6')){spell=Math.round(spell*(1+0.40*bl('b6')));crit+=8*bl('b6');}
   if(bl('b7'))life+=5*bl('b7');
   if(bl('b8'))crit+=12*bl('b8');
-  if(bl('b9'))atk*=(1+0.50*bl('b9'));
+  // Dragonfire Pact ATK: 1.45× per level — enemies scale 1.75×, so there's real tension
+  if(bl('b9')) atk *= Math.pow(1.45, bl('b9'));
   if(bl('b10')){const zb=G.zone*10*bl('b10');atk+=zb;def+=zb;spell+=zb;maxHp+=zb*5;}
   if(bl('b14')){const m=1+0.28*bl('b14');atk*=m;def*=m;maxHp=Math.round(maxHp*m);spell=Math.round(spell*m);spd+=0.05*bl('b14');}
   if(bl('b17')&&G.chainKills>0)atk*=1+Math.min(G.chainKills,30)*0.05*bl('b17');
@@ -3796,12 +3797,15 @@ function spawnEnemy(){
   const pool=ZONES[zi].enemies;
   const key=pool[Math.floor(Math.random()*pool.length)];
   
-  // Soft cap: age scaling diminishes after age 3
-  const ageMult=1+((Math.pow(1.35,G.age-1)-1)*0.65);
-  // Zone scaling slightly reduced
-  const zoneMult=Math.pow(1.48,G.zone-1);
+  // Age: steeper curve so late ages feel genuinely dangerous
+  const ageMult = Math.pow(1.28, G.age - 1);
+  // Zone: tighter per-zone jump so progress feels earned
+  const zoneMult = Math.pow(1.55, G.zone - 1);
   
-  eMaxHP=Math.round(22*zoneMult*ageMult*(1+(boonLevel('b9')*0.3)));
+  const _dfLv = boonLevel('b9');
+  const _dfMult = _dfLv > 0 ? Math.pow(1.75, _dfLv) : 1;
+  eMaxHP = Math.round(28 * zoneMult * ageMult * _dfMult);
+
   // Depth Score scaling (AL5+)
   if (G.ascensionLevel >= 5 && G.depthScore > 0) {
     eMaxHP = Math.round(eMaxHP * getDepthEnemyMult());
@@ -3821,12 +3825,11 @@ function spawnEnemy(){
     ? getDepthEnemyMult()
     : 1.0;
   G._eDmgBase = Math.round(
-    (3 + G.zone * 1.8)
-    * Math.pow(1.14, G.zone - 1)
-    * (1 + ((Math.pow(1.25, G.age - 1) - 1) * 0.7))
+    (4 + G.zone * 2.4)
+    * Math.pow(1.22, G.zone - 1)
+    * Math.pow(1.22, G.age - 1)
     * depthDmgMult
   );
-
   
   const nl=ENAMES[key];
   curEnemy={key,name:nl[Math.floor(Math.random()*nl.length)]};
@@ -3920,12 +3923,11 @@ function doAttack(){
 
   const st2=getStats();
   
-  // DEF reduces damage by percentage, diminishing returns after 100 DEF
-  // This means DEF always matters, never becomes irrelevant
-  const defReduction=st2.def<100
-    ? st2.def/200          // 0-100 DEF = 0-50% reduction
-    : 0.50+(st2.def-100)/600; // 100+ DEF = 50-67% reduction, soft capped
-  const defMult=Math.max(0.12, 1-Math.min(defReduction,0.88));
+  // DEF reduces damage logarithmically — effective but never trivial
+  // Formula: reduction = DEF / (DEF + 300). Asymptotes at ~75% max.
+  const defReduction = st2.def / (st2.def + 300);
+  const defMult = Math.max(0.25, 1 - Math.min(defReduction, 0.75));
+
   
   let blocked=0;
   if(st2.block>0){
@@ -4131,9 +4133,10 @@ function killEnemy(){
   // Zone advance — slower target growth, scales with age not just zone
   if(G.zoneKills>=G.zoneTarget){
     G.zoneKills=0;
-    // Slower target growth — was 1.22, now tapers off at high zones
-    const growthRate=Math.max(1.08, 1.22-G.zone*0.02);
-    G.zoneTarget=Math.round(G.zoneTarget*growthRate);
+    // Zone target grows faster in later zones — more kills needed to advance
+    const growthRate = Math.min(1.35, 1.18 + G.zone * 0.02);
+    G.zoneTarget = Math.round(G.zoneTarget * growthRate);
+
     
     if(G.zone>=8){
       G.zone=1;G.age++;
