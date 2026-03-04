@@ -4032,7 +4032,7 @@ function killEnemy(){
         eHP = Math.max(0, eHP - bleedDmg);
         showDmg('🔴' + bleedDmg, false, 'spell');
         spawnParticles(EA.x, EA.y, '#c02020', 4);
-        if (eHP <= 0) killEnemy();
+        if (eHP <= 0 && !EA.dead) killEnemy();
       }, delay);
     });
   }
@@ -4078,6 +4078,22 @@ function killEnemy(){
   }
   G.gold+=gold;G.gtotal+=gold;SFX.gold();
 
+  // XP calculation
+  let xpg=Math.round(13*Math.pow(1.45,G.zone-1)*Math.pow(1.2,G.age-1));
+  if(bl('b3'))xpg=Math.round(xpg*(1+0.25*bl('b3')));
+  if(bl('b16')&&G.zone>=4)xpg=Math.round(xpg*(1+0.5*bl('b16')));
+  if(G.sk&&G.sk.radiance){gold=Math.round(gold*1.2);xpg=Math.round(xpg*1.2);}
+  if(G.curses&&G.curses.af3)xpg=Math.round(xpg*0.5);
+  if(G.curses&&G.curses.af1)xpg=Math.round(xpg*1.20);
+  if(G.curses&&G.curses.ca3){
+    xpg=Math.round(xpg*2);
+    if(G.deathTollDebt>0){
+      G.deathTollKills=(G.deathTollKills||0)+1;
+      if(G.deathTollKills>=50){G.deathTollDebt=Math.max(0,G.deathTollDebt-1);G.deathTollKills=0;}
+    }
+  }
+  if(G.skInvest){const pts=G.skInvest.si_xp||0;if(pts>0)xpg=Math.round(xpg*(1+pts/100));}
+
   if (G.voidRiftActive && _activeRift) {
     gold = Math.round(gold * _activeRift.goldMult);
     xpg = Math.round(xpg * _activeRift.xpMult);
@@ -4102,21 +4118,6 @@ function killEnemy(){
     }
   }
 
-  // XP calculation
-  let xpg=Math.round(13*Math.pow(1.45,G.zone-1)*Math.pow(1.2,G.age-1));
-  if(bl('b3'))xpg=Math.round(xpg*(1+0.25*bl('b3')));
-  if(bl('b16')&&G.zone>=4)xpg=Math.round(xpg*(1+0.5*bl('b16')));
-  if(G.sk&&G.sk.radiance){gold=Math.round(gold*1.2);xpg=Math.round(xpg*1.2);}
-  if(G.curses&&G.curses.af3)xpg=Math.round(xpg*0.5);
-  if(G.curses&&G.curses.af1)xpg=Math.round(xpg*1.20);
-  if(G.curses&&G.curses.ca3){
-    xpg=Math.round(xpg*2);
-    if(G.deathTollDebt>0){
-      G.deathTollKills=(G.deathTollKills||0)+1;
-      if(G.deathTollKills>=50){G.deathTollDebt=Math.max(0,G.deathTollDebt-1);G.deathTollKills=0;}
-    }
-  }
-  if(G.skInvest){const pts=G.skInvest.si_xp||0;if(pts>0)xpg=Math.round(xpg*(1+pts/100));}
   G.xp+=xpg;
 
   // HP restore on kill
