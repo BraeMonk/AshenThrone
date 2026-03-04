@@ -2651,6 +2651,7 @@ function doAscension() {
 
   // Carry forward
   G.ascensionLevel = nextAL;
+  markStatsDirty();
   G.hasAscended = true;
   G.lastAscensionAge = G.age;
 
@@ -3184,7 +3185,10 @@ function loadG() {
             offSpd = Math.max(0.5, offSpd);
 
             const attacksPerSec = offSpd;
-            const killChance = 0.35;
+            // Fight-duration-aware offline kill chance
+            // Matches live difficulty — longer fights = lower kill chance per attack
+            const _offTargetHits = Math.max(1, getTargetFightDuration());
+            const killChance = Math.min(0.45, 1 / _offTargetHits);
 
             let simZone = G.zone;
             let simAge = G.age;
@@ -3820,16 +3824,14 @@ function getAvgHitDmg() {
 }
 
 function getTargetFightDuration() {
-  // How many hits should it take to kill an enemy at this point in the game
-  // Zone and age both increase fight length — age more aggressively
-  // Dragonfire Pact adds extra hits because enemies are supposed to be tankier
+  if (!G) return 6;
   const baseDuration = 6;
   const zoneBonus    = G.zone * 2.2;
   const ageBonus     = G.age  * 5.0;
   const dfBonus      = boonLevel('b9') * 8;
   return baseDuration + zoneBonus + ageBonus + dfBonus;
 }
-   
+
 function spawnEnemy(){
   const zi=Math.min(G.zone-1,ZONES.length-1);
   const pool=ZONES[zi].enemies;
@@ -4971,6 +4973,7 @@ function doSacrifice(id){
 function applySacrifice(id){
   if(!G.sacrifices)G.sacrifices={};
   G.sacrifices[id]=true;
+  markStatsDirty();
   const s=SACRIFICES.find(x=>x.id===id);
   // Apply immediate penalties
   if(id==='sa1'){const st=getStats();G.hp=Math.min(G.hp,st.maxHp);}
@@ -5939,6 +5942,7 @@ function openPrestige(){
 
 function doPrestige(){
   const gain=Math.max(1,Math.floor(G.lv/5));G.prestige+=gain;G.pbonus=1+G.prestige*.05;
+  markStatsDirty();
   const carryoverSP=Math.floor(G.sp*0.5);
   // SP that didn't carry over counts as wasted
   G.skInvestWasted=(G.skInvestWasted||0)+Math.ceil(G.sp*0.5);
