@@ -3794,19 +3794,29 @@ function spawnParticles(x,y,col,n=10){
 =============================================== */
 let curEnemy=null,eHP=0,eMaxHP=0,atkTimer=null,curseTimer=null,manaTimer=null,vaultTimer=null,atkCount=0;
 
+let _cachedPowerIndex = 0;
+
 function getPlayerPowerIndex() {
-  const st = getStats();
-  // Log scale of ATK × speed × crit factor — captures all multiplier stacking
-  const rawPower = st.atk * st.spd * (1 + st.crit / 100);
-  return Math.log10(Math.max(1, rawPower));
+  // Reuses the avgHit cache — no extra getStats() call
+  const avgHit = getAvgHitDmg();
+  const st = { spd: G._cachedSpd || 1.0 };
+  return Math.log10(Math.max(1, avgHit * st.spd));
 }
 
+// Cache stat lookups — only recompute when level/boons actually change
+let _cachedAvgHit = 1;
+let _avgHitDirty = true;
+function markStatsDirty() { _avgHitDirty = true; }
+
 function getAvgHitDmg() {
+  if (!_avgHitDirty) return _cachedAvgHit;
   const st = getStats();
-  // Weighted average accounting for crit rate and spell contribution
   const critFactor = 1 + (st.crit / 100) * 1.2;
-  const spellBonus = st.mana > 0 ? st.spell * 0.6 : st.spell * 0.3;
-  return Math.max(1, (st.atk * critFactor) + spellBonus);
+  const spellBonus = G.mana > 0 ? st.spell * 0.6 : st.spell * 0.3;
+  _cachedAvgHit = Math.max(1, (st.atk * critFactor) + spellBonus);
+  G._cachedSpd = st.spd;
+  _avgHitDirty = false;
+  return _cachedAvgHit;
 }
 
 function getTargetFightDuration() {
@@ -3859,15 +3869,12 @@ function spawnEnemy(){
   const depthDmgMult = (G.ascensionLevel >= 5 && G.depthScore > 0)
     ? getDepthEnemyMult()
     : 1.0;
-  // Option B enemy damage: scales off player max HP so incoming hits always sting
-  // Target: each enemy hit deals ~8-14% of player max HP before DEF mitigation
-  // Zone and age increase the percentage — late game enemies are genuinely threatening
-  const st0        = getStats();
-  const _hpBasis   = st0.maxHp;
-  const _dmgPct    = 0.08 + (G.zone * 0.008) + (G.age * 0.012);
-  const _dfDmgBonus = boonLevel('b9') * 0.04; // Dragonfire: enemies also hit harder
-  const _clampedPct = Math.min(_dmgPct + _dfDmgBonus, 0.55); // hard cap at 55% per hit
-  G._eDmgBase = Math.round(_hpBasis * _clampedPct * depthDmgMult);
+  // Use cached maxHp instead of calling getStats() again — already computed at spawn
+  G._eDmgBase = Math.round(
+    G.maxHp
+    * Math.min(0.08 + (G.zone * 0.008) + (G.age * 0.012) + (boonLevel('b9') * 0.04), 0.55)
+    * depthDmgMult
+  );
   
   const nl=ENAMES[key];
   curEnemy={key,name:nl[Math.floor(Math.random()*nl.length)]};
@@ -4622,6 +4629,7 @@ function buySkill(id){
   const cur=G.sk[id]||0;if(cur>=sk.max){toast('Already maxed!');return;}
   if(sk.req&&!(G.sk[sk.req]>=1)){toast('Unlock prerequisite first!');return;}
   G.sp--;G.sk[id]=(G.sk[id]||0)+1;G.sktotal=(G.sktotal||0)+1;
+  markStatsDirty();
   G.spSpentTotal=(G.spSpentTotal||0)+1;
   G.skInvestWasted=(G.skInvestWasted||0)+1; // every SP spent in skills counts as "invested/wasted"
   if(G.sk.secondwind)G._swr=true;if(G.idle)startIdle();SFX.skill();
@@ -4772,11 +4780,12 @@ function buyBoon(id){
   if(G.gold < cost){ toast('Not enough gold!'); return; }
   G.gold -= cost;
   G.boons[id] = lv + 1;
-    if(lv === 0) G.boonCount = (G.boonCount||0) + 1;
-    // Grant XP for boon purchase — scales with boon cost
-    const boonXP = Math.round(cost * 0.4);
-    G.xp += boonXP;
-    while(G.xp >= G.xpNext){ G.xp -= G.xpNext; G.lv++; G.xpNext = xpFor(G.lv); G.sp++; showLvlUp(); }
+  markStatsDirty();
+  if(lv === 0) G.boonCount = (G.boonCount||0) + 1;
+  // Grant XP for boon purchase — scales with boon cost
+  const boonXP = Math.round(cost * 0.4);
+  G.xp += boonXP;
+  while(G.xp >= G.xpNext){ G.xp -= G.xpNext; G.lv++; G.xpNext = xpFor(G.lv); G.sp++; showLvlUp(); }
   SFX.boon();
   if(G.idle) startIdle();
   toast(`⚗ ${b.name} → Level ${lv+1}!`);
@@ -6151,6 +6160,7 @@ let toastT;
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('show'),3200);}
 let lvlT;
 function showLvlUp(){
+  markStatsDirty();
   const el=document.getElementById('lvlup');
   document.getElementById('lvlup-txt').textContent='LEVEL '+G.lv+'!';
   el.classList.add('show');clearTimeout(lvlT);lvlT=setTimeout(()=>el.classList.remove('show'),1800);
