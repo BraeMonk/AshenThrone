@@ -4516,8 +4516,8 @@ function updateHUD(){
   }
   // Show/hide Ascension tab
   const ascTab = document.getElementById('tb-ascend');
-  if (ascTab) ascTab.style.display = (G.ascensionLevel >= 1 || canAscend()) ? '' : 'none';
- 
+  if (ascTab) ascTab.style.display = '';
+
   // Ascension HUD strip (AL1+)
   if (G.ascensionLevel >= 1) {
     injectAscensionHUD();
