@@ -6725,12 +6725,11 @@ setBoonCat = function(c) {
 
 (function() {
   const MAX_DMG_NODES = 12;
-  const MERGE_MS      = 80;   // hits within this window merge
-  const ANIM_MS       = 880;  // must match CSS floatup duration
+  const MERGE_MS      = 80;
+  const ANIM_MS       = 880;
 
-  // Small pool of reusable nodes
   const _pool = [];
-  let   _active = [];         // { el, timer, lastVal, lastTime }
+  let   _active = [];
 
   function _getNode() {
     return _pool.pop() || document.createElement('div');
@@ -6745,12 +6744,13 @@ setBoonCat = function(c) {
   }
 
   showDmg = function(dmg, isCrit, x, y) {
+    dmg = +dmg;
+    if (!dmg || dmg !== dmg) return;
     const ov = document.getElementById('arena-ov');
     if (!ov) return;
 
     const now = Date.now();
 
-    // --- merge rapid-fire hits into the most recent number ---
     if (_active.length > 0) {
       const last = _active[_active.length - 1];
       if (now - last.lastTime < MERGE_MS) {
@@ -6763,25 +6763,21 @@ setBoonCat = function(c) {
       }
     }
 
-    // --- drop tiny hits when near cap ---
     if (_active.length >= MAX_DMG_NODES - 2) {
       const ref = _active[_active.length - 1];
       if (ref && dmg < ref.lastVal * 0.01) return;
     }
 
-    // --- enforce hard cap: recycle oldest ---
     if (_active.length >= MAX_DMG_NODES) {
       const oldest = _active[0];
       clearTimeout(oldest.timer);
       _release(oldest);
     }
 
-    // --- create / reuse node ---
     const el = _getNode();
     el.className = 'dmg-num' + (isCrit ? ' crit' : '');
     el.textContent = isCrit ? '💥 ' + fmt(Math.round(dmg)) : fmt(Math.round(dmg));
 
-    // Position — use provided coords or random fallback
     const ox = (x !== undefined) ? x : (20 + Math.random() * 60);
     const oy = (y !== undefined) ? y : (20 + Math.random() * 40);
     el.style.cssText = `left:${ox}%;top:${oy}%;position:absolute;pointer-events:none;`;
@@ -6793,6 +6789,7 @@ setBoonCat = function(c) {
     _active.push(entry);
   };
 })();
+
 </script>
 
 </body>
