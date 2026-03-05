@@ -1035,516 +1035,511 @@ function toggleBGM(){
 /* ===============================================
    32-BIT SPRITES — More color depth, shading, highlights
 =============================================== */
-const PX=5; // Larger base pixel for ultra-HD feel
+const PX = 4;
 
-function drawSprite32(ctx,sprite,ox,oy,scale=1){
-  sprite.forEach((row,ry)=>row.forEach((c,rx)=>{
-    if(!c||c==='.'||c==='_')return;
-    ctx.fillStyle=c;
-    ctx.fillRect(ox+rx*PX*scale,oy+ry*PX*scale,PX*scale,PX*scale);
+function drawSprite32(ctx, sprite, ox, oy, scale=1) {
+  sprite.forEach((row, ry) => row.forEach((c, rx) => {
+    if (!c || c === '.' || c === '_') return;
+    ctx.fillStyle = c;
+    ctx.fillRect(ox + rx*PX*scale, oy + ry*PX*scale, PX*scale, PX*scale);
   }));
 }
 
-// Ultra-HD palette helper — creates layered shading from a base hex
-function mkPal(base, hi=30, lo=40){
-  const r=parseInt(base.slice(1,3),16),g=parseInt(base.slice(3,5),16),b=parseInt(base.slice(5,7),16);
-  const clamp=(v)=>Math.max(0,Math.min(255,v));
-  const hex=(v)=>v.toString(16).padStart(2,'0');
-  const shade=(dr,dg,db)=>`#${hex(clamp(r+dr))}${hex(clamp(g+dg))}${hex(clamp(b+db))}`;
-  return{
-    base:base,
-    hi:shade(hi,hi,hi),
-    hi2:shade(hi*1.6,hi*1.6,hi*1.6),
-    mid:shade(0,0,0),
-    lo:shade(-lo,-lo,-lo),
-    lo2:shade(-lo*1.7,-lo*1.7,-lo*1.7),
-    rim:shade(hi*2.2,hi*2.2,hi*2.2),
-    spec:'#ffffff',
-  };
-}
-
-const SPR32={
-  warrior(p,attacking){
-    const _=null;
-    if(attacking) return [
-      // Row 0 — helm crest/plume
-      [_,   _,   _,   p.helmLo2,p.helmRim,p.helmRim,p.helmRim,p.helmLo2,_,   _,   _,   _  ],
-      // Row 1 — helm top with specular
-      [_,   _,   p.helmLo,p.helmHi2,p.helmHi2,p.helmRim,p.helmHi2,p.helmHi,p.helmLo,_,   _,   _  ],
-      // Row 2 — helm sides
-      [_,   p.helmLo,p.helmHi,p.helmHi2,p.helmSpec,p.helmHi2,p.helmHi2,p.helmHi,p.helmLo,_,   _,   _  ],
-      // Row 3 — visor line + eyes
-      [_,   p.helmLo,p.helmMid,p.skinHi,p.skin,p.eyeGlow,p.skin,p.skinHi,p.helmMid,p.helmLo,_,   _  ],
-      // Row 4 — face/chin guard
-      [_,   p.helmLo2,p.helmLo,p.skin,p.skinLo,p.skinLo,p.skinLo,p.skin,p.helmLo,p.helmLo2,_,   _  ],
-      // Row 5 — pauldrons / shoulders raised for attack
-      [p.capeLo,p.armorRim,p.armorHi2,p.armorHi,p.beltHi,p.beltMid,p.armorHi,p.armorHi2,p.armorRim,p.armorLo,p.swordHi,p.swordRim],
-      // Row 6 — chest plate
-      [p.capeMid,p.armorHi,p.armorHi2,p.armorMid,p.armorHi,p.armorHi,p.armorMid,p.armorHi2,p.armorHi,p.armorLo,p.swordMid,p.swordLo],
-      // Row 7 — torso
-      [p.capeMid,p.armorMid,p.armorHi,p.beltHi,p.beltMid,p.beltMid,p.beltHi,p.armorHi,p.armorMid,p.capeLo,p.swordMid,_  ],
-      // Row 8 — waist / tassets
-      [p.capeLo,p.armorLo,p.beltMid,p.beltLo,p.beltLo2,p.beltLo2,p.beltLo,p.beltMid,p.armorLo,p.capeLo,_,   _  ],
-      // Row 9 — upper legs
-      [p.capeLo2,p.armorHi,p.armorMid,p.armorHi,p.armorMid,p.armorMid,p.armorHi,p.armorMid,p.armorHi,p.capeLo2,_,   _  ],
-      // Row 10 — knees
-      [_,   p.armorLo,p.armorLo2,p.armorHi,_,   _,   p.armorHi,p.armorLo2,p.armorLo,_,   _,   _  ],
-      // Row 11 — greaves
-      [_,   p.armorMid,p.armorHi,p.armorLo,_,   _,   p.armorLo,p.armorHi,p.armorMid,_,   _,   _  ],
-      // Row 12 — ankles
-      [_,   p.armorLo,p.armorMid,p.armorLo2,_,   _,   p.armorLo2,p.armorMid,p.armorLo,_,   _,   _  ],
-      // Row 13 — boots
-      [_,   p.bootLo,p.bootHi,p.bootMid,p.bootLo,_,   p.bootLo,p.bootMid,p.bootHi,p.bootLo,_,   _  ],
-      // Row 14 — boot soles
-      [_,   p.bootLo2,p.bootLo,p.bootLo,p.bootLo2,_,   p.bootLo2,p.bootLo,p.bootLo,p.bootLo2,_,   _  ],
-    ];
-    return[
-      [_,   _,   _,   p.helmLo2,p.helmRim,p.helmRim,p.helmRim,p.helmLo2,_,   _,   _,   _  ],
-      [_,   _,   p.helmLo,p.helmHi2,p.helmHi2,p.helmRim,p.helmHi2,p.helmHi,p.helmLo,_,   _,   _  ],
-      [_,   p.helmLo,p.helmHi,p.helmHi2,p.helmSpec,p.helmHi2,p.helmHi2,p.helmHi,p.helmLo,_,   _,   _  ],
-      [_,   p.helmLo,p.helmMid,p.skinHi,p.skin,p.eyeGlow,p.skin,p.skinHi,p.helmMid,p.helmLo,_,   _  ],
-      [_,   p.helmLo2,p.helmLo,p.skin,p.skinLo,p.skinLo,p.skinLo,p.skin,p.helmLo,p.helmLo2,_,   _  ],
-      [p.capeLo,p.armorRim,p.armorHi2,p.armorHi,p.beltHi,p.beltHi,p.armorHi,p.armorHi2,p.armorRim,p.armorLo,_,   _  ],
-      [p.capeMid,p.armorHi,p.armorHi2,p.armorMid,p.armorHi,p.armorHi,p.armorMid,p.armorHi2,p.armorHi,p.armorLo,p.swordHi,p.swordRim],
-      [p.capeMid,p.armorMid,p.armorHi,p.beltHi,p.beltMid,p.beltMid,p.beltHi,p.armorHi,p.armorMid,p.capeLo,p.swordMid,p.swordLo],
-      [p.capeLo,p.armorLo,p.beltMid,p.beltLo,p.beltLo2,p.beltLo2,p.beltLo,p.beltMid,p.armorLo,p.capeLo,_,   _  ],
-      [p.capeLo2,p.armorHi,p.armorMid,p.armorHi,p.armorMid,p.armorMid,p.armorHi,p.armorMid,p.armorHi,p.capeLo2,_,   _  ],
-      [_,   p.armorLo,p.armorLo2,p.armorHi,_,   _,   p.armorHi,p.armorLo2,p.armorLo,_,   _,   _  ],
-      [_,   p.armorMid,p.armorHi,p.armorLo,_,   _,   p.armorLo,p.armorHi,p.armorMid,_,   _,   _  ],
-      [_,   p.armorLo,p.armorMid,p.armorLo2,_,   _,   p.armorLo2,p.armorMid,p.armorLo,_,   _,   _  ],
-      [_,   p.bootLo,p.bootHi,p.bootMid,p.bootLo,_,   p.bootLo,p.bootMid,p.bootHi,p.bootLo,_,   _  ],
-      [_,   p.bootLo2,p.bootLo,p.bootLo,p.bootLo2,_,   p.bootLo2,p.bootLo,p.bootLo,p.bootLo2,_,   _  ],
-    ];
+const PAL32 = {
+  warrior: {
+    // Helm — burnished iron with gold trim
+    hA: '#c8c0a8', hB: '#a89880', hC: '#787060', hD: '#504840',
+    hrim: '#e8d888', hglow: '#fff0a0',
+    // Skin
+    sk: '#d4956a', skh: '#e8b080', skd: '#b07040',
+    // Eye
+    eye: '#ff4820',
+    // Armor — steel blue-grey
+    aA: '#8090a8', aB: '#607080', aC: '#485868', aD: '#303848',
+    arim: '#b8ccd8', aglow: '#d8eaf8',
+    // Cape — deep crimson
+    cA: '#8a1818', cB: '#601010', cC: '#3a0808',
+    // Belt — bronze
+    bA: '#c08030', bB: '#906020', bC: '#604010',
+    // Boots
+    btA: '#382818', btB: '#281808', btC: '#180800',
+    // Sword
+    swA: '#d8ecf8', swB: '#a8c8e0', swC: '#6898b8', swH: '#ffffff',
+    swG: '#c0a830',
   },
-  mage(p,attacking){
-    const _=null;
-    if(attacking) return [
-      [_,   _,   _,   p.hatLo,p.hatMid,p.hatHi,p.hatMid,p.hatLo,_,   _,   _,   _  ],
-      [_,   _,   p.hatLo,p.hatMid,p.hatHi2,p.hatHi,p.hatHi2,p.hatMid,p.hatLo,_,   _,   _  ],
-      [_,   p.hatLo,p.hatMid,p.hatHi,p.hatHi2,p.hatSpec,p.hatHi2,p.hatHi,p.hatMid,p.hatLo,_,   _  ],
-      [p.hatBrimLo,p.hatBrimHi,p.hatBrimHi,p.hatBrimHi,p.hatBrimHi,p.hatBrimHi,p.hatBrimHi,p.hatBrimHi,p.hatBrimHi,p.hatBrimLo,_,   _  ],
-      [_,   p.robeLo,p.skinHi,p.skin,p.skinHi,p.skinHi,p.skin,p.skinHi,p.robeLo,_,   _,   _  ],
-      [_,   p.robeLo,p.skin,p.eye,p.skinHi,p.skinHi,p.eye,p.skin,p.robeLo,_,   _,   _  ],
-      [p.staffOrb,p.staffHi,p.robeHi,p.robeTrimHi,p.robeHi,p.robeHi,p.robeTrimHi,p.robeHi,p.staffHi,p.staffOrb,p.gemGlow,p.gemHi],
-      [p.staffMid,p.gemGlow,p.gemHi,p.gemGlow,p.gemGlow,p.gemGlow,p.gemGlow,p.gemHi,p.gemGlow,p.staffMid,p.gemGlow,p.gemSpec],
-      [p.staffLo,p.robeLo,p.robeTrimMid,p.robeMid,p.robeHi,p.robeHi,p.robeMid,p.robeTrimMid,p.robeLo,p.staffLo,_,   _  ],
-      [p.staffHi,p.robeMid,p.robeLo,p.robeTrimHi,p.robeMid,p.robeMid,p.robeTrimHi,p.robeLo,p.robeMid,_,   _,   _  ],
-      [p.staffMid,p.robeLo2,p.robeMid,p.robeHi,p.robeLo2,p.robeLo2,p.robeHi,p.robeMid,p.robeLo2,_,   _,   _  ],
-      [_,   p.robeLo2,p.robeLo,p.robeMid,p.robeHi,p.robeHi,p.robeMid,p.robeLo,p.robeLo2,_,   _,   _  ],
-      [p.staffOrb,p.robeLo2,p.robeMid,p.robeTrimMid,p.robeLo2,p.robeLo2,p.robeTrimMid,p.robeMid,p.robeLo2,_,   _,   _  ],
-      [p.staffHi,p.bootLo,p.bootHi,p.bootMid,_,   _,   p.bootMid,p.bootHi,p.bootLo,_,   _,   _  ],
-      [_,   p.bootLo2,p.bootLo,p.bootLo2,_,   _,   p.bootLo2,p.bootLo,p.bootLo2,_,   _,   _  ],
-    ];
-    return[
-      [_,   _,   _,   p.hatLo,p.hatMid,p.hatHi,p.hatMid,p.hatLo,_,   _,   _,   _  ],
-      [_,   _,   p.hatLo,p.hatMid,p.hatHi2,p.hatHi,p.hatHi2,p.hatMid,p.hatLo,_,   _,   _  ],
-      [_,   p.hatLo,p.hatMid,p.hatHi,p.hatHi2,p.hatSpec,p.hatHi2,p.hatHi,p.hatMid,p.hatLo,_,   _  ],
-      [p.hatBrimLo,p.hatBrimHi,p.hatBrimHi,p.hatBrimHi,p.hatBrimHi,p.hatBrimHi,p.hatBrimHi,p.hatBrimHi,p.hatBrimHi,p.hatBrimLo,_,   _  ],
-      [_,   p.robeLo,p.skinHi,p.skin,p.skinHi,p.skinHi,p.skin,p.skinHi,p.robeLo,_,   _,   _  ],
-      [_,   p.robeLo,p.skin,p.eye,p.skinHi,p.skinHi,p.eye,p.skin,p.robeLo,_,   _,   _  ],
-      [p.staffLo,p.robeLo,p.robeHi,p.robeTrimHi,p.robeTrimMid,p.robeTrimMid,p.robeTrimHi,p.robeHi,p.robeLo,_,   _,   _  ],
-      [p.staffHi,p.robeMid,p.robeHi,p.gemMid,p.gemHi,p.gemHi,p.gemMid,p.robeHi,p.robeMid,_,   _,   _  ],
-      [p.staffMid,p.robeLo,p.robeTrimMid,p.robeMid,p.robeHi,p.robeHi,p.robeMid,p.robeTrimMid,p.robeLo,_,   _,   _  ],
-      [p.staffHi,p.robeMid,p.robeLo,p.robeTrimHi,p.robeMid,p.robeMid,p.robeTrimHi,p.robeLo,p.robeMid,_,   _,   _  ],
-      [p.staffMid,p.robeLo2,p.robeMid,p.robeHi,p.robeLo2,p.robeLo2,p.robeHi,p.robeMid,p.robeLo2,_,   _,   _  ],
-      [_,   p.robeLo2,p.robeLo,p.robeMid,p.robeHi,p.robeHi,p.robeMid,p.robeLo,p.robeLo2,_,   _,   _  ],
-      [p.staffOrb,p.robeLo2,p.robeMid,p.robeTrimMid,p.robeLo2,p.robeLo2,p.robeTrimMid,p.robeMid,p.robeLo2,_,   _,   _  ],
-      [p.staffHi,p.bootLo,p.bootHi,p.bootMid,_,   _,   p.bootMid,p.bootHi,p.bootLo,_,   _,   _  ],
-      [_,   p.bootLo2,p.bootLo,p.bootLo2,_,   _,   p.bootLo2,p.bootLo,p.bootLo2,_,   _,   _  ],
-    ];
+  mage: {
+    // Hat — deep violet
+    hA: '#2a1860', hB: '#1e1048', hC: '#140a30', hrim: '#8060d0', hbrim: '#c0a030',
+    // Skin
+    sk: '#d4956a', skh: '#e8b080', skd: '#b07040',
+    // Eye glow
+    eye: '#c040f0',
+    // Robe — rich purple
+    rA: '#6030a0', rB: '#481c78', rC: '#301050', rD: '#1a0830',
+    rtrim: '#c0a030', rtrimB: '#907818',
+    // Gem
+    gA: '#f060ff', gB: '#c030d8', gH: '#ffc0ff',
+    // Staff
+    stA: '#8a5828', stB: '#604018', stO: '#40c8e0', stH: '#a8f0ff',
+    // Boots
+    btA: '#280840', btB: '#180428', btC: '#0c0018',
   },
-  rogue(p,attacking){
-    const _=null;
-    if(attacking) return [
-      [_,   _,   p.hoodLo,p.hoodMid,p.hoodRim,p.hoodHi,p.hoodRim,p.hoodMid,p.hoodLo,_,   _,   _  ],
-      [_,   p.hoodLo,p.hoodMid,p.hoodHi,p.hoodHi2,p.hoodSpec,p.hoodHi2,p.hoodHi,p.hoodMid,p.hoodLo,_,   _  ],
-      [p.cloakLo,p.hoodMid,p.hoodLo,p.skinHi,p.skin,p.skinHi,p.skinHi,p.skin,p.hoodLo,p.hoodMid,p.cloakLo,_  ],
-      [p.cloakLo,p.hoodMid,p.skin,p.eye,p.skinHi,p.skinHi,p.eye,p.skin,p.hoodMid,p.cloakLo,_,   _  ],
-      [p.cloakMid,p.hoodLo,p.hoodMid,p.skinLo,p.skinLo,p.skinLo,p.skinLo,p.hoodMid,p.bladeHi,p.bladeRim,p.bladeSpec,_  ],
-      [_,   p.cloakHi,p.cloakRim,p.cloakMid,p.accentHi,p.accentMid,p.cloakMid,p.bladeHi,p.bladeRim,p.bladeSpec,_,   _  ],
-      [p.cloakLo,p.cloakMid,p.accentMid,p.accentHi,p.cloakHi,p.bladeHi,p.bladeRim,p.bladeSpec,_,   _,   _,   _  ],
-      [p.cloakMid,p.cloakLo,p.cloakHi,p.cloakMid,p.bladeHi,p.bladeRim,p.bladeSpec,_,   _,   _,   _,   _  ],
-      [p.cloakLo,p.cloakMid,p.accentMid,p.accentHi,p.cloakMid,p.cloakHi,p.accentHi,p.accentMid,_,   _,   _,   _  ],
-      [p.cloakMid,p.cloakLo,p.cloakHi,p.cloakMid,p.cloakLo,p.cloakLo,p.cloakMid,p.cloakHi,_,   _,   _,   _  ],
-      [_,   p.cloakLo,p.cloakMid,p.cloakHi,_,   _,   p.cloakHi,p.cloakMid,p.cloakLo,_,   _,   _  ],
-      [_,   p.cloakMid,p.cloakRim,p.cloakLo,_,   _,   p.cloakLo,p.cloakRim,p.cloakMid,_,   _,   _  ],
-      [_,   p.cloakLo,p.cloakHi,p.cloakMid,_,   _,   p.cloakMid,p.cloakHi,p.cloakLo,_,   _,   _  ],
-      [_,   p.bootLo,p.bootHi,p.bootMid,p.bootLo,_,   p.bootLo,p.bootMid,p.bootHi,p.bootLo,_,   _  ],
-      [_,   p.bootLo2,p.bootLo,p.bootLo,p.bootLo2,_,   p.bootLo2,p.bootLo,p.bootLo,p.bootLo2,_,   _  ],
-    ];
-    return[
-      [_,   _,   p.hoodLo,p.hoodMid,p.hoodRim,p.hoodHi,p.hoodRim,p.hoodMid,p.hoodLo,_,   _,   _  ],
-      [_,   p.hoodLo,p.hoodMid,p.hoodHi,p.hoodHi2,p.hoodSpec,p.hoodHi2,p.hoodHi,p.hoodMid,p.hoodLo,_,   _  ],
-      [p.cloakLo,p.hoodMid,p.hoodLo,p.skinHi,p.skin,p.skinHi,p.skinHi,p.skin,p.hoodLo,p.hoodMid,p.cloakLo,_  ],
-      [p.cloakLo,p.hoodMid,p.skin,p.eye,p.skinHi,p.skinHi,p.eye,p.skin,p.hoodMid,p.cloakLo,_,   _  ],
-      [p.cloakMid,p.hoodLo,p.hoodMid,p.skinLo,p.skinLo,p.skinLo,p.skinLo,p.hoodMid,p.bladeLo,p.cloakMid,_,   _  ],
-      [p.cloakHi,p.cloakRim,p.cloakMid,p.accentMid,p.accentHi,p.accentHi,p.accentMid,p.cloakMid,p.bladeHi,p.bladeLo,_,   _  ],
-      [p.cloakLo,p.cloakHi,p.accentMid,p.accentHi,p.cloakHi,p.cloakHi,p.accentHi,p.accentMid,p.bladeHi,p.bladeRim,_,   _  ],
-      [p.cloakMid,p.cloakLo,p.cloakRim,p.cloakMid,p.cloakLo,p.cloakLo,p.cloakMid,p.cloakRim,p.bladeMid,p.bladeSpec,_,   _  ],
-      [p.cloakLo,p.cloakMid,p.accentMid,p.accentHi,p.cloakMid,p.cloakMid,p.accentHi,p.accentMid,p.bladeMid,p.bladeLo,_,   _  ],
-      [p.cloakMid,p.cloakLo,p.cloakHi,p.cloakMid,p.cloakLo,p.cloakLo,p.cloakMid,p.cloakHi,p.bladeHi,_,   _,   _  ],
-      [_,   p.cloakLo,p.cloakMid,p.cloakHi,_,   _,   p.cloakHi,p.cloakMid,p.cloakLo,_,   _,   _  ],
-      [_,   p.cloakMid,p.cloakRim,p.cloakLo,_,   _,   p.cloakLo,p.cloakRim,p.cloakMid,_,   _,   _  ],
-      [_,   p.cloakLo,p.cloakHi,p.cloakMid,_,   _,   p.cloakMid,p.cloakHi,p.cloakLo,_,   _,   _  ],
-      [_,   p.bootLo,p.bootHi,p.bootMid,p.bootLo,_,   p.bootLo,p.bootMid,p.bootHi,p.bootLo,_,   _  ],
-      [_,   p.bootLo2,p.bootLo,p.bootLo,p.bootLo2,_,   p.bootLo2,p.bootLo,p.bootLo,p.bootLo2,_,   _  ],
-    ];
+  rogue: {
+    // Hood — near-black charcoal
+    hA: '#2c2838', hB: '#1e1a28', hC: '#141018', hrim: '#504860', hglow: '#786890',
+    // Skin
+    sk: '#c07858', skh: '#d89070', skd: '#a06040',
+    // Eye
+    eye: '#e030a0',
+    // Cloak — dark slate
+    cA: '#282438', cB: '#1c1828', cC: '#100c18', crim: '#403858',
+    // Accent — muted violet
+    acA: '#6838a8', acB: '#4c2880',
+    // Blades
+    blA: '#e8f4ff', blB: '#c0d8f0', blC: '#88b0d0', blH: '#ffffff', blS: '#d8f0ff',
+    // Boots
+    btA: '#181018', btB: '#100808', btC: '#080408',
   },
-  paladin(p,attacking){
-    const _=null;
-    if(attacking) return [
-      [_,   _,   p.helmLo2,p.helmRim,p.holyGlow,p.holySpec,p.holyGlow,p.helmRim,p.helmLo2,_,   _,   _  ],
-      [_,   p.helmLo,p.helmHi,p.helmHi2,p.helmRim,p.helmSpec,p.helmRim,p.helmHi2,p.helmHi,p.helmLo,_,   _  ],
-      [_,   p.helmLo,p.helmHi2,p.armorLo,p.armorLo2,p.armorLo2,p.armorLo,p.helmHi2,p.helmHi2,p.helmLo,_,   _  ],
-      [_,   p.helmMid,p.armorLo2,p.eyePlate,p.holyGlow,p.holySpec,p.holyGlow,p.eyePlate,p.armorLo2,p.helmMid,_,   _  ],
-      [_,   p.helmLo,p.helmHi,p.helmHi2,p.helmMid,p.helmMid,p.helmHi2,p.helmHi,p.helmLo,_,   _,   _  ],
-      // Both arms raised — smite pose, holy light explosion
-      [p.holyGlow,p.armorRim,p.holyMid,p.holyGlow,p.holySpec,p.holySpec,p.holyGlow,p.holyMid,p.armorRim,p.holyGlow,p.holySpec,p.holyGlow],
-      [p.armorHi,p.armorRim,p.holyLo,p.holyMid,p.holyGlow,p.holyGlow,p.holyMid,p.holyLo,p.armorRim,p.armorHi,p.holyGlow,p.holyMid],
-      [p.capeHi,p.armorHi,p.armorRim,p.holyMid,p.holyGlow,p.holyGlow,p.holyMid,p.armorRim,p.armorHi,p.capeHi,_,   _  ],
-      [p.capeLo,p.armorMid,p.armorHi,p.armorRim,p.armorMid,p.armorMid,p.armorRim,p.armorHi,p.armorMid,p.capeLo,_,   _  ],
-      [p.capeLo2,p.armorMid,p.armorLo,p.armorHi,p.armorLo2,p.armorLo2,p.armorHi,p.armorLo,p.armorMid,p.capeLo2,_,   _  ],
-      [_,   p.armorLo,p.armorLo2,p.armorMid,_,   _,   p.armorMid,p.armorLo2,p.armorLo,_,   _,   _  ],
-      [_,   p.armorMid,p.armorRim,p.armorLo,_,   _,   p.armorLo,p.armorRim,p.armorMid,_,   _,   _  ],
-      [_,   p.armorLo,p.armorMid,p.armorHi,_,   _,   p.armorHi,p.armorMid,p.armorLo,_,   _,   _  ],
-      [_,   p.bootLo,p.bootHi,p.armorRim,p.bootLo,_,   p.bootLo,p.armorRim,p.bootHi,p.bootLo,_,   _  ],
-      [_,   p.bootLo2,p.bootLo,p.bootLo,p.bootLo2,_,   p.bootLo2,p.bootLo,p.bootLo,p.bootLo2,_,   _  ],
-    ];
-    return[
-      [_,   _,   p.helmLo2,p.helmRim,p.holyGlow,p.holySpec,p.holyGlow,p.helmRim,p.helmLo2,_,   _,   _  ],
-      [_,   p.helmLo,p.helmHi,p.helmHi2,p.helmRim,p.helmSpec,p.helmRim,p.helmHi2,p.helmHi,p.helmLo,_,   _  ],
-      [_,   p.helmLo,p.helmHi2,p.armorLo,p.armorLo2,p.armorLo2,p.armorLo,p.helmHi2,p.helmHi2,p.helmLo,_,   _  ],
-      [_,   p.helmMid,p.armorLo2,p.eyePlate,p.holyGlow,p.holySpec,p.holyGlow,p.eyePlate,p.armorLo2,p.helmMid,_,   _  ],
-      [_,   p.helmLo,p.helmHi,p.helmHi2,p.helmMid,p.helmMid,p.helmHi2,p.helmHi,p.helmLo,_,   _,   _  ],
-      [p.armorLo,p.armorHi,p.armorRim,p.holyMid,p.holyGlow,p.holyGlow,p.holyMid,p.armorRim,p.armorHi,p.armorLo,_,   _  ],
-      [p.capeHi,p.armorHi,p.armorRim,p.armorHi,p.holyLo,p.holyLo,p.armorHi,p.armorRim,p.armorHi,p.capeHi,_,   _  ],
-      [p.capeLo,p.armorMid,p.armorHi,p.holyMid,p.holyGlow,p.holyGlow,p.holyMid,p.armorHi,p.armorMid,p.capeLo,_,   _  ],
-      [p.capeHi,p.armorLo,p.armorMid,p.armorHi,p.armorMid,p.armorMid,p.armorHi,p.armorMid,p.armorLo,p.capeHi,_,   _  ],
-      [p.capeLo2,p.armorMid,p.armorLo,p.armorHi,p.armorLo2,p.armorLo2,p.armorHi,p.armorLo,p.armorMid,p.capeLo2,_,   _  ],
-      [_,   p.armorLo,p.armorLo2,p.armorMid,_,   _,   p.armorMid,p.armorLo2,p.armorLo,_,   _,   _  ],
-      [_,   p.armorMid,p.armorRim,p.armorLo,_,   _,   p.armorLo,p.armorRim,p.armorMid,_,   _,   _  ],
-      [_,   p.armorLo,p.armorMid,p.armorHi,_,   _,   p.armorHi,p.armorMid,p.armorLo,_,   _,   _  ],
-      [_,   p.bootLo,p.bootHi,p.armorRim,p.bootLo,_,   p.bootLo,p.armorRim,p.bootHi,p.bootLo,_,   _  ],
-      [_,   p.bootLo2,p.bootLo,p.bootLo,p.bootLo2,_,   p.bootLo2,p.bootLo,p.bootLo,p.bootLo2,_,   _  ],
-    ];
+  paladin: {
+    // Helm — polished gold-steel
+    hA: '#d4b848', hB: '#b89030', hC: '#806418', hD: '#503c08',
+    hrim: '#fff0a0', hglow: '#ffee60',
+    // Skin
+    sk: '#d4956a', skh: '#e8b080', skd: '#b07040',
+    // Eye plate
+    eyep: '#a07810', eye: '#ffe860',
+    // Armor — bright silver-gold
+    aA: '#c0c8d0', aB: '#9098a8', aC: '#607080', aD: '#384858',
+    arim: '#e8f0f8', aglow: '#ffffff',
+    // Holy light
+    hoA: '#fffce0', hoB: '#fff080', hoC: '#f0d840', hoD: '#c0a820',
+    // Cape — royal blue
+    cA: '#1a3090', cB: '#102060', cC: '#081030',
+    // Boots
+    btA: '#383020', btB: '#282010', btC: '#181008',
   },
-  ranger(p,attacking){
-    const _=null;
-    if(attacking) return [
-      [_,   _,   p.hoodLo,p.hoodMid,p.leafHi,p.leafSpec,p.leafHi,p.hoodMid,p.hoodLo,_,   _,   _  ],
-      [_,   p.hoodLo,p.hoodMid,p.hoodHi,p.leafMid,p.leafHi,p.leafMid,p.hoodHi,p.hoodMid,p.hoodLo,_,   _  ],
-      [p.leafLo,p.hoodMid,p.hoodLo,p.skinHi,p.skin,p.skinHi,p.skinHi,p.skin,p.hoodLo,p.leafLo,_,   _  ],
-      [p.leafLo,p.hoodMid,p.skin,p.eye,p.skinHi,p.skinHi,p.eye,p.skin,p.hoodMid,p.leafLo,_,   _  ],
-      [p.leafMid,p.hoodLo,p.hoodMid,p.skinLo,p.skinLo,p.skinLo,p.skinLo,p.hoodMid,p.hoodLo,_,   _,   _  ],
-      // Full draw — bow arm extended, string pulled to ear
-      [p.bowStr,p.bowHi,p.gearRim,p.gearHi,p.gearHi,p.gearHi,p.gearHi,p.bowMid,p.bowHi,p.bowStr,p.bowHi,p.bowStr],
-      [p.bowStr,p.gearMid,p.gearHi,p.leafHi,p.gearMid,p.gearMid,p.bowMid,p.bowHi,p.bowMid,p.bowStr,p.bowMid,p.bowStr],
-      [p.bowStr,p.gearLo,p.gearMid,p.gearHi,p.gearLo,p.bowMid,p.bowHi,p.bowMid,_,   p.bowStr,_,   p.bowStr],
-      [p.leafLo,p.gearMid,p.leafHi,p.leafMid,p.gearMid,p.gearMid,p.leafMid,p.leafHi,_,   _,   _,   _  ],
-      [p.leafMid,p.gearLo,p.gearHi,p.gearMid,p.gearLo,p.gearLo,p.gearMid,p.gearHi,_,   _,   _,   _  ],
-      [_,   p.gearLo,p.gearMid,p.gearHi,_,   _,   p.gearHi,p.gearMid,p.gearLo,_,   _,   _  ],
-      [_,   p.gearMid,p.gearRim,p.gearLo,_,   _,   p.gearLo,p.gearRim,p.gearMid,_,   _,   _  ],
-      [_,   p.gearLo,p.gearHi,p.gearMid,_,   _,   p.gearMid,p.gearHi,p.gearLo,_,   _,   _  ],
-      [_,   p.bootLo,p.bootHi,p.bootMid,p.bootLo,_,   p.bootLo,p.bootMid,p.bootHi,p.bootLo,_,   _  ],
-      [_,   p.bootLo2,p.bootLo,p.bootLo,p.bootLo2,_,   p.bootLo2,p.bootLo,p.bootLo,p.bootLo2,_,   _  ],
-    ];
-    return[
-      [_,   _,   p.hoodLo,p.hoodMid,p.leafHi,p.leafSpec,p.leafHi,p.hoodMid,p.hoodLo,_,   _,   _  ],
-      [_,   p.hoodLo,p.hoodMid,p.hoodHi,p.leafMid,p.leafHi,p.leafMid,p.hoodHi,p.hoodMid,p.hoodLo,_,   _  ],
-      [p.leafLo,p.hoodMid,p.hoodLo,p.skinHi,p.skin,p.skinHi,p.skinHi,p.skin,p.hoodLo,p.leafLo,_,   _  ],
-      [p.leafLo,p.hoodMid,p.skin,p.eye,p.skinHi,p.skinHi,p.eye,p.skin,p.hoodMid,p.leafLo,_,   _  ],
-      [p.leafMid,p.hoodLo,p.hoodMid,p.skinLo,p.skinLo,p.skinLo,p.skinLo,p.hoodMid,p.hoodLo,_,   _,   _  ],
-      [p.leafMid,p.gearHi,p.gearRim,p.gearMid,p.gearHi,p.gearHi,p.gearMid,p.gearRim,p.bowMid,p.leafLo,_,   _  ],
-      [p.leafLo,p.gearMid,p.gearHi,p.leafHi,p.gearMid,p.gearMid,p.leafHi,p.gearHi,p.bowHi,p.bowMid,_,   _  ],
-      [p.leafMid,p.gearLo,p.gearMid,p.gearHi,p.gearLo,p.gearLo,p.gearHi,p.gearMid,p.bowMid,p.bowHi,_,   _  ],
-      [p.leafLo,p.gearMid,p.leafHi,p.leafMid,p.gearMid,p.gearMid,p.leafMid,p.leafHi,p.bowMid,p.bowStr,_,   _  ],
-      [p.leafMid,p.gearLo,p.gearHi,p.gearMid,p.gearLo,p.gearLo,p.gearMid,p.gearHi,p.bowHi,p.bowMid,_,   _  ],
-      [_,   p.gearLo,p.gearMid,p.gearHi,_,   _,   p.gearHi,p.gearMid,p.gearLo,_,   _,   _  ],
-      [_,   p.gearMid,p.gearRim,p.gearLo,_,   _,   p.gearLo,p.gearRim,p.gearMid,_,   _,   _  ],
-      [_,   p.gearLo,p.gearHi,p.gearMid,_,   _,   p.gearMid,p.gearHi,p.gearLo,_,   _,   _  ],
-      [_,   p.bootLo,p.bootHi,p.bootMid,p.bootLo,_,   p.bootLo,p.bootMid,p.bootHi,p.bootLo,_,   _  ],
-      [_,   p.bootLo2,p.bootLo,p.bootLo,p.bootLo2,_,   p.bootLo2,p.bootLo,p.bootLo,p.bootLo2,_,   _  ],
-    ];
+  ranger: {
+    // Hood — forest green
+    hA: '#2e4a1e', hB: '#203414', hC: '#14200c', hrim: '#5a8030', hglow: '#90c050',
+    // Skin
+    sk: '#c07858', skh: '#d89070', skd: '#a06040',
+    // Eye
+    eye: '#80e040',
+    // Leather gear — earthy brown-green
+    gA: '#4a5c28', gB: '#384418', gC: '#242c10', grim: '#7a9040',
+    // Leaf accents
+    lA: '#6aaa30', lB: '#4c8020', lC: '#305010', lH: '#a8e060',
+    // Bow — warm wood
+    bwA: '#8a5828', bwB: '#6a4018', bwC: '#4a2c0c', bwStr: '#f0e080',
+    // Boots
+    btA: '#2e3a18', btB: '#1e2810', btC: '#101408',
   },
 };
 
-// Ultra-HD palettes — 6-level shading per material
-const PAL32={
-  warrior:(()=>{
-    const helm=mkPal('#5a4a22',32,48);
-    const skin=mkPal('#d4956a',28,40);
-    const armor=mkPal('#607898',38,52);
-    const belt=mkPal('#d4a030',36,44);
-    const cape=mkPal('#8a1818',28,48);
-    const boot=mkPal('#2a2010',24,36);
-    const sword=mkPal('#c8dcea',40,30);
-    return{
-      helmLo2:helm.lo2, helmLo:helm.lo, helmMid:helm.mid, helmHi:helm.hi, helmHi2:helm.hi2, helmRim:helm.rim, helmSpec:helm.spec,
-      skin:skin.mid, skinHi:skin.hi, skinHi2:skin.hi2, skinLo:skin.lo, skinSpec:skin.spec,
-      eyeGlow:'#ff5840',
-      armorLo2:armor.lo2, armorLo:armor.lo, armorMid:armor.mid, armorHi:armor.hi, armorHi2:armor.hi2, armorRim:armor.rim,
-      beltLo2:belt.lo2, beltLo:belt.lo, beltMid:belt.mid, beltHi:belt.hi,
-      capeLo2:cape.lo2, capeLo:cape.lo, capeMid:cape.mid, capeHi:cape.hi,
-      bootLo2:boot.lo2, bootLo:boot.lo, bootMid:boot.mid, bootHi:boot.hi,
-      swordLo:sword.lo, swordMid:sword.mid, swordHi:sword.hi, swordRim:sword.rim, swordSpec:sword.spec,
-    };
-  })(),
-  mage:(()=>{
-    const hat=mkPal('#1a1248',30,40);
-    const skin=mkPal('#d4956a',28,40);
-    const robe=mkPal('#5a1a90',32,44);
-    const trim=mkPal('#c0a030',36,44);
-    const gem=mkPal('#e040f0',44,30);
-    const staff=mkPal('#6a4820',28,38);
-    const boot=mkPal('#200a40',24,36);
-    return{
-      hatLo:hat.lo, hatMid:hat.mid, hatHi:hat.hi, hatHi2:hat.hi2, hatRim:hat.rim, hatSpec:hat.spec,
-      hatBrimLo:trim.lo, hatBrimHi:trim.hi,
-      skin:skin.mid, skinHi:skin.hi, skinHi2:skin.hi2, skinLo:skin.lo,
-      eye:'#8020c0',
-      robeLo2:robe.lo2, robeLo:robe.lo, robeMid:robe.mid, robeHi:robe.hi,
-      robeTrimMid:trim.mid, robeTrimHi:trim.hi,
-      gemMid:gem.mid, gemHi:gem.hi, gemGlow:'#f8a0ff', gemSpec:gem.spec,
-      staffLo:staff.lo, staffMid:staff.mid, staffHi:staff.hi, staffOrb:'#40d0f0',
-      bootLo2:boot.lo2, bootLo:boot.lo, bootMid:boot.mid, bootHi:boot.hi,
-    };
-  })(),
-  rogue:(()=>{
-    const hood=mkPal('#1a161e',22,34);
-    const skin=mkPal('#c07858',24,38);
-    const cloak=mkPal('#1e1c28',22,32);
-    const blade=mkPal('#d8e8f8',40,22);
-    const accent=mkPal('#7040a0',32,40);
-    const boot=mkPal('#161014',20,30);
-    return{
-      hoodLo:hood.lo, hoodMid:hood.mid, hoodHi:hood.hi, hoodHi2:hood.hi2, hoodRim:hood.rim, hoodSpec:hood.spec,
-      skin:skin.mid, skinHi:skin.hi, skinLo:skin.lo,
-      eye:'#d040a0',
-      cloakLo:cloak.lo, cloakMid:cloak.mid, cloakHi:cloak.hi, cloakRim:cloak.rim,
-      bladeLo:blade.lo, bladeMid:blade.mid, bladeHi:blade.hi, bladeRim:blade.rim, bladeSpec:blade.spec,
-      accentMid:accent.mid, accentHi:accent.hi,
-      bootLo2:boot.lo2, bootLo:boot.lo, bootMid:boot.mid, bootHi:boot.hi,
-    };
-  })(),
-  paladin:(()=>{
-    const helm=mkPal('#4a3c10',34,46);
-    const skin=mkPal('#d4956a',28,40);
-    const armor=mkPal('#8898b8',40,52);
-    const holy=mkPal('#f8f040',44,20);
-    const cape=mkPal('#1a3080',28,46);
-    const boot=mkPal('#303020',26,38);
-    return{
-      helmLo2:helm.lo2, helmLo:helm.lo, helmMid:helm.mid, helmHi:helm.hi, helmHi2:helm.hi2, helmRim:helm.rim, helmSpec:helm.spec,
-      skin:skin.mid, skinHi:skin.hi, skinLo:skin.lo,
-      eyePlate:'#c09810',
-      armorLo2:armor.lo2, armorLo:armor.lo, armorMid:armor.mid, armorHi:armor.hi, armorRim:armor.rim,
-      holyLo:holy.lo, holyMid:holy.mid, holyGlow:'#fff8a0', holySpec:holy.spec,
-      capeLo2:cape.lo2, capeLo:cape.lo, capeHi:cape.hi,
-      bootLo2:boot.lo2, bootLo:boot.lo, bootMid:boot.mid, bootHi:boot.hi,
-    };
-  })(),
-  ranger:(()=>{
-    const hood=mkPal('#1e2e10',24,36);
-    const skin=mkPal('#c07858',24,38);
-    const gear=mkPal('#3c5820',28,40);
-    const leaf=mkPal('#5a8830',32,42);
-    const bow=mkPal('#7a5028',28,38);
-    const boot=mkPal('#283018',22,34);
-    return{
-      hoodLo:hood.lo, hoodMid:hood.mid, hoodHi:hood.hi, hoodRim:hood.rim,
-      skin:skin.mid, skinHi:skin.hi, skinLo:skin.lo,
-      eye:'#80e040',
-      gearLo:gear.lo, gearMid:gear.mid, gearHi:gear.hi, gearRim:gear.rim,
-      leafLo:leaf.lo, leafMid:leaf.mid, leafHi:leaf.hi, leafSpec:leaf.spec,
-      bowLo:bow.lo, bowMid:bow.mid, bowHi:bow.hi, bowStr:'#e0d090',
-      bootLo2:boot.lo2, bootLo:boot.lo, bootMid:boot.mid, bootHi:boot.hi,
-    };
-  })(),
+const SPR32 = {
+
+  warrior(p, attacking) {
+    const _ = null;
+    // 12 wide × 18 tall — clear silhouette, readable at small size
+    const s = attacking;
+    return [
+      // 0 — helm crest
+      [_,    _,    _,    p.hrim,p.hrim,p.hrim,p.hrim,_,    _,    _,    _,    _   ],
+      // 1 — helm top
+      [_,    _,    p.hC, p.hB,  p.hA,  p.hA,  p.hB,  p.hC, _,    _,    _,    _   ],
+      // 2 — helm upper with spec
+      [_,    p.hC, p.hB, p.hA,  p.hglow,p.hA, p.hB,  p.hC, _,    _,    _,    _   ],
+      // 3 — visor / eye slit
+      [_,    p.hC, p.hB, p.hC,  p.eye, p.eye, p.hC,  p.hB, p.hC, _,    _,    _   ],
+      // 4 — lower helm / chin
+      [_,    p.hD, p.hC, p.hB,  p.hC,  p.hC,  p.hB,  p.hC, p.hD, _,    _,    _   ],
+      // 5 — neck / gorget
+      [_,    _,    p.aD, p.aC,  p.sk,  p.sk,  p.aC,  p.aD, _,    _,    _,    _   ],
+      // 6 — pauldrons + chest
+      [p.cC, p.arim,p.aA,p.aA,  p.aB,  p.aB,  p.aA,  p.aA, p.arim,p.cC,s?p.swA:_,s?p.swH:_],
+      // 7 — chest plate center
+      [p.cB, p.aA, p.arim,p.aB, p.aA,  p.aA,  p.aB,  p.arim,p.aA,p.cB,s?p.swB:_,s?p.swA:_],
+      // 8 — torso / belt line
+      [p.cA, p.aB, p.aA, p.bA,  p.bB,  p.bB,  p.bA,  p.aA, p.aB, p.cA,s?p.swC:_,_   ],
+      // 9 — belt
+      [p.cC, p.bA, p.bB, p.bC,  p.bB,  p.bB,  p.bC,  p.bB, p.bA, p.cC,_,    _   ],
+      // 10 — upper thighs
+      [_,    p.aA, p.aB, p.aA,  p.aB,  p.aB,  p.aA,  p.aB, p.aA, _,    _,    _   ],
+      // 11 — knee guards
+      [_,    p.arim,p.aA,p.arim,_,     _,     p.arim,p.aA,p.arim,_,    _,    _   ],
+      // 12 — shins
+      [_,    p.aB, p.aA, p.aB,  _,     _,     p.aB,  p.aA, p.aB, _,    _,    _   ],
+      // 13 — lower shins
+      [_,    p.aC, p.aB, p.aC,  _,     _,     p.aC,  p.aB, p.aC, _,    _,    _   ],
+      // 14 — boot tops
+      [_,    p.btA,p.btB,p.btA, p.btC, _,     p.btC, p.btA,p.btB,p.btA,_,    _   ],
+      // 15 — boot soles
+      [_,    p.btB,p.btC,p.btC, p.btB, _,     p.btB, p.btC,p.btC,p.btB,_,    _   ],
+    ];
+  },
+
+  mage(p, attacking) {
+    const _ = null;
+    const s = attacking;
+    return [
+      // 0 — hat tip
+      [_,    _,    _,    _,    p.hC, p.hrim,p.hC, _,    _,    _,    _,    _   ],
+      // 1 — hat upper
+      [_,    _,    _,    p.hC, p.hB, p.hA,  p.hB, p.hC, _,    _,    _,    _   ],
+      // 2 — hat mid
+      [_,    _,    p.hC, p.hB, p.hA, p.hrim,p.hA, p.hB, p.hC, _,    _,    _   ],
+      // 3 — hat lower
+      [_,    p.hC, p.hB, p.hA, p.hB, p.hA,  p.hB, p.hA, p.hB, p.hC, _,    _   ],
+      // 4 — brim
+      [p.hbrim,p.hbrim,p.hbrim,p.hbrim,p.hbrim,p.hbrim,p.hbrim,p.hbrim,p.hbrim,p.hbrim,_,_],
+      // 5 — face upper
+      [_,    p.rD, p.skh,p.sk,  p.sk,  p.sk,  p.sk,  p.skh,p.rD, _,    _,    _   ],
+      // 6 — face eyes
+      [_,    p.rD, p.sk, p.eye, p.sk,  p.sk,  p.eye, p.sk, p.rD, _,    _,    _   ],
+      // 7 — face lower
+      [_,    p.rD, p.skd,p.sk,  p.skd, p.skd, p.sk,  p.skd,p.rD, _,    _,    _   ],
+      // 8 — shoulders + staff
+      [s?p.stO:p.stA,p.rA,p.rA,p.rtrim,p.rB,p.rB,p.rtrim,p.rA,p.rA,s?p.stH:p.stA,s?p.gH:_,s?p.gA:_],
+      // 9 — chest + gem
+      [s?p.stA:_,p.rB,p.rtrim,p.gA,p.gH,p.gH,p.gA,p.rtrim,p.rB,s?p.stA:_,s?p.gA:_,s?p.gB:_],
+      // 10 — torso
+      [s?p.stB:_,p.rA,p.rB,p.rtrim,p.rC,p.rC,p.rtrim,p.rB,p.rA,_,    _,    _   ],
+      // 11 — lower robe
+      [_,    p.rB, p.rA, p.rtrimB,p.rB,p.rB,p.rtrimB,p.rA,p.rB,_,    _,    _   ],
+      // 12 — robe flare
+      [_,    p.rC, p.rB, p.rA,  p.rC, p.rC,  p.rA,  p.rB, p.rC, _,    _,    _   ],
+      // 13 — robe hem
+      [_,    p.rD, p.rC, p.rtrimB,p.rD,p.rD,p.rtrimB,p.rC,p.rD,_,    _,    _   ],
+      // 14 — boot tops
+      [_,    _,    p.btA,p.btB, p.btA, _,     p.btA, p.btB,p.btA,_,    _,    _   ],
+      // 15 — boot soles
+      [_,    _,    p.btB,p.btC, p.btB, _,     p.btB, p.btC,p.btB,_,    _,    _   ],
+    ];
+  },
+
+  rogue(p, attacking) {
+    const _ = null;
+    const s = attacking;
+    return [
+      // 0 — hood peak
+      [_,    _,    _,    p.hC, p.hrim,p.hrim,p.hC,  _,    _,    _,    _,    _   ],
+      // 1 — hood upper
+      [_,    _,    p.hC, p.hB, p.hA,  p.hA,  p.hB,  p.hC, _,    _,    _,    _   ],
+      // 2 — hood sides
+      [_,    p.hC, p.hB, p.skh,p.sk,  p.sk,  p.skh, p.hB, p.hC, _,    _,    _   ],
+      // 3 — face / eyes
+      [p.cC, p.hB, p.sk, p.eye,p.sk,  p.sk,  p.eye, p.sk, p.hB, p.cC, _,    _   ],
+      // 4 — lower face / mask edge
+      [p.cB, p.hC, p.hB, p.skd,p.skd, p.skd, p.skd, p.hB, p.hC, p.cB, _,    _   ],
+      // 5 — neck / collar
+      [p.cB, p.cA, p.hC, p.cA, p.cB,  p.cB,  p.cA,  p.hC, p.cA, p.cB, _,    _   ],
+      // 6 — shoulders — blade raised if attacking
+      [p.cA, p.crim,p.cA,p.acA,p.cB,  p.cB,  p.acA, p.cA, p.crim,p.cA,s?p.blA:_,s?p.blH:_],
+      // 7 — torso + accent stripe
+      [p.cB, p.cA, p.acB,p.acA,p.cA,  p.cA,  p.acA, p.acB,p.cA, p.cB, s?p.blB:_,s?p.blA:_],
+      // 8 — mid torso
+      [p.cC, p.cB, p.cA, p.cB, p.acB, p.acB, p.cB,  p.cA, p.cB, p.cC, s?p.blC:_,_   ],
+      // 9 — waist
+      [_,    p.cC, p.cB, p.acA,p.cC,  p.cC,  p.acA, p.cB, p.cC, _,    _,    _   ],
+      // 10 — upper legs
+      [_,    p.cA, p.cB, p.cA, p.cC,  p.cC,  p.cA,  p.cB, p.cA, _,    _,    _   ],
+      // 11 — knee
+      [_,    p.crim,p.cA,p.crim,_,    _,     p.crim,p.cA,p.crim,_,    _,    _   ],
+      // 12 — shins
+      [_,    p.cB, p.cA, p.cB,  _,    _,     p.cB,  p.cA, p.cB, _,    _,    _   ],
+      // 13 — lower shins
+      [_,    p.cC, p.cB, p.cC,  _,    _,     p.cC,  p.cB, p.cC, _,    _,    _   ],
+      // 14 — boots
+      [_,    p.btA,p.btB,p.btA, p.btC,_,     p.btC, p.btA,p.btB,p.btA,_,    _   ],
+      // 15 — soles
+      [_,    p.btB,p.btC,p.btC, p.btB,_,     p.btB, p.btC,p.btC,p.btB,_,    _   ],
+    ];
+  },
+
+  paladin(p, attacking) {
+    const _ = null;
+    const s = attacking;
+    return [
+      // 0 — helm crest (holy glow)
+      [_,    _,    p.hglow,p.hoB,p.hoA,p.hoA,p.hoB,p.hglow,_,   _,    _,    _   ],
+      // 1 — helm top
+      [_,    _,    p.hC, p.hB,  p.hA,  p.hrim,p.hA, p.hB,  p.hC,_,    _,    _   ],
+      // 2 — helm upper
+      [_,    p.hD, p.hB, p.hA,  p.hrim,p.hA,  p.hrim,p.hA, p.hB,p.hD, _,    _   ],
+      // 3 — eye visor
+      [_,    p.hD, p.hC, p.eyep,p.eye, p.eye, p.eye, p.eyep,p.hC,p.hD,_,    _   ],
+      // 4 — lower helm
+      [_,    p.hD, p.hC, p.hB,  p.hC,  p.hC,  p.hB,  p.hC, p.hD,_,    _,    _   ],
+      // 5 — gorget
+      [_,    _,    p.aD, p.aC,  p.aB,  p.aB,  p.aC,  p.aD, _,   _,    _,    _   ],
+      // 6 — broad pauldrons + holy light arms if attacking
+      [p.cC,p.arim,p.aA, s?p.hoA:p.aA,s?p.hoB:p.aB,s?p.hoB:p.aB,s?p.hoA:p.aA,p.aA,p.arim,p.cC,s?p.hoA:_,s?p.hoB:_],
+      // 7 — chest
+      [p.cB, p.aA,p.arim,p.aB,  p.hoD, p.hoD, p.aB,  p.arim,p.aA,p.cB,s?p.hoB:_,s?p.hoA:_],
+      // 8 — torso cross motif
+      [p.cA, p.aB, p.aA, p.hoC, p.hoB, p.hoB, p.hoC, p.aA, p.aB,p.cA,_,    _   ],
+      // 9 — waist
+      [p.cC, p.aA, p.aB, p.aC,  p.aB,  p.aB,  p.aC,  p.aB, p.aA,p.cC,_,    _   ],
+      // 10 — thighs
+      [_,    p.aA, p.aB, p.aA,  p.aB,  p.aB,  p.aA,  p.aB, p.aA,_,    _,    _   ],
+      // 11 — knee
+      [_,    p.arim,p.aA,p.arim,_,     _,     p.arim,p.aA,p.arim,_,   _,    _   ],
+      // 12 — shins
+      [_,    p.aB, p.aA, p.aB,  _,     _,     p.aB,  p.aA, p.aB,_,    _,    _   ],
+      // 13 — lower shins
+      [_,    p.aC, p.aB, p.aC,  _,     _,     p.aC,  p.aB, p.aC,_,    _,    _   ],
+      // 14 — boots
+      [_,    p.btA,p.btB,p.btA, p.btC, _,     p.btC, p.btA,p.btB,p.btA,_,   _   ],
+      // 15 — soles
+      [_,    p.btB,p.btC,p.btC, p.btB, _,     p.btB, p.btC,p.btC,p.btB,_,   _   ],
+    ];
+  },
+
+  ranger(p, attacking) {
+    const _ = null;
+    const s = attacking;
+    return [
+      // 0 — hood / leaf crown
+      [_,    _,    p.lC, p.lB,  p.lH,  p.lH,  p.lB,  p.lC, _,    _,    _,    _   ],
+      // 1 — hood upper
+      [_,    _,    p.hC, p.hB,  p.hA,  p.hA,  p.hB,  p.hC, _,    _,    _,    _   ],
+      // 2 — hood sides
+      [_,    p.hC, p.hB, p.skh, p.sk,  p.sk,  p.skh, p.hB, p.hC, _,    _,    _   ],
+      // 3 — face / eyes
+      [p.lC, p.hB, p.sk, p.eye, p.sk,  p.sk,  p.eye, p.sk, p.hB, p.lC, _,    _   ],
+      // 4 — lower face
+      [p.lB, p.hC, p.hB, p.skd, p.skd, p.skd, p.skd, p.hB, p.hC, p.lB, _,    _   ],
+      // 5 — collar / neck
+      [p.lC, p.gA, p.grim,p.gB,p.gA,  p.gA,  p.gB,  p.grim,p.gA,p.lC,_,    _   ],
+      // 6 — shoulders — bow arm extended if attacking
+      [s?p.bwStr:p.lC,p.grim,p.gA,p.lA,p.gB,p.gB,p.lA,p.gA,p.grim,s?p.bwA:p.lC,s?p.bwB:_,s?p.bwStr:_],
+      // 7 — torso + quiver strap
+      [s?p.bwStr:_,p.gA,p.gB,p.lB,p.gA,p.gA,p.lB,p.gB,p.gA,s?p.bwA:_,s?p.bwB:_,s?p.bwStr:_],
+      // 8 — mid torso
+      [s?p.bwStr:_,p.gB,p.gA,p.grim,p.gC,p.gC,p.grim,p.gA,p.gB,_,    _,    _   ],
+      // 9 — waist / belt
+      [_,    p.lB, p.lA, p.lC,  p.lB,  p.lB,  p.lC,  p.lA, p.lB, _,    _,    _   ],
+      // 10 — thighs
+      [_,    p.gA, p.gB, p.gA,  p.gC,  p.gC,  p.gA,  p.gB, p.gA, _,    _,    _   ],
+      // 11 — knee guards
+      [_,    p.grim,p.gA,p.grim,_,     _,     p.grim,p.gA,p.grim,_,   _,    _   ],
+      // 12 — shins
+      [_,    p.gB, p.gA, p.gB,  _,     _,     p.gB,  p.gA, p.gB, _,    _,    _   ],
+      // 13 — lower shins
+      [_,    p.gC, p.gB, p.gC,  _,     _,     p.gC,  p.gB, p.gC, _,    _,    _   ],
+      // 14 — boots
+      [_,    p.btA,p.btB,p.btA, p.btC, _,     p.btC, p.btA,p.btB,p.btA,_,   _   ],
+      // 15 — soles
+      [_,    p.btB,p.btC,p.btC, p.btB, _,     p.btB, p.btC,p.btC,p.btB,_,   _   ],
+    ];
+  },
+
 };
 
 // 32-bit enemies with more color detail
-const ENEMIES32={
-  rat:{draw(ctx,x,y,sc){
-    const p=PX*sc;
-    const c={
-      f1:'#3e2e1e',f2:'#5a4232',f3:'#7a5e48',f4:'#9a7a62',fHl:'#b89878',
-      belly:'#c8b090',bellyHl:'#e0caa8',
-      snout:'#c88880',snoutHl:'#e8a898',
-      eyeOut:'#800808',eyeIn:'#ff2020',eyeSpec:'#ff8060',
-      earOut:'#b06060',earIn:'#e09090',
-      tail1:'#7a5840',tail2:'#9a7858',tailTip:'#c8a880',
-      whisker:'#e8e0c0',
-      claw:'#d0c8a0',shadow:'#1e1208',
-    };
-    const _=null;
-    const sp=[
-      [_,    _,    c.f2,  c.f3,  c.f3,  c.f2,  _,    _    ],
-      [_,    c.f1, c.earOut,c.earIn,c.earIn,c.earOut,c.f1, _    ],
-      [c.f1, c.f2, c.f3,  c.fHl, c.fHl, c.f3,  c.f2, c.f1 ],
-      [c.f2, c.f3, c.belly,c.bellyHl,c.snoutHl,c.bellyHl,c.f3, c.f2 ],
-      [c.f1, c.f2, c.eyeOut,c.eyeIn,c.eyeIn,c.eyeOut,c.f2, c.f1 ],
-      [c.f1, c.f2, c.eyeSpec,c.belly,c.belly,c.eyeSpec,c.f2, c.f1 ],
-      [c.shadow,c.f2,c.f3,c.claw,c.snout,c.claw,c.f2,c.tail1],
-      [_,    c.f1, c.f2, c.whisker,c.whisker,c.f2, c.tail2,c.tailTip],
-      [_,    _,    c.shadow,c.f1,c.f1,c.shadow,_,    _    ],
-    ];
-    sp.forEach((row,ry)=>row.forEach((col,rx)=>{if(!col)return;ctx.fillStyle=col;ctx.fillRect(x+rx*p,y+ry*p,p,p);}));
-    // Specular dot on eye
-    ctx.fillStyle=c.eyeSpec;ctx.fillRect(x+2*p,y+4*p,p*.5,p*.5);
-  }},
+const ENEMIES32 = {
 
-  skeleton:{draw(ctx,x,y,sc){
-    const p=PX*sc;
-    const c={
-      b1:'#f4ece0',b2:'#ddd4c0',b3:'#ece4d0',b4:'#c8c0a8',
-      shad:'#9a9080',crack:'#b8b0a0',dark:'#0e0808',
-      eyeOut:'#c03008',eyeIn:'#ff5020',eyeSpec:'#ffb080',
-      rust:'#8a5018',rustHl:'#b07030',
-      joint:'#d0c8b0',jointLo:'#a89880',
-      ribs:'#b0a890',
+  rat: { draw(ctx, x, y, sc) {
+    const p = PX * sc;
+    const c = {
+      f1:'#1e1208', f2:'#3a2618', f3:'#5a3e28', f4:'#7a5840', fHl:'#9a7860',
+      belly:'#c0a880', bellyHl:'#dcc8a0',
+      ear:'#b06060', earIn:'#e09090',
+      eye:'#ff2020', eyeSpec:'#ff9070',
+      tail:'#8a6040', tailTip:'#c0a070',
+      whisker:'#e0d8b0',
+      claw:'#c8c090', shadow:'#0e0808',
     };
-    const _=null;
-    const sp=[
-      [_,    c.b2,  c.b1,  c.b3,  c.b3,  c.b1,  c.b2,  _    ],
-      [c.b2, c.b3,  c.crack,c.b1,  c.b1,  c.crack,c.b3,  c.b2 ],
-      [c.b1, c.b3,  c.eyeOut,c.eyeIn,c.eyeIn,c.eyeOut,c.b3,  c.b1 ],
-      [c.b2, c.b1,  c.eyeSpec,c.dark,c.dark,c.eyeSpec,c.b1, c.b2 ],
-      [c.b3, c.b2,  c.b1,  c.b3,  c.b3,  c.b1,  c.b2,  c.b3 ],
-      [_,    c.shad,c.joint,c.b1,  c.b1,  c.joint,c.shad,_    ],
-      [c.rust,c.rustHl,c.b2,c.joint,c.ribs,c.ribs,c.joint,c.b2,c.rustHl,c.rust],
-      [c.b1, c.joint,c.b2,  c.ribs,c.shad,c.shad,c.ribs, c.b2, c.joint,c.b1 ],
-      [_,    c.b2,  c.shad,c.b1,  c.b2,  c.b2,  c.b1,  c.shad,c.b2,  _    ],
-      [_,    c.b1,  c.b2,  _,    c.jointLo,c.jointLo,_,   c.b2,  c.b1,  _    ],
-      [_,    c.joint,c.b1,  _,    _,    _,    _,    c.b1,  c.joint,_    ],
+    const _ = null;
+    // 10 wide × 10 tall — low-slung hunched rodent
+    const sp = [
+      [_,    _,    c.ear, c.earIn,_,     _,    c.ear, c.earIn,_,    _    ],
+      [_,    c.f2, c.f3,  c.f4,   c.f4,  c.f3, c.f3,  c.f2,   _,    _    ],
+      [c.f1, c.f3, c.fHl, c.fHl,  c.belly,c.bellyHl,c.fHl,c.f3,c.f1,_   ],
+      [c.f2, c.f3, c.eye, c.eyeSpec,c.belly,c.bellyHl,c.eye,c.eyeSpec,c.f2,_],
+      [c.f1, c.f2, c.f3,  c.belly, c.bellyHl,c.belly,c.f3, c.f2,  c.f1, _   ],
+      [c.f2, c.f3, c.f4,  c.f3,   c.f2,  c.f3, c.f4,  c.f3,   c.f2, c.tail],
+      [c.f1, c.claw,c.f3, c.f4,   c.f3,  c.f4, c.f3,  c.claw, c.tail,c.tailTip],
+      [_,    c.whisker,c.f1,c.f2, c.f1,  c.f2, c.f1,  c.whisker,_,  _    ],
+      [_,    _,    c.shadow,c.f1, c.f2,  c.f1, c.shadow,_,    _,    _    ],
     ];
     sp.forEach((row,ry)=>row.forEach((col,rx)=>{if(!col)return;ctx.fillStyle=col;ctx.fillRect(x+rx*p,y+ry*p,p,p);}));
   }},
 
-  zombie:{draw(ctx,x,y,sc){
-    const p=PX*sc;
-    const c={
-      s1:'#708060',s2:'#8a9a70',s3:'#607050',s4:'#506040',
-      rot1:'#486040',rot2:'#304830',rotHl:'#5a7850',
-      flesh:'#d09090',fleshHl:'#e8b0a8',
-      wound:'#a04040',blood:'#801010',bloodDk:'#580808',
-      cloth1:'#5a5040',cloth2:'#3e3828',clothHl:'#706858',clothDk:'#2a2418',
-      eye1:'#c8e040',eye2:'#e8ff60',eyeSpec:'#ffffff',
-      bone:'#d0c8a8',boneDk:'#a8a080',
-      shadow:'#1a2010',
+  skeleton: { draw(ctx, x, y, sc) {
+    const p = PX * sc;
+    const c = {
+      b1:'#f0e8d8', b2:'#d8d0bc', b3:'#c0b89e', b4:'#a8a088',
+      shad:'#888070', crack:'#b0a890',
+      eye:'#ff4010', eyeIn:'#ff8040', eyeSpec:'#ffb880',
+      rust:'#904818', rustHl:'#c07028',
+      joint:'#ccc0a8', jointLo:'#a09880',
+      dark:'#100808',
     };
-    const _=null;
-    const sp=[
-      [_,    c.rot2, c.s1,  c.s2,  c.s2,  c.s1,  c.rot2, _    ],
-      [c.rot2,c.s2,  c.s3,  c.s1,  c.s1,  c.s3,  c.s2,  c.rot2],
-      [c.s1, c.s2,  c.eye1,c.eye2,c.eye2,c.eye1, c.s2,  c.s1 ],
-      [c.rot2,c.s1,  c.eyeSpec,c.wound,c.wound,c.eyeSpec,c.s1, c.rot2],
-      [c.rot2,c.s3,  c.flesh,c.fleshHl,c.blood,c.fleshHl,c.s3, c.rot2],
-      [_,    c.shadow,c.s4, c.rot1,c.rot1,c.s4,  c.shadow,_    ],
-      [c.cloth1,c.clothHl,c.cloth2,c.blood,c.blood,c.cloth2,c.clothHl,c.cloth1],
-      [c.rot1,c.cloth2,c.clothHl,c.cloth1,c.bloodDk,c.bloodDk,c.cloth1,c.clothHl,c.cloth2,c.rot1],
-      [c.cloth1,c.rot2,c.cloth2,c.rot1,c.cloth1,c.cloth1,c.rot1,c.cloth2,c.rot2,c.cloth1],
-      [_,    c.cloth2,c.rot2,c.cloth1,_,   _,   c.cloth1,c.rot2,c.cloth2,_    ],
-      [_,    c.rot1, c.cloth1,_,   _,   _,   _,    c.cloth1,c.rot1,_    ],
+    const _ = null;
+    // 10 wide × 14 tall — upright humanoid skeleton
+    const sp = [
+      [_,    c.b2,  c.b1,  c.b2,  c.b1,  c.b2,  c.b1,  c.b2,  _,    _   ],
+      [c.b2, c.b3,  c.b1,  c.crack,c.b2, c.crack,c.b1,  c.b3,  c.b2, _   ],
+      [c.b1, c.b2,  c.eye, c.eyeIn,c.eyeSpec,c.eyeIn,c.eye,c.b2,c.b1,_   ],
+      [c.b2, c.b1,  c.eyeSpec,c.dark,c.b2,c.dark,c.eyeSpec,c.b1,c.b2,_   ],
+      [c.b3, c.b2,  c.b1,  c.b3,  c.crack,c.b3,  c.b1,  c.b2,  c.b3, _   ],
+      [_,    c.shad,c.joint,c.b1, c.b2,  c.b1,  c.joint,c.shad,_,    _   ],
+      [c.rust,c.rustHl,c.b2,c.joint,c.b1,c.b1,c.joint,c.b2,c.rustHl,c.rust],
+      [c.b1, c.joint,c.b2, c.b3,  c.shad,c.shad,c.b3,  c.b2,  c.joint,c.b1],
+      [_,    c.b2,  c.b3,  c.b2,  c.b1,  c.b1,  c.b2,  c.b3,  c.b2,  _   ],
+      [_,    c.b1,  c.b2,  _,     c.jointLo,c.jointLo,_,c.b2, c.b1,  _   ],
+      [_,    c.joint,c.b1, _,     c.b2,  c.b2,  _,     c.b1,  c.joint,_  ],
+      [_,    c.b2,  c.b3,  _,     c.b1,  c.b1,  _,     c.b3,  c.b2,  _   ],
+      [_,    c.b1,  c.b2,  _,     c.shad,c.shad,_,     c.b2,  c.b1,  _   ],
+      [_,    c.shad,c.b3,  _,     _,     _,     _,     c.b3,  c.shad,_   ],
     ];
     sp.forEach((row,ry)=>row.forEach((col,rx)=>{if(!col)return;ctx.fillStyle=col;ctx.fillRect(x+rx*p,y+ry*p,p,p);}));
   }},
 
-  wraith:{draw(ctx,x,y,sc){
-    const p=PX*sc;
-    const t=_lastFrame*0.0025;
-    const pulse=0.5+0.5*Math.sin(t);
-    const pulse2=0.5+0.5*Math.sin(t+1.2);
-    const c={
-      core1:`rgba(28,48,200,${0.85+0.1*pulse})`,
-      core2:`rgba(52,82,230,${0.8+0.1*pulse2})`,
-      core3:`rgba(90,120,250,${0.75})`,
-      glow1:'#a8c8ff',glow2:'#d0e4ff',
-      eye1:'#ffffff',eye2:'#e8f4ff',eyeGlow:'#80b8ff',eyeCore:'rgba(180,220,255,0.9)',
-      veil:`rgba(14,22,60,${0.7+0.15*pulse})`,
-      veilHl:`rgba(28,44,90,${0.6+0.15*pulse2})`,
-      fade1:`rgba(40,68,210,${0.45+0.2*pulse})`,
-      fade2:`rgba(70,100,240,${0.28+0.15*pulse2})`,
-      innerGlow:`rgba(160,200,255,${0.5+0.2*pulse})`,
+  zombie: { draw(ctx, x, y, sc) {
+    const p = PX * sc;
+    const c = {
+      s1:'#607850', s2:'#7a9060', s3:'#506040', s4:'#3c4c30',
+      flesh:'#c08878', fleshHl:'#dca898', fleshDk:'#a06858',
+      wound:'#902020', blood:'#6c0808', bloodDk:'#480404',
+      cloth1:'#504838', cloth2:'#3c3428', clothHl:'#685e48',
+      eye1:'#c0d830', eye2:'#e0f040', eyeSpec:'#ffffff',
+      bone:'#c8c0a0', boneDk:'#a8a080',
+      shadow:'#182010',
     };
-    const _=null;
-    const sp=[
-      [_,      _,      c.fade2, c.core2, c.core3, c.core2, c.fade2, _      ],
-      [_,      c.fade1, c.core2, c.glow1, c.glow2, c.glow1, c.core2, c.fade1],
-      [c.fade1, c.core2, c.glow2, c.eye1,  c.eye2,  c.eye1,  c.glow2, c.core2],
-      [c.fade1, c.core1, c.eyeGlow,c.eye2,  c.eyeCore,c.eye2,  c.eyeGlow,c.core1],
-      [c.fade2, c.core2, c.innerGlow,c.glow1,c.glow1,c.innerGlow,c.core2,c.fade2],
-      [_,      c.veil,  c.core2, c.glow1, c.glow1, c.core2, c.veil,  _      ],
-      [c.fade2, c.veil,  c.veilHl,c.core2, c.core2, c.veilHl, c.veil,  c.fade2],
-      [c.fade1, c.veilHl,c.veil,  c.core1, c.core1, c.veil,  c.veilHl,c.fade1],
-      [_,      c.fade1, c.veil,  c.fade2, c.fade2, c.veil,  c.fade1, _      ],
-      [_,      c.fade2, c.fade1, _,      _,      c.fade1, c.fade2, _      ],
+    const _ = null;
+    // 10 wide × 14 tall — shambling upright humanoid
+    const sp = [
+      [_,    c.s3,  c.s1,  c.s2,  c.s1,  c.s2,  c.s1,  c.s3,  _,    _   ],
+      [c.s3, c.s2,  c.s1,  c.s3,  c.s2,  c.s3,  c.s1,  c.s2,  c.s3, _   ],
+      [c.s1, c.s2,  c.eye1,c.eye2,c.eyeSpec,c.eye2,c.eye1,c.s2,c.s1, _   ],
+      [c.s3, c.s1,  c.flesh,c.wound,c.fleshHl,c.wound,c.flesh,c.s1,c.s3, _  ],
+      [c.s4, c.s3,  c.fleshDk,c.flesh,c.blood,c.flesh,c.fleshDk,c.s3,c.s4,_],
+      [_,    c.shadow,c.s4,c.s3,  c.s3,  c.s3,  c.s4,  c.shadow,_,   _   ],
+      [c.cloth1,c.clothHl,c.cloth2,c.blood,c.bloodDk,c.blood,c.cloth2,c.clothHl,c.cloth1,_],
+      [c.cloth2,c.cloth1,c.clothHl,c.bloodDk,c.wound,c.bloodDk,c.clothHl,c.cloth1,c.cloth2,_],
+      [c.s3, c.cloth2,c.cloth1,c.cloth2,c.cloth1,c.cloth2,c.cloth1,c.cloth2,c.s3,_],
+      [_,    c.cloth1,c.s4, _,     c.cloth2,c.cloth2,_,    c.s4,  c.cloth1,_  ],
+      [_,    c.s3,  c.cloth2,_,    c.cloth1,c.cloth1,_,    c.cloth2,c.s3, _   ],
+      [_,    c.cloth2,c.s4,_,     c.s3,  c.s3,  _,     c.s4,  c.cloth2,_  ],
+      [_,    c.bone, c.boneDk,_,   c.cloth1,c.cloth1,_,  c.boneDk,c.bone,_  ],
+      [_,    c.boneDk,c.bone,_,    _,     _,     _,     c.bone,c.boneDk,_  ],
     ];
     sp.forEach((row,ry)=>row.forEach((col,rx)=>{if(!col)return;ctx.fillStyle=col;ctx.fillRect(x+rx*p,y+ry*p,p,p);}));
   }},
 
-  dragon:{draw(ctx,x,y,sc){
-    const p=PX*sc;
-    const c={
-      sc1:'#8a0c0c',sc2:'#b81818',sc3:'#d82828',sc4:'#f04040',scHl:'#ff7060',
-      belly:'#c89038',bellyHl:'#eecc60',bellyShad:'#9a6820',bellySpec:'#ffffc0',
-      eye:'#f0c000',eyeGlow:'#ffee40',eyeSlit:'#180600',eyeSpec:'#ffffff',
-      horn:'#3e2808',hornHl:'#6a4818',hornSpec:'#b08030',
-      fire:'#ff8010',fireBright:'#ffee40',fireCore:'#ffffff',fireDim:'#ff4010',
-      wing1:'#680808',wing2:'#8c1010',wingMem:'#c02020',
-      claw:'#d0c880',clawShad:'#a0a060',
-      nostril:'#580808',
-      shadow:'#3a0808',
+  wraith: { draw(ctx, x, y, sc) {
+    const p = PX * sc;
+    const t = _lastFrame * 0.0025;
+    const pulse = 0.5 + 0.5 * Math.sin(t);
+    const pulse2 = 0.5 + 0.5 * Math.sin(t + 1.2);
+    const c = {
+      core1: `rgba(20,36,180,${0.9+0.08*pulse})`,
+      core2: `rgba(44,72,220,${0.85+0.1*pulse2})`,
+      core3: `rgba(80,110,245,${0.78})`,
+      glow1: '#a0c0ff',
+      glow2: '#cce0ff',
+      eye1: '#ffffff',
+      eye2: '#e0f0ff',
+      eyeGlow: '#70a8ff',
+      veil: `rgba(10,18,54,${0.75+0.15*pulse})`,
+      veilHl: `rgba(24,40,86,${0.65+0.15*pulse2})`,
+      fade1: `rgba(36,62,200,${0.5+0.2*pulse})`,
+      fade2: `rgba(60,90,230,${0.3+0.15*pulse2})`,
+      innerGlow: `rgba(150,190,255,${0.55+0.2*pulse})`,
     };
-    const _=null;
-    const sp=[
-      [_,    _,    c.horn, c.sc2,  c.sc3,  c.sc2,  _,    c.fire, c.fireBright,c.fireCore],
-      [_,    c.horn,c.hornHl,c.sc3,  c.scHl, c.sc3,  c.wing2,c.fireBright,c.fireCore,c.fireBright],
-      [c.wing1,c.sc2,c.sc3,  c.scHl, c.eye,  c.eyeGlow,c.wing2,c.fire,  c.fireBright,c.fireDim],
-      [c.wing1,c.sc3,c.sc2,  c.eyeSlit,c.eyeGlow,c.eyeSlit,c.sc2, c.wing1,c.fireDim, _    ],
-      [_,    c.sc1, c.sc2,  c.belly,c.bellyHl,c.bellySpec,c.sc1,  _,    _,    _    ],
-      [_,    c.shadow,c.sc1,c.bellyHl,c.bellySpec,c.bellyHl,c.shadow,_,   _,    _    ],
-      [c.wing1,c.sc2,c.belly,c.bellyShad,c.bellyHl,c.bellyHl,c.bellyShad,c.belly,c.sc2, c.wing2],
-      [c.wing1,c.shadow,c.sc1,c.sc2,  c.sc1,  c.sc2,  c.shadow,c.sc1, c.wing1,_    ],
-      [_,    c.claw, c.clawShad,_,   _,    _,    c.clawShad,c.claw,_,    _    ],
-      [_,    c.clawShad,c.claw,_,   _,    _,    c.claw, c.clawShad,_,  _    ],
+    const _ = null;
+    // 10 wide × 14 tall — tall ethereal figure tapering to wisp
+    const sp = [
+      [_,      _,      c.fade2, c.core2, c.core3, c.core3, c.core2, c.fade2, _,      _      ],
+      [_,      c.fade1, c.core2, c.glow1, c.glow2, c.glow2, c.glow1, c.core2, c.fade1,_      ],
+      [c.fade1, c.core2, c.glow2, c.eye1,  c.eye2,  c.eye2,  c.eye1,  c.glow2, c.core2,c.fade1],
+      [c.fade1, c.core1, c.eyeGlow,c.eye2, c.eye1,  c.eye1,  c.eye2,  c.eyeGlow,c.core1,c.fade1],
+      [c.fade2, c.core2, c.innerGlow,c.glow1,c.glow1,c.glow1,c.glow1,c.innerGlow,c.core2,c.fade2],
+      [_,      c.veil,  c.core2, c.glow1, c.core3, c.core3, c.glow1, c.core2, c.veil, _      ],
+      [c.fade2, c.veil,  c.veilHl,c.core2, c.core1, c.core1, c.core2, c.veilHl,c.veil, c.fade2],
+      [c.fade1, c.veilHl,c.veil,  c.core1, c.core2, c.core2, c.core1, c.veil,  c.veilHl,c.fade1],
+      [_,      c.fade1, c.veil,  c.veilHl,c.core1, c.core1, c.veilHl,c.veil,  c.fade1,_      ],
+      [_,      c.fade2, c.fade1, c.veil,  c.veilHl,c.veilHl,c.veil,  c.fade1, c.fade2,_      ],
+      [_,      _,      c.fade2, c.fade1, c.veil,  c.veil,  c.fade1, c.fade2, _,      _      ],
+      [_,      _,      _,      c.fade2, c.fade1, c.fade1, c.fade2, _,      _,      _      ],
+      [_,      _,      _,      _,      c.fade2, c.fade2, _,      _,      _,      _      ],
     ];
     sp.forEach((row,ry)=>row.forEach((col,rx)=>{if(!col)return;ctx.fillStyle=col;ctx.fillRect(x+rx*p,y+ry*p,p,p);}));
-    // Eye specular
-    ctx.fillStyle=c.eyeSpec;ctx.fillRect(x+4*p,y+2*p,p*.4,p*.4);
   }},
 
-  lich:{draw(ctx,x,y,sc){
-    const p=PX*sc;
-    const t=_lastFrame*0.002;
-    const pulse=0.5+0.5*Math.sin(t);
-    const c={
-      robe1:'#16102a',robe2:'#241848',robe3:'#382060',robeHl:'#6040a0',
-      trim:'#c09020',trimHl:'#f0c840',trimShad:'#806010',trimSpec:'#ffffff',
-      sk1:'#ece4d4',sk2:'#d4ccc0',sk3:'#f0e8dc',
-      eyeOut:'#c01808',eyeIn:'#ff2e18',eyeGlow:`rgba(255,120,80,${0.6+0.4*pulse})`,
-      soul:'#8060d0',soulGlow:`rgba(180,140,255,${0.5+0.4*pulse})`,soulCore:`rgba(230,210,255,${0.85})`,
-      crownGold:'#c09020',crownGem:'#e040a0',crownGemGlow:`rgba(255,120,200,${0.5+0.4*pulse})`,
-      bone:'#c8c0a8',boneShad:'#9a9080',boneHl:'#e0d8c0',
-      orb:'#4020c0',orbGlow:`rgba(140,100,255,${0.6+0.3*pulse})`,orbCore:'#c0a8ff',orbSpec:'#ffffff',
-      shadow:'#0c0818',
+  dragon: { draw(ctx, x, y, sc) {
+    const p = PX * sc;
+    const c = {
+      sc1:'#780808', sc2:'#a41010', sc3:'#cc2020', sc4:'#e83030', scHl:'#ff5040',
+      belly:'#c08828', bellyHl:'#e8c050', bellySpec:'#fff8c0',
+      eye:'#f0b800', eyeGlow:'#ffe030', eyeSlit:'#140400', eyeSpec:'#ffffff',
+      horn:'#3a2408', hornHl:'#604010', hornSpec:'#a07020',
+      fire:'#ff7000', fireBright:'#ffdd30', fireCore:'#ffffff', fireDim:'#ff3800',
+      wing1:'#580606', wing2:'#800c0c',
+      claw:'#ccc070', clawShad:'#989048',
+      shadow:'#300404',
     };
-    const _=null;
-    const sp=[
-      [_,    c.crownGold,c.crownGem,c.crownGemGlow,c.trimHl,c.crownGemGlow,c.crownGem,c.crownGold,_   ],
-      [_,    c.sk2, c.sk3,  c.sk1,  c.sk3,  c.sk1,  c.sk3,  c.sk2,  _   ],
-      [_,    c.sk1, c.eyeOut,c.eyeIn,c.eyeGlow,c.eyeIn,c.eyeOut,c.sk1,  _   ],
-      [_,    c.sk2, c.bone, c.sk1,  c.sk2,  c.sk1,  c.bone, c.sk2,  _   ],
-      [_,    c.boneShad,c.sk1,c.boneHl,c.shadow,c.boneHl,c.sk1,c.boneShad,_  ],
-      [c.shadow,c.robe3,c.robeHl,c.soul,c.soulGlow,c.soul,c.robeHl,c.robe3,c.shadow],
-      [c.trim,c.robeHl,c.robe2,c.soulGlow,c.soulCore,c.soulGlow,c.robe2,c.robeHl,c.trim],
-      [c.trimHl,c.robe3,c.robeHl,c.orb,c.orbGlow,c.orb,c.robeHl,c.robe3,c.trimHl],
-      [c.trim,c.robe2,c.robe3,c.orbGlow,c.orbCore,c.orbGlow,c.robe3,c.robe2,c.trim],
-      [_,    c.trimShad,c.robe2,c.robe1,c.robe2,c.robe1,c.robe2,c.trimShad,_  ],
-      [_,    c.robe1,c.trimShad,c.robe2,c.shadow,c.robe2,c.trimShad,c.robe1,_  ],
-      [_,    c.orbSpec,c.orbGlow,_,   _,   _,   _,   c.orbGlow,c.orbSpec,_  ],
+    const _ = null;
+    // 12 wide × 13 tall — broad, menacing, clear wing / head / body read
+    const sp = [
+      [_,    c.horn,c.hornHl,c.sc3, c.sc4, c.scHl,c.sc3, _,    c.fire,c.fireBright,c.fireCore,c.fireBright],
+      [c.wing1,c.sc2,c.sc3, c.scHl,c.eye, c.eyeGlow,c.sc3,c.wing2,c.fireBright,c.fireCore,c.fireBright,c.fire],
+      [c.wing1,c.sc3,c.sc2, c.eyeSlit,c.eyeGlow,c.eyeSlit,c.sc2,c.wing2,c.fire,c.fireBright,c.fireDim,_  ],
+      [c.wing2,c.sc1,c.sc2, c.sc3, c.belly,c.bellyHl,c.sc2,c.wing1,c.fireDim,_,   _,   _  ],
+      [c.wing1,c.sc2,c.belly,c.bellyHl,c.bellySpec,c.bellyHl,c.belly,c.sc2,c.wing1,_,  _,   _  ],
+      [_,    c.sc2, c.sc3, c.bellyHl,c.bellySpec,c.bellyHl,c.sc3,c.sc2,_,   _,   _,   _  ],
+      [c.wing1,c.sc2,c.belly,c.bellyHl,c.belly,c.belly,c.bellyHl,c.belly,c.sc2,c.wing2,_,  _  ],
+      [c.wing2,c.shadow,c.sc1,c.sc2,c.sc3,c.sc3,c.sc2,c.sc1,c.shadow,c.wing1,_,  _  ],
+      [c.wing1,c.sc2,c.sc1,c.sc2, _,    _,    c.sc2, c.sc1, c.sc2, c.wing1,_,  _  ],
+      [_,    c.claw,c.clawShad,c.sc1,_,   _,    c.sc1,c.clawShad,c.claw,_,  _,   _  ],
+      [_,    c.clawShad,c.claw,_,  _,    _,    _,   c.claw,c.clawShad,_,  _,   _  ],
     ];
     sp.forEach((row,ry)=>row.forEach((col,rx)=>{if(!col)return;ctx.fillStyle=col;ctx.fillRect(x+rx*p,y+ry*p,p,p);}));
+    ctx.fillStyle = c.eyeSpec;
+    ctx.fillRect(x+4*p, y+p, p*0.4, p*0.4);
   }},
+
+  lich: { draw(ctx, x, y, sc) {
+    const p = PX * sc;
+    const t = _lastFrame * 0.002;
+    const pulse = 0.5 + 0.5 * Math.sin(t);
+    const c = {
+      robe1:'#100c22', robe2:'#1e1640', robe3:'#301c58', robeHl:'#5838a0',
+      trim:'#b88818', trimHl:'#e8c030', trimShad:'#786010',
+      sk1:'#ece0d0', sk2:'#d0c8b8', sk3:'#b8b0a0',
+      eye:'#e01400', eyeIn:'#ff3018', eyeGlow:`rgba(255,100,60,${0.5+0.4*pulse})`,
+      soul:'#7050c0', soulGlow:`rgba(170,130,250,${0.45+0.4*pulse})`, soulCore:`rgba(220,200,255,0.9)`,
+      crownGold:'#b88818', crownGem:'#d82888', crownGemGlow:`rgba(255,100,180,${0.45+0.4*pulse})`,
+      bone:'#c0b8a0', boneShad:'#989080', boneHl:'#dcd4bc',
+      orb:'#3818b8', orbGlow:`rgba(130,90,250,${0.55+0.3*pulse})`, orbCore:'#b898ff', orbSpec:'#ffffff',
+      shadow:'#080614',
+    };
+    const _ = null;
+    // 10 wide × 16 tall — imposing robed undead sorcerer
+    const sp = [
+      [_,    c.crownGold,c.crownGem,c.crownGemGlow,c.trimHl,c.trimHl,c.crownGemGlow,c.crownGem,c.crownGold,_  ],
+      [_,    c.sk2, c.sk1, c.sk3,  c.sk1,  c.sk1,  c.sk3,  c.sk1,  c.sk2,  _  ],
+      [_,    c.sk1, c.eye, c.eyeIn,c.eyeGlow,c.eyeGlow,c.eyeIn,c.eye,c.sk1, _  ],
+      [_,    c.sk2, c.bone,c.sk1,  c.sk2,  c.sk2,  c.sk1,  c.bone, c.sk2,  _  ],
+      [_,    c.boneShad,c.sk1,c.boneHl,c.shadow,c.shadow,c.boneHl,c.sk1,c.boneShad,_],
+      [c.shadow,c.robeHl,c.robe3,c.soul,c.soulGlow,c.soulGlow,c.soul,c.robe3,c.robeHl,c.shadow],
+      [c.trim,c.robeHl,c.robe2,c.soulGlow,c.soulCore,c.soulCore,c.soulGlow,c.robe2,c.robeHl,c.trim],
+      [c.trimHl,c.robe3,c.robe2,c.orb,c.orbGlow,c.orbGlow,c.orb,c.robe2,c.robe3,c.trimHl],
+      [c.trim,c.robe2,c.robe3,c.orbGlow,c.orbCore,c.orbCore,c.orbGlow,c.robe3,c.robe2,c.trim],
+      [_,    c.trimShad,c.robe2,c.robe1,c.robe2,c.robe2,c.robe1,c.robe2,c.trimShad,_],
+      [_,    c.robe1,c.robe3,c.robe2,c.robe1,c.robe1,c.robe2,c.robe3,c.robe1,_  ],
+      [_,    c.robe2,c.robe1,c.robe3,c.robe2,c.robe2,c.robe3,c.robe1,c.robe2,_  ],
+      [_,    _,    c.robe1,c.trimShad,c.robe2,c.robe2,c.trimShad,c.robe1,_,   _  ],
+      [_,    _,    c.shadow,c.robe1,c.robe2,c.robe2,c.robe1,c.shadow,_,   _  ],
+      [_,    c.orbSpec,c.orbGlow,_,  _,    _,    _,   c.orbGlow,c.orbSpec,_  ],
+    ];
+    sp.forEach((row,ry)=>row.forEach((col,rx)=>{if(!col)return;ctx.fillStyle=col;ctx.fillRect(x+rx*p,y+ry*p,p,p);}));
+    ctx.fillStyle = c.orbSpec;
+    ctx.fillRect(x + 4*p, y + 7*p, p*0.5, p*0.5);
+  }},
+
 };
 
 /* ===============================================
