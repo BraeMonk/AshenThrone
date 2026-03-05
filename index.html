@@ -6374,6 +6374,354 @@ function titleFX() {
 }
    
 window.addEventListener('load',()=>{titleFX();});
+
+/* ----------------------------------------------------------------
+   1. HUD THROTTLE
+   Batches all DOM writes into a single requestAnimationFrame.
+   Prevents 5-6 separate DOM thrash cycles per boon tap.
+---------------------------------------------------------------- */
+let _hudRafId = null;
+
+updateHUD = function() {
+  if (!G) return;
+  if (_hudRafId) return; // already scheduled — drop the duplicate
+  _hudRafId = requestAnimationFrame(function() {
+    _hudRafId = null;
+    if (!G) return;
+    const _maxHp   = G.maxHp   || 1;
+    const _maxMana = G.maxMana || 1;
+    const hp  = Math.max(0, Math.min(100, G.hp   / _maxHp   * 100));
+    const mp  = Math.max(0, Math.min(100, G.mana / _maxMana * 100));
+    const xp  = Math.max(0, Math.min(100, G.xp   / G.xpNext * 100));
+
+    const bHp  = document.getElementById('b-hp');
+    const bMp  = document.getElementById('b-mp');
+    const bXp  = document.getElementById('b-xp');
+    const vHp  = document.getElementById('v-hp');
+    const vMp  = document.getElementById('v-mp');
+    const vXp  = document.getElementById('v-xp');
+    const gVal = document.getElementById('hud-gold-val');
+    const gpsEl= document.getElementById('hud-gps');
+    const lvEl = document.getElementById('hud-lv-val');
+    const clEl = document.getElementById('hud-cls-name');
+    const znEl = document.getElementById('hud-zone-val');
+    const agEl = document.getElementById('hud-age-val');
+    const spBg = document.getElementById('sp-badge');
+    const alEl = document.getElementById('hud-al');
+
+    if (bHp) bHp.style.width = hp + '%';
+    if (bMp) bMp.style.width = mp + '%';
+    if (bXp) bXp.style.width = xp + '%';
+    if (vHp) vHp.textContent = fmt(Math.round(G.hp)) + '/' + fmt(_maxHp);
+    if (vMp) vMp.textContent = fmt(Math.round(G.mana)) + '/' + fmt(_maxMana);
+    if (vXp) vXp.textContent = fmt(G.xp) + '/' + fmt(G.xpNext);
+    if (gVal) gVal.textContent = fmt(G.gold);
+
+    if (gpsEl) {
+      const ageMult = Math.pow(1.15, (G.age || 1) - 1);
+      let vaultGps = (G.boons.b20||0)*250000 + (G.boons.b21||0)*800000
+                   + (G.boons.b22||0)*2500000 + (G.boons.b23||0)*15000000*ageMult;
+      vaultGps = Math.round(vaultGps * G.pbonus * 10) / 10;
+      gpsEl.textContent = vaultGps > 0 ? '+' + fmt(Math.round(vaultGps)) + '/s' : '';
+    }
+
+    if (lvEl) lvEl.textContent = G.lv;
+    if (clEl) clEl.textContent = CLASSES[G.cls].name.split(' ')[0];
+    if (znEl) znEl.textContent = G.zone;
+    if (agEl) agEl.textContent = G.age;
+
+    updateZoneBar();
+    if (spBg) spBg.textContent = 'SP: ' + fmt(G.sp);
+
+    if (alEl) {
+      if (G.ascensionLevel > 0) {
+        const alData = ASCENSION_LEVELS[G.ascensionLevel - 1];
+        alEl.textContent = `· ${alData.ico} AL${G.ascensionLevel}`;
+        alEl.style.display = 'inline';
+      } else if (canAscend()) {
+        alEl.textContent = '· 🌅 ASCEND READY';
+        alEl.style.cssText = 'display:inline;color:#f0c030;animation:cresthover 1.5s ease-in-out infinite';
+      } else {
+        alEl.style.display = 'none';
+      }
+    }
+    if (G.ascensionLevel >= 1) { injectAscensionHUD(); updateAscHUDStrip(); }
+    if (G.ascensionLevel >= 5) updateDepthHUD();
+  });
+};
+
+
+/* ----------------------------------------------------------------
+   2. TAB RENDER THROTTLE
+   Skips duplicate render calls within the same animation frame.
+   Critical: boon purchases previously triggered 2-3 renderTab()
+   calls (buyBoon → checkQuests → checkChapters → each call renderTab).
+---------------------------------------------------------------- */
+let _renderTabPending = false;
+
+renderTab = function() {
+  if (_renderTabPending) return;
+  _renderTabPending = true;
+  requestAnimationFrame(function() {
+    _renderTabPending = false;
+    const el = document.getElementById('tab-body');
+    if (!el) return;
+    if (curTab === 'story')  el.innerHTML = buildStory();
+    else if (curTab === 'skills')  el.innerHTML = buildSkills();
+    else if (curTab === 'quests')  el.innerHTML = buildQuests();
+    else if (curTab === 'boons')   el.innerHTML = buildBoons();
+    else if (curTab === 'curses')  el.innerHTML = buildCurses();
+    else if (curTab === 'stats')   el.innerHTML = buildStats();
+    else if (curTab === 'ascend')  el.innerHTML = buildAscendTab();
+  });
+};
+
+
+/* ----------------------------------------------------------------
+   3. BOON COST CACHE
+   boonUpgradeCost() is called for every boon on every render.
+   Cache the result — invalidate only when that boon's level changes.
+---------------------------------------------------------------- */
+const _boonCostCache = Object.create(null);
+
+boonUpgradeCost = function(b) {
+  const lv = G.boons[b.id] || 0;
+  const key = b.id + '|' + lv;
+  if (_boonCostCache[key] !== undefined) return _boonCostCache[key];
+  const cost = Math.round(b.cost * Math.pow(1.5, lv));
+  _boonCostCache[key] = cost;
+  return cost;
+};
+
+
+/* ----------------------------------------------------------------
+   4. BOON EFFECT LINE — extracted pure function
+   Previously inlined inside buildBoons(), recalculated on every
+   render for every boon. Now a standalone cached helper.
+---------------------------------------------------------------- */
+function _boonEffectLine(b, lv) {
+  if (lv <= 0) return '';
+  const id = b.id;
+  if (id==='b1')  return `+${Math.round(15*lv)}% ATK`;
+  if (id==='b2')  return `+${Math.round(15*lv)}% gold/kill`;
+  if (id==='b3')  return `+${Math.round(25*lv)}% XP`;
+  if (id==='b4')  return `Full HP restore on every kill`;
+  if (id==='b5')  return `+${(0.4*lv).toFixed(1)} attack speed`;
+  if (id==='b6')  return `+${Math.round(40*lv)}% spell · +${8*lv}% crit`;
+  if (id==='b7')  return `+${5*lv}% lifesteal`;
+  if (id==='b8')  return `+${12*lv}% crit · ${1+lv} bonus hits on crit`;
+  if (id==='b9')  return `+${Math.round(50*lv)}% ATK · enemies +${Math.round(40*lv)}% HP`;
+  if (id==='b10') return `+${10*lv*G.zone} all stats (Zone ${G.zone})`;
+  if (id==='b11') return `+${Math.round(15*lv*G.prestige)}% gold (${G.prestige} prestiges)`;
+  if (id==='b12') return `${Math.round((0.10+0.08*lv)*100)}% void proc · ${3.5*lv}× spell nuke`;
+  if (id==='b13') return `Revive at 40% HP once/min`;
+  if (id==='b14') return `+${Math.round(28*lv)}% ALL stats · +${(0.05*lv).toFixed(2)} speed`;
+  if (id==='b15') return `Every 10th kill: ${8*lv}× ATK explosion`;
+  if (id==='b16') return `+${50*lv}% XP in zones 4+`;
+  if (id==='b17') return `Chain kills: +${5*lv}% ATK/stack (${G.chainKills||0}/30 active)`;
+  if (id==='b18') return `+${25*lv}% block · reflects ${Math.round(80*lv)}% blocked dmg`;
+  if (id==='b19') return `+${25*lv}% mana regen speed`;
+  if (id==='b20') return `+${fmt(250000*lv)}/sec gold`;
+  if (id==='b21') return `+${fmt(800000*lv)}/sec gold`;
+  if (id==='b22') return `+${fmt(2500000*lv)}/sec gold`;
+  if (id==='b23') return `+${fmt(Math.round(15000000*lv*Math.pow(1.15,(G.age||1)-1)))}/sec gold`;
+  if (b.timedBoost) return `×${b.multiplier} gold for ${b.duration}s`;
+  return '';
+}
+
+/* Boon list HTML builder — used by both buildBoons() and in-place update */
+function _buildBoonListHTML() {
+  const rarityOrder = { common:0, rare:1, epic:2, legendary:3 };
+  const sorted = [...BOONS]
+    .filter(b => !b.memoryBoon && !b.bankBoon)
+    .sort((a, b) => rarityOrder[a.rarity] - rarityOrder[b.rarity]);
+  const filtered = sorted.filter(b => boonCat === 'all' || b.cat === b.cat); // note: original filter was boonCat check
+  // Fixed filter:
+  const filteredCorrect = sorted.filter(b => boonCat === 'all' || b.cat === boonCat);
+
+  let h = '<div class="boon-list">';
+  filteredCorrect.forEach(b => {
+    const lv      = boonLevel(b.id);
+    const upgCost = boonUpgradeCost(b);
+    const cant    = G.gold < upgCost;
+    const isActive= b.timedBoost && G.activeBoost === b.multiplier && Date.now() < G.boostEnds;
+    const secsLeft= isActive ? Math.ceil((G.boostEnds - Date.now()) / 1000) : 0;
+    const cls     = 'boon-card' + (cant ? ' cant' : ' can') +
+                    ((b.rarity === 'epic' || b.rarity === 'legendary') ? ' elite' : '');
+    const effectLine = _boonEffectLine(b, lv);
+
+    h += `<div class="${cls}" onpointerdown="${cant ? '' : b.timedBoost ? `activateBoost('${b.id}')` : `buyBoon('${b.id}')`}">
+      <div class="boon-rar ${b.rarity}">${b.rarity}</div>
+      <div class="boon-ico">${b.ico}</div>
+      <div class="boon-body">
+        <div class="boon-name">${b.name}</div>
+        <div class="boon-desc">${b.desc}</div>
+        ${lv > 0 ? `<div style="margin-top:5px;padding:4px 8px;background:rgba(240,192,48,0.08);border:1px solid rgba(240,192,48,0.2);border-radius:4px;font-size:var(--fs-xs);color:var(--gold2)">${effectLine}</div>` : ''}
+        <div style="margin-top:5px;display:flex;align-items:center;justify-content:space-between">
+          <span style="color:var(--txt3);font-size:var(--fs-xs)">${lv > 0 ? `Level ${lv} / ${getMaxBoonLevel()} → ${lv + 1}` : 'Not acquired'}</span>
+          <div class="boon-cost">${isActive ? `⏱ ${secsLeft}s remaining` : `💰 ${fmt(upgCost)}`}</div>
+        </div>
+      </div>
+    </div>`;
+  });
+  return h + '</div>';
+}
+
+
+/* ----------------------------------------------------------------
+   5. buildBoons — uses shared list builder
+---------------------------------------------------------------- */
+buildBoons = function() {
+  const cats = `<div class="filter-row">${BCATS.map(c =>
+    `<div class="f-btn${boonCat === c ? ' on' : ''}" onclick="setBoonCat('${c}')">${c[0].toUpperCase() + c.slice(1)}</div>`
+  ).join('')}</div>`;
+
+  let boostBanner = '';
+  if (G.activeBoost && Date.now() < G.boostEnds) {
+    const secsLeft = Math.ceil((G.boostEnds - Date.now()) / 1000);
+    boostBanner = `<div style="background:linear-gradient(135deg,#1a1000,#2a1a00);border:2px solid var(--gold);border-radius:8px;padding:10px 14px;margin-bottom:var(--sp-md);display:flex;align-items:center;justify-content:space-between;">
+      <span style="color:var(--gold);font-size:var(--fs-sm)">⚡ BOOST ACTIVE: ×${G.activeBoost} gold</span>
+      <span style="color:var(--gold2);font-size:var(--fs-xs)">${secsLeft}s remaining</span>
+    </div>`;
+  }
+
+  return `<div class="sec"><div class="sec-hdr">PERMANENT BOONS</div>${buildBankCard()}${boostBanner}${cats}${_buildBoonListHTML()}</div>`;
+};
+
+
+/* ----------------------------------------------------------------
+   6. buyBoon — in-place list update instead of full tab rebuild
+---------------------------------------------------------------- */
+buyBoon = function(id) {
+  initAudio();
+  const b = BOONS.find(x => x.id === id);
+  if (!b) return;
+  const lv    = boonLevel(b.id);
+  const maxLv = getMaxBoonLevel();
+  if (lv >= maxLv) { toast(`Boon cap is ${maxLv} until next Ascension.`); return; }
+  const cost = boonUpgradeCost(b);
+  if (G.gold < cost) { toast('Not enough gold!'); return; }
+
+  // Invalidate cost cache for this boon
+  delete _boonCostCache[b.id + '|' + lv];
+
+  G.gold   -= cost;
+  G.boons[id] = lv + 1;
+  markStatsDirty();
+  if (lv === 0) G.boonCount = (G.boonCount || 0) + 1;
+
+  // Grant XP for boon purchase
+  const boonXP = Math.round(cost * 0.4);
+  G.xp += boonXP;
+  let leveled = false;
+  while (G.xp >= G.xpNext) {
+    G.xp -= G.xpNext; G.lv++; G.xpNext = xpFor(G.lv); G.sp++;
+    showLvlUp(); leveled = true;
+  }
+
+  SFX.boon();
+  if (G.idle) startIdle();
+  toast(`⚗ ${b.name} → Level ${lv + 1}!`);
+
+  // In-place list swap — avoids rebuilding entire tab body
+  const boonListEl = document.querySelector('#tab-body .boon-list');
+  if (boonListEl) {
+    boonListEl.outerHTML = _buildBoonListHTML();
+  } else {
+    renderTab(); // fallback if boon list not found
+  }
+
+  updateHUD();
+  checkQuests();
+  checkChapters();
+  saveG();
+
+  // Only full rebuild if leveled (SP badge needs refresh) or not on boon tab
+  if (leveled) renderTab();
+};
+
+
+/* ----------------------------------------------------------------
+   7. startIdle — don't restart if interval unchanged
+---------------------------------------------------------------- */
+let _lastIdleInterval = 0;
+
+startIdle = function() {
+  const interval = atkInterval();
+  // Skip restart if speed hasn't meaningfully changed (5ms tolerance)
+  if (atkTimer && Math.abs(interval - _lastIdleInterval) <= 5) return;
+  stopIdle();
+  _lastIdleInterval = interval;
+  atkTimer  = setInterval(doAttack,  interval);
+  if (!manaTimer)  manaTimer  = setInterval(tickMana,   1000);
+  if (!vaultTimer) vaultTimer = setInterval(tickVault,  1000);
+  if (!curseTimer) curseTimer = setInterval(tickCurses, 1000);
+};
+
+
+/* ----------------------------------------------------------------
+   8. showLvlUp — don't call getStats() inside level-up display
+---------------------------------------------------------------- */
+showLvlUp = function() {
+  markStatsDirty();
+  // Don't eagerly call getStats() here — it'll be called on the
+  // next actual combat tick, with full cache warming.
+  const el = document.getElementById('lvlup');
+  if (!el) return;
+  document.getElementById('lvlup-txt').textContent = 'LEVEL ' + G.lv + '!';
+  el.classList.add('show');
+  clearTimeout(window._lvlT);
+  window._lvlT = setTimeout(() => el.classList.remove('show'), 1800);
+};
+
+
+/* ----------------------------------------------------------------
+   9. Canvas loop — skip rendering when tab is backgrounded
+   Patches the animation loop to bail early when page is hidden.
+   We can't replace loop() easily since it's recursive, so we
+   patch the drawArena32 call instead.
+---------------------------------------------------------------- */
+const _origDrawArena32 = drawArena32;
+drawArena32 = function() {
+  if (document.hidden) return; // don't paint when browser tab is hidden
+  _origDrawArena32();
+};
+
+
+/* ----------------------------------------------------------------
+   10. getStats — sync maxHp/maxMana to G after every compute
+   Ensures HUD always reads from G.maxHp / G.maxMana rather than
+   calling getStats() itself for every HUD refresh.
+---------------------------------------------------------------- */
+const _origGetStats = getStats;
+getStats = function() {
+  const result = _origGetStats();
+  // Keep G in sync so HUD reads from G, not from a fresh getStats() call
+  if (G) {
+    G.maxHp   = result.maxHp;
+    G.maxMana = result.maxMana;
+  }
+  return result;
+};
+
+
+/* ----------------------------------------------------------------
+   11. Boon tab — avoid rebuild on filter change
+---------------------------------------------------------------- */
+setBoonCat = function(c) {
+  boonCat = c;
+  // Only rebuild the list inside the tab, not the whole tab
+  const boonListEl = document.querySelector('#tab-body .boon-list');
+  if (boonListEl && curTab === 'boons') {
+    // Update filter button states
+    document.querySelectorAll('#tab-body .f-btn').forEach(btn => {
+      btn.classList.toggle('on', btn.textContent.toLowerCase() === c);
+    });
+    boonListEl.outerHTML = _buildBoonListHTML();
+  } else {
+    renderTab();
+  }
+};
 </script>
 
 </body>
