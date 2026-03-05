@@ -3472,7 +3472,12 @@ function getStats(){
 }
 
 function xpFor(lv){return Math.floor(100*Math.pow(1.28,lv-1));}
-function atkInterval(){return Math.max(200,Math.round(1000/getStats().spd));}
+function atkInterval(){
+  const spd = getStats().spd;
+  const diminished = spd / (1 + spd * 0.08);
+  return Math.max(120, Math.round(1000 / diminished));
+}
+
 function allSkList(){return Object.values(SKTREES).flatMap(t=>t.tiers.flat());}
 
 /* ===============================================
