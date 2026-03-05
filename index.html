@@ -6722,6 +6722,77 @@ setBoonCat = function(c) {
     renderTab();
   }
 };
+
+(function() {
+  const MAX_DMG_NODES = 12;
+  const MERGE_MS      = 80;   // hits within this window merge
+  const ANIM_MS       = 880;  // must match CSS floatup duration
+
+  // Small pool of reusable nodes
+  const _pool = [];
+  let   _active = [];         // { el, timer, lastVal, lastTime }
+
+  function _getNode() {
+    return _pool.pop() || document.createElement('div');
+  }
+
+  function _release(entry) {
+    _active = _active.filter(e => e !== entry);
+    if (entry.el.parentNode) entry.el.parentNode.removeChild(entry.el);
+    entry.el.className = '';
+    entry.el.textContent = '';
+    _pool.push(entry.el);
+  }
+
+  showDmg = function(dmg, isCrit, x, y) {
+    const ov = document.getElementById('arena-ov');
+    if (!ov) return;
+
+    const now = Date.now();
+
+    // --- merge rapid-fire hits into the most recent number ---
+    if (_active.length > 0) {
+      const last = _active[_active.length - 1];
+      if (now - last.lastTime < MERGE_MS) {
+        last.lastVal += dmg;
+        last.lastTime = now;
+        last.el.textContent = (isCrit || last.isCrit)
+          ? '💥 ' + fmt(Math.round(last.lastVal))
+          : fmt(Math.round(last.lastVal));
+        return;
+      }
+    }
+
+    // --- drop tiny hits when near cap ---
+    if (_active.length >= MAX_DMG_NODES - 2) {
+      const ref = _active[_active.length - 1];
+      if (ref && dmg < ref.lastVal * 0.01) return;
+    }
+
+    // --- enforce hard cap: recycle oldest ---
+    if (_active.length >= MAX_DMG_NODES) {
+      const oldest = _active[0];
+      clearTimeout(oldest.timer);
+      _release(oldest);
+    }
+
+    // --- create / reuse node ---
+    const el = _getNode();
+    el.className = 'dmg-num' + (isCrit ? ' crit' : '');
+    el.textContent = isCrit ? '💥 ' + fmt(Math.round(dmg)) : fmt(Math.round(dmg));
+
+    // Position — use provided coords or random fallback
+    const ox = (x !== undefined) ? x : (20 + Math.random() * 60);
+    const oy = (y !== undefined) ? y : (20 + Math.random() * 40);
+    el.style.cssText = `left:${ox}%;top:${oy}%;position:absolute;pointer-events:none;`;
+
+    ov.appendChild(el);
+
+    const entry = { el, lastVal: dmg, lastTime: now, isCrit };
+    entry.timer = setTimeout(() => _release(entry), ANIM_MS);
+    _active.push(entry);
+  };
+})();
 </script>
 
 </body>
