@@ -2732,7 +2732,7 @@ function getAscMult() {
 function canAscend() {
   if (!G) return false;
   if (G.ascensionLevel >= 5) return false;
-  const ageReqs = [25, 50, 80, 120, 175];
+  const ageReqs = [15, 30, 50, 75, 100];
   const ageReq = ageReqs[G.ascensionLevel];
   return G.age >= ageReq;
 }
@@ -5366,7 +5366,7 @@ function buildAscendTab() {
     return `<div class="sec">
       <div class="sec-hdr" style="color:#c090f0">ASCENSION</div>
       <div style="font-family:'Crimson Text',serif;font-style:italic;color:#7a5aaa;padding:var(--sp-lg);text-align:center">
-        Reach Age 75 to unlock Ascension.
+        Reach Age 15 to unlock Ascension.
       </div>
       ${buildSPExchange()}
     </div>`;
