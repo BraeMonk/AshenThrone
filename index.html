@@ -2732,7 +2732,7 @@ function getAscMult() {
 function canAscend() {
   if (!G) return false;
   if (G.ascensionLevel >= 5) return false;
-  const ageReqs = [15, 30, 50, 75, 100];
+  const ageReqs = [10, 10, 20, 30, 50];
   const ageReq = ageReqs[G.ascensionLevel];
   return G.age >= ageReq;
 }
@@ -5371,7 +5371,7 @@ function buildAscendTab() {
     return `<div class="sec">
       <div class="sec-hdr" style="color:#c090f0">ASCENSION</div>
       <div style="font-family:'Crimson Text',serif;font-style:italic;color:#7a5aaa;padding:var(--sp-lg);text-align:center">
-        Reach Age 15 to unlock Ascension.
+        Reach Age 10 to unlock Ascension.
       </div>
       ${buildSPExchange()}
     </div>`;
@@ -5414,9 +5414,9 @@ function buildAscendTab() {
         </div>`).join('')}
     </div>
     ${al < 5 ? `
-    <div style="font-size:var(--fs-xs);color:#7a5aaa;margin-bottom:6px">Next Ascension: Age ${[15,30,50,75,100][al]}</div>
+    <div style="font-size:var(--fs-xs);color:#7a5aaa;margin-bottom:6px">Next Ascension: Age ${[10,10,20,30,50][al]}</div>
     <div style="height:5px;background:rgba(0,0,0,0.5);border-radius:3px;overflow:hidden">
-      <div style="height:100%;background:linear-gradient(90deg,#6030a0,#c090f0);width:${Math.min(100,(G.age/[15,30,50,75,100][al])*100).toFixed(1)}%;transition:width .5s;box-shadow:0 0 6px rgba(160,80,240,0.5)"></div>
+      <div style="height:100%;background:linear-gradient(90deg,#6030a0,#c090f0);width:${Math.min(100,(G.age/[10,10,20,30,50][al])*100).toFixed(1)}%;transition:width .5s;box-shadow:0 0 6px rgba(160,80,240,0.5)"></div>
     </div>` : `<div style="color:#c090f0;font-size:var(--fs-sm);text-align:center;padding:4px">🔱 Maximum Ascension Level Reached</div>`}
   </div>`;
 
