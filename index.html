@@ -5416,7 +5416,7 @@ function buildAscendTab() {
     ${al < 5 ? `
     <div style="font-size:var(--fs-xs);color:#7a5aaa;margin-bottom:6px">Next Ascension: Age ${[25,50,80,120,175][al]}</div>
     <div style="height:5px;background:rgba(0,0,0,0.5);border-radius:3px;overflow:hidden">
-      <div style="height:100%;background:linear-gradient(90deg,#6030a0,#c090f0);width:${Math.min(100,(G.age/[25,50,80,120,175][al])*100).toFixed(1)}%;transition:width .5s;box-shadow:0 0 6px rgba(160,80,240,0.5)"></div>
+      <div style="height:100%;background:linear-gradient(90deg,#6030a0,#c090f0);width:${Math.min(100,(G.age/[15,30,50,75,100][al])*100).toFixed(1)}%;transition:width .5s;box-shadow:0 0 6px rgba(160,80,240,0.5)"></div>
     </div>` : `<div style="color:#c090f0;font-size:var(--fs-sm);text-align:center;padding:4px">🔱 Maximum Ascension Level Reached</div>`}
   </div>`;
 
