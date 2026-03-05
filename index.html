@@ -4890,12 +4890,12 @@ function setBoonCat(c){boonCat=c;renderTab();}
    
 function getMaxBoonLevel(){
   const al = G.ascensionLevel || 0;
-  if(al >= 5) return 500;
-  if(al >= 4) return 400;
-  if(al >= 3) return 300;
-  if(al >= 2) return 200;
-  if(al >= 1) return 100;
-  return 50;
+  if(al >= 5) return 1000;
+  if(al >= 4) return 750;
+  if(al >= 3) return 600;
+  if(al >= 2) return 450;
+  if(al >= 1) return 300;
+  return 150;
 }
 
 function buyBoon(id){
@@ -5358,11 +5358,18 @@ function exchangeSPMax(type) {
    ASCENSION TAB — Skill Tree + Soul Shards/Relics
 =============================================== */
 function buildAscendTab() {
-  if (!G || (G.ascensionLevel < 1 && !canAscend())) {
-    return `<div class="sec"><div class="sec-hdr" style="color:#c090f0">ASCENSION</div>
+  if (!G) return '';
+
+  const locked = G.ascensionLevel < 1 && !canAscend();
+
+  if (locked) {
+    return `<div class="sec">
+      <div class="sec-hdr" style="color:#c090f0">ASCENSION</div>
       <div style="font-family:'Crimson Text',serif;font-style:italic;color:#7a5aaa;padding:var(--sp-lg);text-align:center">
         Reach Age 75 to unlock Ascension.
-      </div></div>`;
+      </div>
+      ${buildSPExchange()}
+    </div>`;
   }
 
   const al = G.ascensionLevel;
