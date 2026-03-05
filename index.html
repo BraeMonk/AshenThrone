@@ -943,6 +943,13 @@ CURSES TAB
         <div class="br"><span class="br-ico" style="color:#ff6060">♥</span><div class="br-track"><div class="br-fill hp" id="b-hp" style="width:100%"></div></div><span class="br-val" id="v-hp">100/100</span></div>
         <div class="br"><span class="br-ico" style="color:#6090ff">✦</span><div class="br-track"><div class="br-fill mp" id="b-mp" style="width:100%"></div></div><span class="br-val" id="v-mp">50/50</span></div>
         <div class="br"><span class="br-ico" style="color:#50d050">★</span><div class="br-track"><div class="br-fill xp" id="b-xp" style="width:0%"></div></div><span class="br-val" id="v-xp">0/100</span></div>
+        <div class="br" id="focus-bar-wrap" style="display:none">
+           <span class="br-ico" style="color:#40e8c0;filter:drop-shadow(0 0 4px rgba(64,232,192,0.8))">☯</span>
+           <div class="br-track">
+              <div class="br-fill" id="focus-bar-fill" style="width:0%;background:linear-gradient(90deg,#108070,#20c0a0 30%,#40e8c0 70%,#b0fff0 100%);transition:width .2s ease;"></div>
+           </div>
+           <span class="br-val" id="focus-bar-val" style="color:#40e8c0">0/10</span>
+        </div>
       </div>
       <div id="hud-right">
         <div id="hud-gold">💰 <span id="hud-gold-val">0</span><span id="hud-gps" style="font-size:0.55rem;color:var(--golddim);margin-left:3px;"></span></div>
@@ -1133,6 +1140,24 @@ const PAL32 = {
     bwA: '#8a5828', bwB: '#6a4018', bwC: '#4a2c0c', bwStr: '#f0e080',
     // Boots
     btA: '#2e3a18', btB: '#1e2810', btC: '#101408',
+  },
+  monk: {
+    // Robe — deep void indigo
+    rA: '#1e1440', rB: '#160e30', rC: '#0e0820', rD: '#08041a',
+    rtrim: '#9060e0', rtrimB: '#6040a0', rtrimC: '#c090ff',
+    // Skin — slightly pale, otherworldly
+    sk: '#c8906a', skh: '#dca880', skd: '#a87050',
+    // Eyes — glowing ki teal
+    eye: '#60f0c0', eyeSpec: '#b0fff0',
+    // Head — shaved, smooth
+    hA: '#8a6040', hB: '#705030', hC: '#503820', hrim: '#a07850',
+    // Ki energy — teal-white glow
+    kiA: '#40e8c0', kiB: '#80fff0', kiC: '#20c0a0', kiD: '#108070',
+    kiGlow: 'rgba(64,232,192,0.7)',
+    // Prayer beads — warm gold, very prominent
+    bead: '#d0a030', beadHl: '#f8d060', beadDk: '#a07820',
+    // Sash
+    sA: '#8040c0', sB: '#6030a0', sC: '#401870',
   },
 };
 
@@ -1333,7 +1358,50 @@ const SPR32 = {
       [_,    p.btB,p.btC,p.btC, p.btB, _,     p.btB, p.btC,p.btC,p.btB,_,   _   ],
     ];
   },
-
+  monk(p, attacking) {
+    const _ = null;
+    const s = attacking;
+    // Ki pulse — breathing glow tied to animation frame
+    const t = _lastFrame * 0.003;
+    const kp = 0.7 + 0.3 * Math.sin(t);
+    const ki = `rgba(64,232,192,${(0.7 + 0.3 * kp).toFixed(2)})`;
+    const kiF = `rgba(128,255,240,${(0.5 + 0.4 * kp).toFixed(2)})`;
+    const beadGlow = s ? p.beadHl : p.bead; // beads glow gold when attacking
+    return [
+      // 0 — shaved head top
+      [_,    _,    _,    p.hC,  p.hA,  p.hA,  p.hC,  _,    _,    _,    _,    _   ],
+      // 1 — head upper (shaved, slight stubble shadow)
+      [_,    _,    p.hC, p.hB,  p.sk,  p.sk,  p.hB,  p.hC, _,    _,    _,    _   ],
+      // 2 — face upper
+      [_,    p.hC, p.skh,p.skh, p.sk,  p.sk,  p.skh, p.skh,p.hC, _,    _,    _   ],
+      // 3 — eyes — glowing ki teal
+      [_,    p.hC, p.sk, p.eye, p.eyeSpec,p.eyeSpec,p.eye,p.sk,p.hC, _,    _,    _   ],
+      // 4 — lower face / closed mouth — calm expression
+      [_,    p.skh,p.sk, p.skd, p.skd, p.skd, p.skd, p.sk, p.skh,_,    _,    _   ],
+      // 5 — neck + prayer bead strand across collar
+      [_,    p.bead,p.bead,p.rA,p.sk,  p.sk,  p.rA,  p.bead,p.bead,_,  _,    _   ],
+      // 6 — shoulders + ki shoulder aura when attacking
+      [s?ki:p.rD,p.rtrimC,p.rA,p.kiC,p.rB,p.rB,p.kiC,p.rA,p.rtrimC,s?ki:p.rD,s?kiF:_,s?ki:_],
+      // 7 — chest — prayer bead loop hangs center
+      [_,    p.rA, p.rtrim,p.bead,p.kiB,p.kiB,p.bead,p.rtrim,p.rA,_,   s?ki:_,s?kiF:_],
+      // 8 — mid torso — sash, bead strand continues
+      [_,    p.rB, p.sA,  p.sB, p.bead,p.bead,p.sB,  p.sA,  p.rB, _,    _,    _   ],
+      // 9 — wrists — prayer beads on both wrists (bright when attacking)
+      [s?p.beadHl:p.bead,p.bead,p.rB,p.sC,p.rB,p.rB,p.sC,p.rB,p.bead,s?p.beadHl:p.bead,_,_],
+      // 10 — upper legs
+      [_,    p.rA, p.rB,  p.rA, p.rC,  p.rC,  p.rA,  p.rB,  p.rA, _,    _,    _   ],
+      // 11 — knee — subtle trim
+      [_,    p.rtrimB,p.rA,p.rtrimB,_,_,p.rtrimB,p.rA,p.rtrimB,_,_,_],
+      // 12 — shins
+      [_,    p.rB, p.rA,  p.rB, _,     _,     p.rB,  p.rA,  p.rB, _,    _,    _   ],
+      // 13 — lower shins
+      [_,    p.rC, p.rB,  p.rC, _,     _,     p.rC,  p.rB,  p.rC, _,    _,    _   ],
+      // 14 — bare feet (no boots — ascetic)
+      [_,    p.skd,p.sk,  p.skd,p.skd, _,     p.skd, p.skd, p.sk, p.skd,_,   _   ],
+      // 15 — toes
+      [_,    p.skd,p.skd, p.skd,_,     _,     _,     p.skd, p.skd,p.skd,_,   _   ],
+    ];
+  },
 };
 
 // 32-bit enemies with more color detail
@@ -1612,6 +1680,20 @@ const CLASSES={
   rogue:{icon:'🗡',name:'Shadow Rogue',flavor:'"Strike unseen. Vanish before the blood hits the ground."',lore:'An assassin born in the slums of a fallen city. The Rogue relies on blistering speed, crippling critical strikes, and the ability to ghost through death itself.',baseAtk:6,baseDef:2,baseHp:110,baseMana:70,baseSpd:1.6,baseCrit:22,baseSpell:0,hints:['⚡ Fastest Attacks','💥 Best Crits','👤 Dodge Chance']},
   paladin:{icon:'✝',name:'Fallen Paladin',flavor:'"Even shattered faith leaves a mark."',lore:'The order of Paladins was destroyed by the Ashen King. One survivor channels divine wrath through cracked armor, fueled by grief and righteous fury.',baseAtk:7,baseDef:4,baseHp:130,baseMana:80,baseSpd:1.0,baseCrit:8,baseSpell:8,hints:['✝ Holy Damage','🛡 Strong Defense','💚 Self-Healing']},
   ranger:{icon:'🏹',name:'Cursed Ranger',flavor:'"The wilds remember every injustice done to them."',lore:"A tracker who witnessed the Rotwood's corruption firsthand and was changed by it. The Ranger strikes from range with nature-imbued arrows.",baseAtk:6,baseDef:3,baseHp:105,baseMana:85,baseSpd:1.35,baseCrit:18,baseSpell:5,hints:['🏹 Ranged Attacks','🌿 Nature Magic','⚡ High Speed']},
+  monk: {
+    icon: '📿',
+    name: 'Void Monk',
+    flavor: '"The self is the first enemy. Silence it, and nothing else can stand."',
+    lore: 'A wandering ascetic who channels void energy through ancient prayer beads worn around their wrists. Each bead is a sealed soul — released as a ki blast in battle. The Monk has no supreme weakness and no supreme strength, only perfect form. But Focus is everything: ten hits without flinching and the void flows freely.',
+    baseAtk: 8,
+    baseDef: 4,
+    baseHp: 130,
+    baseMana: 110,
+    baseSpd: 1.2,
+    baseCrit: 14,
+    baseSpell: 9,
+    hints: ['📿 Ki Blasts from prayer beads', '☯ Focus: +ATK per hit, lost when struck', '⚖️ No weakness — true balanced mastery'],
+  },
 };
 
 /* ===============================================
@@ -3219,6 +3301,9 @@ function tickBankInterest(){
    GAME STATE
 =============================================== */
 const SAVE='ashen_v7';
+const FOCUS_MAX = 10;
+const FOCUS_DMG_PER_STACK = 0.08; // +8% ATK per stack = up to +80% at max
+const FOCUS_DECAY_ON_HIT = 2;
 let G=null;
 function mkState(){return{cls:'warrior',selCls:null,lv:1,xp:0,xpNext:100,hp:160,maxHp:160,mana:30,maxMana:30,gold:0,gtotal:0,kills:0,deaths:0,zone:1,age:1,zoneKills:0,zoneTarget:10,sp:0,prestige:0,pbonus:1.0,sk:{},quests:QUESTS.map(q=>({...q})),boons:{},boonCount:0,idle:false,lastSave:Date.now(),sktotal:0,chapters:STORY_CHAPTERS.map(c=>({...c,objs:c.objs.map(o=>({...o}))})),chainKills:0,divineReady:true,deathBargain:true,
 curses:{},sacrifices:{},deathTollDebt:0,deathTollKills:0,
@@ -3873,6 +3958,48 @@ function drawArena32(){
         ctx.fillStyle='rgba(100,200,60,0.6)';
         ctx.fillRect(lx+2,ly-3,2,2);
       }
+    } else if (G && G.cls === 'monk') {
+      // Ki blast — prayer bead launched as a glowing orb trailing void energy
+      ctx.globalAlpha = prog * 0.98;
+      const t2 = Date.now() * 0.015;
+
+      // Bead core — solid gold pixel at center
+      const beadSize = 3 + (1 - prog) * 2; // shrinks slightly as it travels
+      ctx.fillStyle = '#f0c050';
+      ctx.fillRect(sx - beadSize / 2, sy - beadSize / 2, beadSize, beadSize);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(sx - 1, sy - 1, 2, 2); // specular highlight
+
+      // Ki aura around bead — teal radial glow
+      const auraR = 6 + prog * 10;
+      const auraGrad = ctx.createRadialGradient(sx, sy, 0, sx, sy, auraR);
+      auraGrad.addColorStop(0, 'rgba(255,240,160,0.9)');  // gold center
+      auraGrad.addColorStop(0.3, 'rgba(64,232,192,0.7)'); // ki teal
+      auraGrad.addColorStop(0.7, 'rgba(20,160,130,0.3)');
+      auraGrad.addColorStop(1, 'transparent');
+      ctx.fillStyle = auraGrad;
+      ctx.beginPath(); ctx.arc(sx, sy, auraR, 0, Math.PI * 2); ctx.fill();
+
+      // Trailing void wisps — 5 fading orbs behind the bead
+      for (let i = 1; i <= 5; i++) {
+        const trailX = sx - i * 7;
+        const alpha = prog * (0.6 - i * 0.1);
+        ctx.globalAlpha = Math.max(0, alpha);
+        ctx.fillStyle = i <= 2 ? '#40e8c0' : '#1a8070';
+        ctx.fillRect(trailX - 1, sy - 1, 2, 2);
+      }
+
+      // Impact bloom — expanding ring when near target (prog > 0.75)
+      if (prog > 0.75) {
+        ctx.globalAlpha = (prog - 0.75) * 4 * 0.8;
+        const bloomR = (prog - 0.75) * 4 * 30;
+        const bloomGrad = ctx.createRadialGradient(sx, sy, 0, sx, sy, bloomR);
+        bloomGrad.addColorStop(0, 'rgba(255,240,160,0.9)');
+        bloomGrad.addColorStop(0.4, 'rgba(64,232,192,0.5)');
+        bloomGrad.addColorStop(1, 'transparent');
+        ctx.fillStyle = bloomGrad;
+        ctx.beginPath(); ctx.arc(sx, sy, bloomR, 0, Math.PI * 2); ctx.fill();
+      }
     }
 
     ctx.restore();
@@ -4007,6 +4134,14 @@ function doAttack(){
 
   let dmg=st.atk*(0.82+Math.random()*.36);
 
+  // Focus stacks — Monk gains 1 per hit, lose on taking damage
+  if (G.cls === 'monk') {
+    G.focusStacks = Math.min(FOCUS_MAX, (G.focusStacks || 0) + 1);
+    dmg *= (1 + G.focusStacks * FOCUS_DMG_PER_STACK);
+    // Show focus bar update
+    _updateFocusBar();
+  }
+
   // Void Rift player damage bonus (AL3+)
   if (G.voidRiftActive && _activeRift) {
     dmg *= _activeRift.playerDmgMult;
@@ -4114,6 +4249,11 @@ function doAttack(){
   }
   if(eDmg>0){
     G.hp=Math.max(0,G.hp-eDmg);PA.hflash=1;SFX.hurt();
+    // Monk loses focus stacks when hit
+    if (G.cls === 'monk' && eDmg > 0) {
+      G.focusStacks = Math.max(0, (G.focusStacks || 0) - FOCUS_DECAY_ON_HIT);
+      _updateFocusBar();
+    }
     showDmg(eDmg,false,'enemy');
     spawnParticles(PA.x+PX*4,PA.y+PX*5,'#d02020',5);
   }
@@ -4284,6 +4424,13 @@ function killEnemy(){
   if(bl('b4'))G.hp=st.maxHp; // Blood Pact — full restore
   if(G.sk.regen)G.hp=Math.min(st.maxHp,G.hp+Math.round(st.maxHp*G.sk.regen*.02));
 
+  // Monk passive: ki lifesteal on every kill (scales with focus)
+  if (G.cls === 'monk') {
+    const kiHeal = Math.round(getStats().maxHp * 0.04 * (1 + (G.focusStacks || 0) * 0.05));
+    G.hp = Math.min(getStats().maxHp, G.hp + kiHeal);
+    showDmg('+' + kiHeal, false, 'heal');
+  }
+
   // Level up check
   while(G.xp>=G.xpNext){
     G.xp-=G.xpNext;G.lv++;G.xpNext=xpFor(G.lv);G.sp++;
@@ -4340,6 +4487,11 @@ function die(){
   }
   resetDepthScore();
   const st=getStats();G.hp=Math.round(st.maxHp*.5);
+  // Monk loses all focus on death
+  if (G.cls === 'monk') {
+    G.focusStacks = 0;
+    _updateFocusBar();
+  }
   // Curse of Ages: Death's Toll — each death permanently reduces max HP
   if(G.curses&&G.curses.ca3){
     const toll=Math.round((CLASSES[G.cls].baseHp+(G.lv-1)*13)*0.05);
@@ -4533,6 +4685,23 @@ function updateHUD(){
     updateDepthHUD();
   }
 
+}
+
+function _updateFocusBar() {
+  const bar = document.getElementById('focus-bar-fill');
+  const lbl = document.getElementById('focus-bar-val');
+  const wrap = document.getElementById('focus-bar-wrap');
+  if (!wrap) return;
+  const stacks = G.focusStacks || 0;
+  wrap.style.display = G.cls === 'monk' ? 'flex' : 'none';
+  if (bar) bar.style.width = (stacks / FOCUS_MAX * 100) + '%';
+  if (lbl) lbl.textContent = stacks + '/' + FOCUS_MAX + ' Focus';
+  // Glow at max
+  if (bar) {
+    bar.style.boxShadow = stacks >= FOCUS_MAX
+      ? '0 0 12px rgba(64,232,192,0.9), 0 0 24px rgba(64,232,192,0.4)'
+      : '0 0 4px rgba(64,232,192,0.3)';
+  }
 }
 function updateZoneBar(){const pct=G?Math.min(100,(G.zoneKills/G.zoneTarget)*100):0;const el=document.getElementById('zone-prog-fill');if(el)el.style.width=pct+'%';}
 
